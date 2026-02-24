@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Text, TextInput, Button, SegmentedButtons, Snackbar, useTheme } from 'react-native-paper';
+import { Text, Button, SegmentedButtons, Snackbar, useTheme } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CategorySelector } from '../../categories/components/CategorySelector';
+import { AmountInput } from '../../transactions/components/AmountInput';
 import { budgetService } from '../../../services/budgetService';
 import { useBudgetStore } from '../../../store/budgetStore';
 import { useUserStore } from '../../../store/userStore';
@@ -127,13 +128,8 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
     setCategoryError(false);
   };
 
-  const handleAmountChange = (text: string) => {
-    const cleaned = text.replace(/[^0-9.]/g, '');
-    const parts = cleaned.split('.');
-    if (parts.length > 2) return;
-    if (parts[1] && parts[1].length > 2) return;
-    
-    setAmount(cleaned);
+  const handleAmountChange = (value: string) => {
+    setAmount(value);
     setAmountError(false);
   };
 
@@ -167,17 +163,11 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
           error={categoryError}
         />
 
-        <TextInput
-          label="Budget Amount"
+        <AmountInput
           value={amount}
           onChangeText={handleAmountChange}
-          mode="outlined"
-          keyboardType="decimal-pad"
           error={amountError}
           disabled={loading}
-          left={<TextInput.Affix text={currency} />}
-          style={styles.input}
-          placeholder="0.00"
         />
 
         {selectedCategory && amount && (
