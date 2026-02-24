@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Text, TextInput, Portal, Modal, Button } from 'react-native-paper';
+import { Text, TextInput, Portal, Modal, Button, useTheme } from 'react-native-paper';
 
 interface DatePickerInputProps {
   value: Date;
@@ -19,6 +19,57 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
 }) => {
   const [showPicker, setShowPicker] = useState(false);
   const [tempDate, setTempDate] = useState(value);
+  const theme = useTheme();
+
+  const styles = StyleSheet.create({
+    container: {
+      marginBottom: 16,
+    },
+    input: {
+      backgroundColor: theme.colors.surface,
+    },
+    modal: {
+      backgroundColor: theme.colors.surface,
+      padding: 20,
+      margin: 20,
+      borderRadius: 8,
+      maxHeight: '80%',
+    },
+    modalTitle: {
+      marginBottom: 16,
+      fontWeight: 'bold',
+    },
+    dateList: {
+      maxHeight: 400,
+    },
+    dateItem: {
+      padding: 16,
+      borderRadius: 8,
+      marginBottom: 8,
+      borderWidth: 1,
+      borderColor: theme.colors.outline,
+    },
+    selectedDateItem: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    dateText: {
+      fontWeight: 'bold',
+    },
+    dateSubtext: {
+      marginTop: 4,
+      opacity: 0.7,
+    },
+    selectedDateText: {
+      color: theme.colors.onPrimary,
+    },
+    actions: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: 8,
+      marginTop: 16,
+    },
+  });
 
   const formatDate = (date: Date): string => {
     return date.toLocaleDateString('en-US', {
@@ -31,7 +82,7 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
   const generateDates = () => {
     const dates = [];
     const today = new Date();
-    
+
     // Generate last 60 days
     for (let i = 0; i < 60; i++) {
       const date = new Date();
@@ -85,8 +136,8 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
         disabled={disabled}
         error={error}
         right={
-          <TextInput.Icon 
-            icon="calendar" 
+          <TextInput.Icon
+            icon="calendar"
             onPress={handleIconPress}
             disabled={disabled}
           />
@@ -151,55 +202,3 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  input: {
-    backgroundColor: '#fff',
-  },
-  modal: {
-    backgroundColor: 'white',
-    padding: 20,
-    margin: 20,
-    borderRadius: 8,
-    maxHeight: '80%',
-  },
-  modalTitle: {
-    marginBottom: 16,
-    fontWeight: 'bold',
-  },
-  dateList: {
-    maxHeight: 400,
-  },
-  dateItem: {
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  selectedDateItem: {
-    backgroundColor: '#6200ee',
-    borderColor: '#6200ee',
-  },
-  dateText: {
-    fontWeight: 'bold',
-  },
-  dateSubtext: {
-    marginTop: 4,
-    opacity: 0.7,
-  },
-  selectedDateText: {
-    color: '#fff',
-  },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
-    marginTop: 16,
-  },
-});
-
-
