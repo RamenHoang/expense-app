@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase';
+import * as FileSystem from 'expo-file-system';
 import {
   Transaction,
   TransactionWithCategory,
@@ -6,6 +7,26 @@ import {
   UpdateTransactionInput,
   TransactionFilters,
 } from '../types/transaction';
+
+// Helper function to convert base64 to Blob
+function base64toBlob(base64: string, contentType: string): Blob {
+  const byteCharacters = atob(base64);
+  const byteArrays = [];
+
+  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+    const slice = byteCharacters.slice(offset, offset + 512);
+    const byteNumbers = new Array(slice.length);
+    
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+    
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
+  }
+
+  return new Blob(byteArrays, { type: contentType });
+}
 
 export const transactionService = {
   /**
@@ -182,23 +203,37 @@ export const transactionService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    // Read file as blob (implementation depends on platform)
-    const response = await fetch(fileUri);
-    const blob = await response.blob();
-
     const filePath = `${user.id}/${transactionId}/${fileName}`;
 
-    const { data, error } = await supabase.storage
-      .from('receipts')
-      .upload(filePath, blob, {
-        cacheControl: '3600',
-        upsert: false,
+    try {
+      // Read file as base64
+      const base64 = await FileSystem.readAsStringAsync(fileUri, {
+        encoding: FileSystem.EncodingType.Base64,
       });
 
-    if (error) throw error;
+      // Convert base64 to blob
+      const blob = base64toBlob(base64, 'image/jpeg');
 
-    // For private buckets, return the path (we'll use signed URLs when displaying)
-    return filePath;
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('receipts')
+        .upload(filePath, blob, {
+          contentType: 'image/jpeg',
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('Supabase upload error:', error);
+        throw error;
+      }
+
+      // Return the file path (we'll use signed URLs when displaying)
+      return filePath;
+    } catch (error: any) {
+      console.error('Receipt upload error:', error);
+      throw new Error(`Receipt upload failed: ${error.message || 'Unknown error'}`);
+    }
   },
 
   /**
