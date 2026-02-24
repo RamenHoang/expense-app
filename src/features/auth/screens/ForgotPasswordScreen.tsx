@@ -4,6 +4,7 @@ import { Text, Button, TextInput, Snackbar } from 'react-native-paper';
 import { supabase } from '../../../config/supabase';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../../types/navigation';
+import { useTheme } from 'react-native-paper';
 
 type ForgotPasswordScreenProps = {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
@@ -14,6 +15,48 @@ export const ForgotPasswordScreen = ({ navigation }: ForgotPasswordScreenProps) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const theme = useTheme();
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: 24,
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: 32,
+    },
+    title: {
+      fontWeight: 'bold',
+      marginBottom: 8,
+      color: theme.colors.primary,
+    },
+    subtitle: {
+      opacity: 0.7,
+      textAlign: 'center',
+      marginHorizontal: 16,
+      color: theme.colors.onBackground,
+    },
+    form: {
+      width: '100%',
+    },
+    input: {
+      marginBottom: 16,
+    },
+    resetButton: {
+      marginTop: 8,
+      paddingVertical: 6,
+    },
+    backContainer: {
+      alignItems: 'center',
+      marginTop: 16,
+    },
+  });
 
   const validateEmail = () => {
     if (!email.trim()) {
@@ -53,7 +96,7 @@ export const ForgotPasswordScreen = ({ navigation }: ForgotPasswordScreenProps) 
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
@@ -124,41 +167,3 @@ export const ForgotPasswordScreen = ({ navigation }: ForgotPasswordScreenProps) 
     </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  title: {
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    opacity: 0.7,
-    textAlign: 'center',
-    marginHorizontal: 16,
-  },
-  form: {
-    width: '100%',
-  },
-  input: {
-    marginBottom: 16,
-  },
-  resetButton: {
-    marginTop: 8,
-    paddingVertical: 6,
-  },
-  backContainer: {
-    alignItems: 'center',
-    marginTop: 16,
-  },
-});

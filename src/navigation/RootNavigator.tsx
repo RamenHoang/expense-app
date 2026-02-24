@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, StyleSheet } from 'react-native';
-import { ActivityIndicator, Text } from 'react-native-paper';
+import { ActivityIndicator, Text, useTheme } from 'react-native-paper';
 import { RootStackParamList } from '../types/navigation';
 import { AuthNavigator } from './AuthNavigator';
 import { MainNavigator } from './MainNavigator';
@@ -17,10 +17,18 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const RootNavigator = () => {
   const { user, isLoading } = useAuthStore();
+  const theme = useTheme();
+
+  const commonScreenOptions = {
+    headerStyle: {
+      backgroundColor: theme.colors.surface,
+    },
+    headerTintColor: theme.colors.onSurface,
+  };
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
         <ActivityIndicator size="large" />
         <Text variant="bodyLarge" style={styles.loadingText}>Loading...</Text>
       </View>
@@ -43,6 +51,7 @@ export const RootNavigator = () => {
               options={{ 
                 title: 'Manage Categories',
                 headerBackTitle: 'Back',
+                ...commonScreenOptions,
               }}
             />
             <Stack.Screen 
@@ -51,6 +60,7 @@ export const RootNavigator = () => {
               options={{ 
                 title: 'Add Transaction',
                 headerBackTitle: 'Back',
+                ...commonScreenOptions,
               }}
             />
             <Stack.Screen 
@@ -59,6 +69,7 @@ export const RootNavigator = () => {
               options={{ 
                 title: 'Edit Transaction',
                 headerBackTitle: 'Back',
+                ...commonScreenOptions,
               }}
             />
             <Stack.Screen 
@@ -67,6 +78,7 @@ export const RootNavigator = () => {
               options={{ 
                 title: 'Set Budget',
                 headerBackTitle: 'Back',
+                ...commonScreenOptions,
               }}
             />
             <Stack.Screen 
@@ -75,6 +87,7 @@ export const RootNavigator = () => {
               options={{ 
                 title: 'Select Currency',
                 headerBackTitle: 'Back',
+                ...commonScreenOptions,
               }}
             />
           </>
@@ -82,7 +95,10 @@ export const RootNavigator = () => {
           <Stack.Screen 
             name="Auth" 
             component={AuthNavigator} 
-            options={{ headerShown: false }}
+            options={{
+              headerShown: false,
+              ...commonScreenOptions,
+            }}
           />
         )}
       </Stack.Navigator>
