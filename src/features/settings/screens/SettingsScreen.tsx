@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text, List, Avatar, Divider, Dialog, Button, Portal } from 'react-native-paper';
 import { useAuthStore } from '../../../store/authStore';
+import { useUserStore } from '../../../store/userStore';
 import { useNavigation } from '@react-navigation/native';
 
 export const SettingsScreen = () => {
   const navigation = useNavigation();
   const { user, signOut } = useAuthStore();
+  const { profile, fetchProfile } = useUserStore();
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!profile) {
+      fetchProfile();
+    }
+  }, []);
 
   const handleSignOut = async () => {
     setLoading(true);
@@ -67,9 +75,10 @@ export const SettingsScreen = () => {
         />
         <List.Item
           title="Currency"
-          description="USD"
+          description={profile?.currency || 'USD'}
           left={(props) => <List.Icon {...props} icon="currency-usd" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
+          onPress={() => navigation.navigate('CurrencySelection' as never)}
         />
       </List.Section>
       
