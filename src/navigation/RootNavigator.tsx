@@ -10,6 +10,7 @@ import { CategoryListScreen } from '../features/categories/screens/CategoryListS
 import { AddTransactionScreen } from '../features/transactions/screens/AddTransactionScreen';
 import { EditTransactionScreen } from '../features/transactions/screens/EditTransactionScreen';
 import { SetBudgetScreen } from '../features/budget/screens/SetBudgetScreen';
+import { CurrencySelectionScreen } from '../features/settings/screens/CurrencySelectionScreen';
 import { useAuthStore } from '../store/authStore';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -65,6 +66,14 @@ export const RootNavigator = () => {
               component={SetBudgetScreen}
               options={{ 
                 title: 'Set Budget',
+                headerBackTitle: 'Back',
+              }}
+            />
+            <Stack.Screen 
+              name="CurrencySelection" 
+              component={CurrencySelectionScreen}
+              options={{ 
+                title: 'Select Currency',
                 headerBackTitle: 'Back',
               }}
             />
