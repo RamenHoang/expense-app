@@ -218,10 +218,8 @@ export const TransactionListScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    ,
   },
   header: {
-    ,
     padding: 16,
     paddingBottom: 8,
   },
@@ -238,7 +236,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    ,
     marginTop: 8,
   },
   sectionDate: {
