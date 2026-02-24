@@ -91,7 +91,7 @@ export const DashboardScreen = () => {
 
   if (loading && !refreshing) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
         <Text variant="bodyLarge">Loading dashboard...</Text>
       </View>
     );

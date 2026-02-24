@@ -118,7 +118,7 @@ export const TransactionListScreen = () => {
     if (isYesterday) dateLabel = 'Yesterday';
 
     return (
-      <View style={styles.sectionHeader}>
+      <View style={[styles.sectionHeader, { backgroundColor: theme.colors.surfaceVariant }]}>
         <Text variant="titleMedium" style={styles.sectionDate}>
           {dateLabel}
         </Text>
@@ -126,7 +126,7 @@ export const TransactionListScreen = () => {
           variant="titleMedium"
           style={[
             styles.sectionTotal,
-            { color: total >= 0 ? '#4caf50' : '#f44336' },
+            { color: total >= 0 ? theme.colors.income : theme.colors.expense },
           ]}
         >
           {total >= 0 ? '+' : ''}${Math.abs(total).toFixed(2)}
@@ -151,8 +151,8 @@ export const TransactionListScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
         <Searchbar
           placeholder="Search transactions"
           onChangeText={handleSearch}
