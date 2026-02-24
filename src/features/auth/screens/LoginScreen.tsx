@@ -4,6 +4,7 @@ import { Text, Button, TextInput, Snackbar, ActivityIndicator } from 'react-nati
 import { supabase } from '../../../config/supabase';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../../types/navigation';
+import { useTheme } from 'react-native-paper';
 
 type LoginScreenProps = {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'Login'>;
@@ -15,6 +16,52 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const theme = useTheme();
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: 24,
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: 32,
+    },
+    title: {
+      fontWeight: 'bold',
+      marginBottom: 8,
+      color: theme.colors.primary,
+    },
+    subtitle: {
+      opacity: 0.7,
+      color: theme.colors.onBackground,
+    },
+    form: {
+      width: '100%',
+    },
+    input: {
+      marginBottom: 16,
+    },
+    forgotButton: {
+      alignSelf: 'flex-end',
+      marginBottom: 8,
+    },
+    loginButton: {
+      marginTop: 8,
+      paddingVertical: 6,
+    },
+    registerContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 16,
+    },
+  });
 
   const validateForm = () => {
     if (!email.trim()) {
@@ -58,7 +105,7 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
@@ -91,8 +138,8 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
             autoComplete="password"
             disabled={loading}
             right={
-              <TextInput.Icon 
-                icon={showPassword ? 'eye-off' : 'eye'} 
+              <TextInput.Icon
+                icon={showPassword ? 'eye-off' : 'eye'}
                 onPress={() => setShowPassword(!showPassword)}
               />
             }
@@ -146,45 +193,3 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
     </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  title: {
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    opacity: 0.7,
-  },
-  form: {
-    width: '100%',
-  },
-  input: {
-    marginBottom: 16,
-  },
-  forgotButton: {
-    alignSelf: 'flex-end',
-    marginBottom: 8,
-  },
-  loginButton: {
-    marginTop: 8,
-    paddingVertical: 6,
-  },
-  registerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 16,
-  },
-});
