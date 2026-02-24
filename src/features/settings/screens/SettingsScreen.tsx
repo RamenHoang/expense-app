@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { Text, List, Avatar, Divider, Dialog, Button, Portal, Switch } from 'react-native-paper';
 import { useAuthStore } from '../../../store/authStore';
 import { useUserStore } from '../../../store/userStore';
 import { useThemeStore } from '../../../store/themeStore';
+import { exportService } from '../../../services/exportService';
 import { useNavigation } from '@react-navigation/native';
 
 export const SettingsScreen = () => {
@@ -12,7 +13,9 @@ export const SettingsScreen = () => {
   const { profile, fetchProfile } = useUserStore();
   const { isDarkMode, toggleTheme } = useThemeStore();
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
+  const [exportDialogVisible, setExportDialogVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!profile) {
@@ -29,6 +32,32 @@ export const SettingsScreen = () => {
       Alert.alert('Error', error.message || 'Failed to sign out');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportJSON = async () => {
+    setExportDialogVisible(false);
+    setExporting(true);
+    try {
+      await exportService.exportAndShareJSON();
+      Alert.alert('Success', 'Data exported successfully!');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to export data');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportCSV = async () => {
+    setExportDialogVisible(false);
+    setExporting(true);
+    try {
+      await exportService.exportAndShareCSV();
+      Alert.alert('Success', 'Transactions exported as CSV!');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to export CSV');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -105,9 +134,11 @@ export const SettingsScreen = () => {
         <List.Subheader>Data</List.Subheader>
         <List.Item
           title="Export Data"
-          description="Download your data as CSV"
+          description="Backup your data as JSON or CSV"
           left={(props) => <List.Icon {...props} icon="download" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
+          onPress={() => setExportDialogVisible(true)}
+          disabled={exporting}
         />
       </List.Section>
       
@@ -134,6 +165,35 @@ export const SettingsScreen = () => {
             </Button>
             <Button onPress={handleSignOut} loading={loading} disabled={loading}>
               Sign Out
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        {/* Export Format Dialog */}
+        <Dialog visible={exportDialogVisible} onDismiss={() => setExportDialogVisible(false)}>
+          <Dialog.Title>Export Data</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium" style={{ marginBottom: 16 }}>
+              Choose export format:
+            </Text>
+            <List.Item
+              title="JSON (Complete Backup)"
+              description="All data including categories, transactions, and budgets"
+              left={(props) => <List.Icon {...props} icon="code-json" />}
+              onPress={handleExportJSON}
+              disabled={exporting}
+            />
+            <List.Item
+              title="CSV (Transactions)"
+              description="Transaction history in spreadsheet format"
+              left={(props) => <List.Icon {...props} icon="file-delimited" />}
+              onPress={handleExportCSV}
+              disabled={exporting}
+            />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setExportDialogVisible(false)} disabled={exporting}>
+              Cancel
             </Button>
           </Dialog.Actions>
         </Dialog>
