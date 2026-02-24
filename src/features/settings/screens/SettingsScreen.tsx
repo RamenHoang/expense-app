@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { Text, List, Avatar, Divider, Dialog, Button, Portal, Switch } from 'react-native-paper';
+import { Text, List, Avatar, Divider, Dialog, Button, Portal, Switch, useTheme } from 'react-native-paper';
 import { useAuthStore } from '../../../store/authStore';
 import { useUserStore } from '../../../store/userStore';
 import { useThemeStore } from '../../../store/themeStore';
@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 
 export const SettingsScreen = () => {
   const navigation = useNavigation();
+  const theme = useTheme();
   const { user, signOut } = useAuthStore();
   const { profile, fetchProfile } = useUserStore();
   const { isDarkMode, toggleTheme } = useThemeStore();
@@ -74,9 +75,9 @@ export const SettingsScreen = () => {
   const fullName = user?.user_metadata?.full_name || 'User';
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* User Profile Section */}
-      <View style={styles.profileSection}>
+      <View style={[styles.profileSection, { backgroundColor: theme.colors.surface }]}>
         <Avatar.Text 
           size={64} 
           label={getInitials(fullName)} 
@@ -205,12 +206,10 @@ export const SettingsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   profileSection: {
     alignItems: 'center',
     padding: 24,
-    backgroundColor: '#fff',
   },
   avatar: {
     marginBottom: 12,
