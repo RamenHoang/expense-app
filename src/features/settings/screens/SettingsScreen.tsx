@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Text, List, Avatar, Divider, Dialog, Button, Portal } from 'react-native-paper';
+import { Text, List, Avatar, Divider, Dialog, Button, Portal, Switch } from 'react-native-paper';
 import { useAuthStore } from '../../../store/authStore';
 import { useUserStore } from '../../../store/userStore';
+import { useThemeStore } from '../../../store/themeStore';
 import { useNavigation } from '@react-navigation/native';
 
 export const SettingsScreen = () => {
   const navigation = useNavigation();
   const { user, signOut } = useAuthStore();
   const { profile, fetchProfile } = useUserStore();
+  const { isDarkMode, toggleTheme } = useThemeStore();
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -87,9 +89,14 @@ export const SettingsScreen = () => {
         <List.Subheader>Appearance</List.Subheader>
         <List.Item
           title="Dark Mode"
-          description="Coming soon"
+          description={isDarkMode ? "Enabled" : "Disabled"}
           left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
-          right={(props) => <List.Icon {...props} icon="chevron-right" />}
+          right={(props) => (
+            <Switch 
+              value={isDarkMode} 
+              onValueChange={toggleTheme}
+            />
+          )}
         />
       </List.Section>
       

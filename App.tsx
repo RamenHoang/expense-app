@@ -5,7 +5,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { useAuthStore } from './src/store/authStore';
-import { lightTheme } from './src/config/theme';
+import { useThemeStore } from './src/store/themeStore';
+import { lightTheme, darkTheme } from './src/theme/theme';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,16 +19,19 @@ const queryClient = new QueryClient({
 
 export default function App() {
   const initialize = useAuthStore((state) => state.initialize);
+  const isDarkMode = useThemeStore((state) => state.isDarkMode);
 
   useEffect(() => {
     initialize();
   }, [initialize]);
 
+  const theme = isDarkMode ? darkTheme : lightTheme;
+
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <PaperProvider theme={lightTheme}>
-          <StatusBar style="auto" />
+        <PaperProvider theme={theme}>
+          <StatusBar style={isDarkMode ? "light" : "dark"} />
           <RootNavigator />
         </PaperProvider>
       </QueryClientProvider>
