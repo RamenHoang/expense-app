@@ -206,9 +206,9 @@ export const transactionService = {
     const filePath = `${user.id}/${transactionId}/${fileName}`;
 
     try {
-      // Read file as base64
+      // Read file as base64 (using string literal instead of EncodingType enum)
       const base64 = await FileSystem.readAsStringAsync(fileUri, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: 'base64',
       });
 
       // Convert base64 to blob
