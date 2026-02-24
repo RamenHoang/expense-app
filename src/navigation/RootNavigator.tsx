@@ -6,6 +6,9 @@ import { ActivityIndicator, Text } from 'react-native-paper';
 import { RootStackParamList } from '../types/navigation';
 import { AuthNavigator } from './AuthNavigator';
 import { MainNavigator } from './MainNavigator';
+import { CategoryListScreen } from '../features/categories/screens/CategoryListScreen';
+import { AddTransactionScreen } from '../features/transactions/screens/AddTransactionScreen';
+import { EditTransactionScreen } from '../features/transactions/screens/EditTransactionScreen';
 import { useAuthStore } from '../store/authStore';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -24,11 +27,45 @@ export const RootNavigator = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator screenOptions={{ headerShown: true }}>
         {user ? (
-          <Stack.Screen name="Main" component={MainNavigator} />
+          <>
+            <Stack.Screen 
+              name="Main" 
+              component={MainNavigator} 
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="Categories" 
+              component={CategoryListScreen}
+              options={{ 
+                title: 'Manage Categories',
+                headerBackTitle: 'Back',
+              }}
+            />
+            <Stack.Screen 
+              name="AddTransaction" 
+              component={AddTransactionScreen}
+              options={{ 
+                title: 'Add Transaction',
+                headerBackTitle: 'Back',
+              }}
+            />
+            <Stack.Screen 
+              name="EditTransaction" 
+              component={EditTransactionScreen}
+              options={{ 
+                title: 'Edit Transaction',
+                headerBackTitle: 'Back',
+              }}
+            />
+          </>
         ) : (
-          <Stack.Screen name="Auth" component={AuthNavigator} />
+          <Stack.Screen 
+            name="Auth" 
+            component={AuthNavigator} 
+            options={{ headerShown: false }}
+          />
         )}
       </Stack.Navigator>
     </NavigationContainer>

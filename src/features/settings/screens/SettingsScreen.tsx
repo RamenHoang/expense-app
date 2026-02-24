@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text, List, Avatar, Divider, Dialog, Button, Portal } from 'react-native-paper';
 import { useAuthStore } from '../../../store/authStore';
+import { useNavigation } from '@react-navigation/native';
 
 export const SettingsScreen = () => {
+  const navigation = useNavigation();
   const { user, signOut } = useAuthStore();
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -55,6 +57,13 @@ export const SettingsScreen = () => {
           description="Edit your profile information"
           left={(props) => <List.Icon {...props} icon="account" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
+        />
+        <List.Item
+          title="Manage Categories"
+          description="Add, edit, or delete categories"
+          left={(props) => <List.Icon {...props} icon="tag-multiple" />}
+          right={(props) => <List.Icon {...props} icon="chevron-right" />}
+          onPress={() => navigation.navigate('Categories' as never)}
         />
         <List.Item
           title="Currency"
