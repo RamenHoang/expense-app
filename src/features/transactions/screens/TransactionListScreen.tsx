@@ -10,8 +10,6 @@ import {
   FAB,
   Searchbar,
   SegmentedButtons,
-  Chip,
-  Portal,
   Snackbar,
   useTheme,
 } from 'react-native-paper';
@@ -19,6 +17,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useTransactionStore } from '../../../store/transactionStore';
 import { TransactionListItem } from '../components/TransactionListItem';
 import { TransactionWithCategory } from '../../../types/transaction';
+import { useUserStore } from '../../../store/userStore';
+import { getCurrencySymbol } from '../../../utils/currency';
 
 export const TransactionListScreen = () => {
   const navigation = useNavigation();
@@ -32,10 +32,14 @@ export const TransactionListScreen = () => {
     setFilters,
     clearError,
   } = useTransactionStore();
+  const { profile } = useUserStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [refreshing, setRefreshing] = useState(false);
+  const currency = profile?.currency || 'USD';
+  const currencySymbol = getCurrencySymbol(currency);
+  const noDecimals = ['VND', 'JPY', 'KRW'].includes(currency.toUpperCase());
 
   useEffect(() => {
     loadTransactions();
@@ -129,7 +133,7 @@ export const TransactionListScreen = () => {
             { color: total >= 0 ? theme.colors.income : theme.colors.expense },
           ]}
         >
-          {total >= 0 ? '+' : ''}${Math.abs(total).toFixed(2)}
+          {total >= 0 ? '+' : ''} {currencySymbol}{Math.abs(total).toFixed(noDecimals ? 0 : 2)}
         </Text>
       </View>
     );
