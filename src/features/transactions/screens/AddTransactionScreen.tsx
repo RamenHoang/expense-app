@@ -18,6 +18,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CategorySelector } from '../../categories/components/CategorySelector';
 import { DatePickerInput } from '../components/DatePickerInput';
 import { AmountInput } from '../components/AmountInput';
+import { ReceiptUpload } from '../components/ReceiptUpload';
 import { transactionService } from '../../../services/transactionService';
 import { useTransactionStore } from '../../../store/transactionStore';
 import { useUserStore } from '../../../store/userStore';
@@ -37,6 +38,8 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [date, setDate] = useState(new Date());
   const [note, setNote] = useState('');
+  const [receiptUri, setReceiptUri] = useState('');
+  const [receiptFileName, setReceiptFileName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -91,6 +94,23 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
         note: note.trim() || undefined,
       });
 
+      // Upload receipt if provided
+      let receiptUrl;
+      if (receiptUri && receiptFileName) {
+        try {
+          receiptUrl = await transactionService.uploadReceipt(
+            transaction.id,
+            receiptUri,
+            receiptFileName
+          );
+          // Update transaction with receipt URL
+          await transactionService.updateTransaction(transaction.id, { receipt_url: receiptUrl });
+        } catch (uploadError: any) {
+          console.error('Receipt upload failed:', uploadError);
+          // Don't fail the whole transaction if receipt upload fails
+        }
+      }
+
       // Fetch the created transaction with category details
       const transactionWithCategory = await transactionService.getTransactionById(
         transaction.id
@@ -118,6 +138,16 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
     if (category && category.type !== type) {
       setType(category.type);
     }
+  };
+
+  const handleReceiptUpload = (uri: string, fileName: string) => {
+    setReceiptUri(uri);
+    setReceiptFileName(fileName);
+  };
+
+  const handleReceiptDelete = () => {
+    setReceiptUri('');
+    setReceiptFileName('');
   };
 
   return (
@@ -181,6 +211,13 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
             disabled={loading}
             style={styles.input}
             placeholder="Add a note about this transaction"
+          />
+
+          <ReceiptUpload
+            receiptUrl={receiptUri}
+            onUpload={handleReceiptUpload}
+            onDelete={handleReceiptDelete}
+            disabled={loading}
           />
 
           <View style={styles.summary}>
