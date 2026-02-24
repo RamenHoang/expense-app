@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Text, Card, Button, IconButton, SegmentedButtons } from 'react-native-paper';
+import { Text, Card, Button, IconButton, SegmentedButtons, useTheme } from 'react-native-paper';
 import { useUserStore } from '../../../store/userStore';
 import { dashboardService, DashboardSummary, CategorySummary } from '../../../services/dashboardService';
 import { formatCurrency } from '../../../utils/currency';
@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 
 export const DashboardScreen = () => {
   const navigation = useNavigation();
+  const theme = useTheme();
   const { profile, fetchProfile } = useUserStore();
   
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -98,7 +99,7 @@ export const DashboardScreen = () => {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
       contentContainerStyle={styles.scrollContent}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -125,7 +126,7 @@ export const DashboardScreen = () => {
           <View style={styles.balanceContainer}>
             <Text variant="headlineLarge" style={[
               styles.balanceAmount,
-              { color: (summary?.balance || 0) >= 0 ? '#4caf50' : '#f44336' }
+              { color: (summary?.balance || 0) >= 0 ? theme.colors.income : theme.colors.expense }
             ]}>
               {formatCurrency(summary?.balance || 0, currency)}
             </Text>
@@ -135,14 +136,14 @@ export const DashboardScreen = () => {
           </View>
 
           <View style={styles.summaryGrid}>
-            <View style={styles.summaryItem}>
-              <View style={[styles.summaryIcon, { backgroundColor: '#e8f5e9' }]}>
-                <IconButton icon="arrow-down" iconColor="#4caf50" size={20} />
+            <View style={[styles.summaryItem, { backgroundColor: theme.colors.surfaceVariant }]}>
+              <View style={[styles.summaryIcon, { backgroundColor: theme.dark ? '#1b3a1c' : '#e8f5e9' }]}>
+                <IconButton icon="arrow-down" iconColor={theme.colors.income} size={20} />
               </View>
               <Text variant="labelSmall" style={styles.summaryItemLabel}>
                 Income
               </Text>
-              <Text variant="titleMedium" style={[styles.summaryItemValue, { color: '#4caf50' }]}>
+              <Text variant="titleMedium" style={[styles.summaryItemValue, { color: theme.colors.income }]}>
                 {formatCurrency(summary?.totalIncome || 0, currency)}
               </Text>
               <Text variant="bodySmall" style={styles.summaryItemCount}>
@@ -150,14 +151,14 @@ export const DashboardScreen = () => {
               </Text>
             </View>
 
-            <View style={styles.summaryItem}>
-              <View style={[styles.summaryIcon, { backgroundColor: '#ffebee' }]}>
-                <IconButton icon="arrow-up" iconColor="#f44336" size={20} />
+            <View style={[styles.summaryItem, { backgroundColor: theme.colors.surfaceVariant }]}>
+              <View style={[styles.summaryIcon, { backgroundColor: theme.dark ? '#3a1b1b' : '#ffebee' }]}>
+                <IconButton icon="arrow-up" iconColor={theme.colors.expense} size={20} />
               </View>
               <Text variant="labelSmall" style={styles.summaryItemLabel}>
                 Expense
               </Text>
-              <Text variant="titleMedium" style={[styles.summaryItemValue, { color: '#f44336' }]}>
+              <Text variant="titleMedium" style={[styles.summaryItemValue, { color: theme.colors.expense }]}>
                 {formatCurrency(summary?.totalExpense || 0, currency)}
               </Text>
               <Text variant="bodySmall" style={styles.summaryItemCount}>
@@ -252,7 +253,7 @@ export const DashboardScreen = () => {
                   variant="titleSmall"
                   style={[
                     styles.transactionAmount,
-                    { color: transaction.type === 'income' ? '#4caf50' : '#f44336' },
+                    { color: transaction.type === 'income' ? theme.colors.income : theme.colors.expense },
                   ]}
                 >
                   {transaction.type === 'income' ? '+' : '-'}
@@ -281,7 +282,6 @@ export const DashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   scrollContent: {
     padding: 16,
@@ -333,7 +333,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     padding: 12,
-    backgroundColor: '#f9f9f9',
     borderRadius: 8,
   },
   summaryIcon: {
@@ -372,7 +371,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 6,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: 'rgba(128, 128, 128, 0.2)',
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -395,7 +394,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: 'rgba(128, 128, 128, 0.1)',
   },
   transactionIcon: {
     marginRight: 8,
