@@ -4,10 +4,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start --go",
-    "start:dev": "expo start --dev-client",
-    "android": "expo start --android --go",
-    "ios": "expo start --ios --go",
-    "web": "expo start --web"
+    "build:android": "eas build -p android --profile preview --local --output ./builds/android"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

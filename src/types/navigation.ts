@@ -1,6 +1,9 @@
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
+  Categories: undefined;
+  AddTransaction: undefined;
+  EditTransaction: { transactionId: string };
 };
 
 export type AuthStackParamList = {
@@ -20,4 +23,8 @@ export type TransactionStackParamList = {
   TransactionList: undefined;
   AddTransaction: undefined;
   EditTransaction: { transactionId: string };
+};
+
+export type CategoryStackParamList = {
+  CategoryList: undefined;
 };

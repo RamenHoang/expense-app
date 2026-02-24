@@ -1,0 +1,226 @@
+import { supabase } from '../config/supabase';
+import {
+  Transaction,
+  TransactionWithCategory,
+  CreateTransactionInput,
+  UpdateTransactionInput,
+  TransactionFilters,
+} from '../types/transaction';
+
+export const transactionService = {
+  /**
+   * Get transactions with optional filters
+   */
+  getTransactions: async (
+    filters?: TransactionFilters
+  ): Promise<TransactionWithCategory[]> => {
+    let query = supabase
+      .from('transactions')
+      .select(`
+        *,
+        category:categories(id, name, icon, color, type)
+      `)
+      .order('transaction_date', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (filters?.type) {
+      query = query.eq('type', filters.type);
+    }
+
+    if (filters?.category_id) {
+      query = query.eq('category_id', filters.category_id);
+    }
+
+    if (filters?.start_date) {
+      query = query.gte('transaction_date', filters.start_date);
+    }
+
+    if (filters?.end_date) {
+      query = query.lte('transaction_date', filters.end_date);
+    }
+
+    if (filters?.search) {
+      query = query.ilike('note', `%${filters.search}%`);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  /**
+   * Get a single transaction by ID
+   */
+  getTransactionById: async (id: string): Promise<TransactionWithCategory> => {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select(`
+        *,
+        category:categories(id, name, icon, color, type)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create a new transaction
+   */
+  createTransaction: async (
+    input: CreateTransactionInput
+  ): Promise<Transaction> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert([
+        {
+          user_id: user.id,
+          ...input,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Update an existing transaction
+   */
+  updateTransaction: async (
+    id: string,
+    input: UpdateTransactionInput
+  ): Promise<Transaction> => {
+    const { data, error } = await supabase
+      .from('transactions')
+      .update({
+        ...input,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Delete a transaction
+   */
+  deleteTransaction: async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
+  /**
+   * Get transaction summary for a period
+   */
+  getTransactionSummary: async (
+    startDate?: string,
+    endDate?: string
+  ): Promise<{
+    totalIncome: number;
+    totalExpense: number;
+    balance: number;
+    transactionCount: number;
+  }> => {
+    let query = supabase.from('transactions').select('type, amount');
+
+    if (startDate) {
+      query = query.gte('transaction_date', startDate);
+    }
+
+    if (endDate) {
+      query = query.lte('transaction_date', endDate);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    const summary = (data || []).reduce(
+      (acc, transaction) => {
+        if (transaction.type === 'income') {
+          acc.totalIncome += Number(transaction.amount);
+        } else {
+          acc.totalExpense += Number(transaction.amount);
+        }
+        acc.transactionCount += 1;
+        return acc;
+      },
+      {
+        totalIncome: 0,
+        totalExpense: 0,
+        balance: 0,
+        transactionCount: 0,
+      }
+    );
+
+    summary.balance = summary.totalIncome - summary.totalExpense;
+    return summary;
+  },
+
+  /**
+   * Upload receipt image to Supabase Storage
+   */
+  uploadReceipt: async (
+    transactionId: string,
+    fileUri: string,
+    fileName: string
+  ): Promise<string> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    // Read file as blob (implementation depends on platform)
+    const response = await fetch(fileUri);
+    const blob = await response.blob();
+
+    const filePath = `${user.id}/${transactionId}/${fileName}`;
+
+    const { data, error } = await supabase.storage
+      .from('receipts')
+      .upload(filePath, blob, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('receipts')
+      .getPublicUrl(data.path);
+
+    return publicUrl;
+  },
+
+  /**
+   * Delete receipt image from storage
+   */
+  deleteReceipt: async (receiptUrl: string): Promise<void> => {
+    if (!receiptUrl) return;
+
+    // Extract file path from URL
+    const urlParts = receiptUrl.split('/');
+    const bucketIndex = urlParts.indexOf('receipts');
+    if (bucketIndex === -1) return;
+
+    const filePath = urlParts.slice(bucketIndex + 1).join('/');
+
+    const { error } = await supabase.storage
+      .from('receipts')
+      .remove([filePath]);
+
+    if (error) throw error;
+  },
+};
