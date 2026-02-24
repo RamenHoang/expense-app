@@ -197,11 +197,22 @@ export const transactionService = {
 
     if (error) throw error;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('receipts')
-      .getPublicUrl(data.path);
+    // For private buckets, return the path (we'll use signed URLs when displaying)
+    return filePath;
+  },
 
-    return publicUrl;
+  /**
+   * Get signed URL for receipt (for private storage)
+   */
+  getReceiptUrl: async (filePath: string): Promise<string> => {
+    if (!filePath) return '';
+
+    const { data, error } = await supabase.storage
+      .from('receipts')
+      .createSignedUrl(filePath, 3600); // 1 hour expiry
+
+    if (error) throw error;
+    return data.signedUrl;
   },
 
   /**
