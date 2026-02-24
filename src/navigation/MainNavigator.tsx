@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { MainTabParamList } from '../types/navigation';
 import { DashboardScreen } from '../features/dashboard/screens/DashboardScreen';
 import { TransactionsScreen } from '../features/transactions/screens/TransactionsScreen';
-import { ReportsScreen } from '../features/reports/screens/ReportsScreen';
+import { BudgetScreen } from '../features/budget/screens/BudgetScreen';
 import { SettingsScreen } from '../features/settings/screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -37,11 +37,11 @@ export const MainNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="Reports"
-        component={ReportsScreen}
+        name="Budget"
+        component={BudgetScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="chart-bar" size={size} color={color} />
+            <MaterialCommunityIcons name="wallet" size={size} color={color} />
           ),
         }}
       />
