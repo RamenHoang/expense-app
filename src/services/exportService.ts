@@ -72,27 +72,56 @@ export const exportService = {
         budgetService.getBudgets(),
       ]);
 
-      // Transactions CSV
-      const transactionsCsv = [
+      // Helper to escape CSV fields
+      const escapeCSV = (value: string | number | null | undefined): string => {
+        if (value === null || value === undefined) return '';
+        const str = String(value);
+        // Escape quotes and wrap in quotes if contains comma, quote, or newline
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      // Transactions CSV with BOM for Excel UTF-8 support
+      const transactionsCsv = '\uFEFF' + [
         'Date,Type,Category,Amount,Note,Created At',
         ...transactions.map(tx =>
-          `"${tx.transaction_date}","${tx.type}","${tx.category?.name || 'Uncategorized'}",${tx.amount},"${tx.note || ''}","${tx.created_at}"`
+          [
+            escapeCSV(tx.transaction_date),
+            escapeCSV(tx.type),
+            escapeCSV(tx.category?.name || 'Uncategorized'),
+            tx.amount,
+            escapeCSV(tx.note || ''),
+            escapeCSV(tx.created_at),
+          ].join(',')
         ),
       ].join('\n');
 
       // Categories CSV
-      const categoriesCsv = [
+      const categoriesCsv = '\uFEFF' + [
         'Name,Type,Icon,Color',
         ...categories.map(cat =>
-          `"${cat.name}","${cat.type}","${cat.icon || ''}","${cat.color || ''}"`
+          [
+            escapeCSV(cat.name),
+            escapeCSV(cat.type),
+            escapeCSV(cat.icon || ''),
+            escapeCSV(cat.color || ''),
+          ].join(',')
         ),
       ].join('\n');
 
       // Budgets CSV
-      const budgetsCsv = [
+      const budgetsCsv = '\uFEFF' + [
         'Category,Amount,Period,Start Date,End Date',
         ...budgets.map(budget =>
-          `"${budget.category?.name || ''}",${budget.amount},"${budget.period}","${budget.start_date}","${budget.end_date || ''}"`
+          [
+            escapeCSV(budget.category?.name || ''),
+            budget.amount,
+            escapeCSV(budget.period),
+            escapeCSV(budget.start_date),
+            escapeCSV(budget.end_date || ''),
+          ].join(',')
         ),
       ].join('\n');
 
@@ -113,9 +142,9 @@ export const exportService = {
     try {
       const fileUri = `${FileSystem.documentDirectory}${filename}`;
       
-      // Write file
+      // Write file with proper UTF-8 encoding
       await FileSystem.writeAsStringAsync(fileUri, content, {
-        encoding: FileSystem.EncodingType.UTF8,
+        encoding: 'utf8',
       });
 
       // Share file
@@ -123,11 +152,13 @@ export const exportService = {
         await Sharing.shareAsync(fileUri, {
           mimeType: filename.endsWith('.json') ? 'application/json' : 'text/csv',
           dialogTitle: 'Export Data',
+          UTI: filename.endsWith('.json') ? 'public.json' : 'public.comma-separated-values-text',
         });
       } else {
         throw new Error('Sharing is not available on this device');
       }
     } catch (error: any) {
+      console.error('Export file error:', error);
       throw new Error(`Failed to save file: ${error.message}`);
     }
   },
