@@ -4,6 +4,8 @@ import { List, IconButton, Dialog, Button, Portal, Text, useTheme } from 'react-
 import { TransactionWithCategory } from '../../../types/transaction';
 import { transactionService } from '../../../services/transactionService';
 import { useTransactionStore } from '../../../store/transactionStore';
+import { getCurrencySymbol } from '../../../utils/currency';
+import { useUserStore } from '../../../store/userStore';
 
 interface TransactionListItemProps {
   transaction: TransactionWithCategory;
@@ -15,20 +17,24 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
   onEdit,
 }) => {
   const theme = useTheme();
+  const { profile } = useUserStore();
   const removeTransaction = useTransactionStore((state) => state.removeTransaction);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const currency = profile?.currency || 'USD';
+  const currencySymbol = getCurrencySymbol(currency);
+  const noDecimals = ['VND', 'JPY', 'KRW'].includes(currency.toUpperCase());
 
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
       await transactionService.deleteTransaction(transaction.id);
-      
+
       // Delete receipt if exists
       if (transaction.receipt_url) {
         await transactionService.deleteReceipt(transaction.receipt_url);
       }
-      
+
       removeTransaction(transaction.id);
       setDeleteDialogVisible(false);
     } catch (error: any) {
@@ -86,8 +92,8 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
                 },
               ]}
             >
-              {transaction.type === 'income' ? '+' : '-'}$
-              {formatAmount(Number(transaction.amount))}
+              {transaction.type === 'income' ? '+' : '-'}{currencySymbol}
+              {formatAmount(Number(transaction.amount.toFixed(noDecimals ? 0 : 2)))}
             </Text>
             <View style={styles.actions}>
               <IconButton
@@ -119,7 +125,7 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
             </Text>
             <View style={[styles.transactionDetails, { backgroundColor: theme.colors.surfaceVariant }]}>
               <Text variant="bodyMedium" style={styles.detailText}>
-                Amount: ${formatAmount(Number(transaction.amount))}
+                Amount: {currencySymbol}{formatAmount(Number(transaction.amount.toFixed(noDecimals ? 0 : 2)))}
               </Text>
               <Text variant="bodyMedium" style={styles.detailText}>
                 Category: {categoryInfo.name}
