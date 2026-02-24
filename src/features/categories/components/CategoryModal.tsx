@@ -9,6 +9,7 @@ import {
   SegmentedButtons,
   Divider,
   IconButton,
+  useTheme,
 } from 'react-native-paper';
 import { Category, CreateCategoryInput, UpdateCategoryInput } from '../../../types/category';
 import { categoryService } from '../../../services/categoryService';
@@ -48,7 +49,7 @@ const CATEGORY_ICONS = [
   'bank',
   'briefcase',
   'gift',
-  
+
   // Expense
   'cash-minus',
   'cart',
@@ -90,6 +91,81 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   const [selectedColor, setSelectedColor] = useState('#f44336');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const theme = useTheme();
+
+  const styles = StyleSheet.create({
+    modal: {
+      backgroundColor: theme.colors.surface,
+      padding: 20,
+      margin: 20,
+      borderRadius: 8,
+      maxHeight: '90%',
+    },
+    title: {
+      marginBottom: 16,
+      fontWeight: 'bold',
+    },
+    input: {
+      marginBottom: 16,
+    },
+    label: {
+      marginBottom: 8,
+      marginTop: 8,
+    },
+    segmentedButtons: {
+      marginBottom: 8,
+    },
+    divider: {
+      marginVertical: 16,
+    },
+    colorGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    colorBox: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    selectedColorBox: {
+      borderColor: theme.colors.primary,
+      borderWidth: 3,
+    },
+    iconGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 4,
+    },
+    iconBox: {
+      width: 56,
+      height: 56,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 8,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    selectedIconBox: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primaryContainer,
+    },
+    errorText: {
+      color: theme.colors.error,
+      marginTop: 8,
+      marginBottom: 8,
+    },
+    actions: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: 8,
+      marginTop: 16,
+    },
+  });
 
   useEffect(() => {
     if (category) {
@@ -263,77 +339,3 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     </Portal>
   );
 };
-
-const styles = StyleSheet.create({
-  modal: {
-    backgroundColor: 'white',
-    padding: 20,
-    margin: 20,
-    borderRadius: 8,
-    maxHeight: '90%',
-  },
-  title: {
-    marginBottom: 16,
-    fontWeight: 'bold',
-  },
-  input: {
-    marginBottom: 16,
-  },
-  label: {
-    marginBottom: 8,
-    marginTop: 8,
-  },
-  segmentedButtons: {
-    marginBottom: 8,
-  },
-  divider: {
-    marginVertical: 16,
-  },
-  colorGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  colorBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  selectedColorBox: {
-    borderColor: '#000',
-    borderWidth: 3,
-  },
-  iconGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
-  },
-  iconBox: {
-    width: 56,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  selectedIconBox: {
-    borderColor: '#6200ee',
-    backgroundColor: '#f5f5f5',
-  },
-  errorText: {
-    color: '#d32f2f',
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
-    marginTop: 16,
-  },
-});

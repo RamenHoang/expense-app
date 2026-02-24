@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Text, Portal, Modal, IconButton, Searchbar, Chip } from 'react-native-paper';
+import { Text, Portal, Modal, IconButton, Searchbar, useTheme } from 'react-native-paper';
 import { useCategoryStore } from '../../../store/categoryStore';
 import { Category } from '../../../types/category';
 
@@ -22,6 +22,140 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
   const { categories, fetchCategories, isLoading, error: fetchError } = useCategoryStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const theme = useTheme();
+
+  const styles = StyleSheet.create({
+    container: {
+      marginBottom: 16,
+    },
+    label: {
+      marginBottom: 8,
+    },
+    errorLabel: {
+      color: '#d32f2f',
+    },
+    selector: {
+      borderWidth: 1,
+      borderColor: theme.colors.outline,
+      borderRadius: 4,
+      backgroundColor: theme.colors.surface,
+      minHeight: 56,
+    },
+    errorSelector: {
+      borderColor: '#d32f2f',
+    },
+    selectedCategory: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 8,
+    },
+    iconContainer: {
+      pointerEvents: 'none',
+    },
+    categoryName: {
+      flex: 1,
+    },
+    placeholder: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 8,
+    },
+    placeholderText: {
+      flex: 1,
+      opacity: 0.6,
+    },
+    errorText: {
+      color: theme.colors.error,
+      marginTop: 4,
+      marginLeft: 12,
+    },
+    modal: {
+      backgroundColor: theme.colors.surface,
+      margin: 20,
+      borderRadius: 8,
+      maxHeight: '80%',
+      minHeight: 400,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingLeft: 20,
+      paddingTop: 8,
+    },
+    modalTitle: {
+      fontWeight: 'bold',
+    },
+    searchBar: {
+      margin: 16,
+      marginTop: 0,
+      elevation: 0,
+    },
+    categoryList: {
+      paddingHorizontal: 16,
+      paddingBottom: 16,
+    },
+    categoryListItem: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 8,
+      marginBottom: 8,
+      borderWidth: 1,
+      borderColor: theme.colors.outline,
+    },
+    selectedListItem: {
+      borderColor: theme.colors.primary,
+      borderWidth: 2,
+      backgroundColor: theme.colors.primaryContainer,
+    },
+    categoryListContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 8,
+      paddingHorizontal: 4,
+    },
+    categoryListTextContainer: {
+      flex: 1,
+    },
+    categoryListName: {
+      fontWeight: 'bold',
+    },
+    categoryListType: {
+      opacity: 0.6,
+      marginTop: 2,
+    },
+    categoryGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      padding: 12,
+      gap: 8,
+    },
+    categoryChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.outline,
+      borderRadius: 20,
+      paddingRight: 12,
+      maxWidth: '48%',
+      backgroundColor: theme.colors.surface,
+    },
+    selectedChip: {
+      borderColor: theme.colors.primary,
+      borderWidth: 2,
+      backgroundColor: theme.colors.primaryContainer,
+    },
+    chipText: {
+      flex: 1,
+    },
+    emptyState: {
+      padding: 32,
+      alignItems: 'center',
+    },
+    emptyText: {
+      opacity: 0.6,
+      textAlign: 'center',
+    },
+  });
 
   useEffect(() => {
     if (categories.length === 0) {
@@ -80,7 +214,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
                   icon="close-circle"
                   size={20}
                   iconColor="#999"
-                  onPress={() => {}}
+                  onPress={() => { }}
                 />
               </TouchableOpacity>
             </View>
@@ -139,7 +273,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
                 <Text variant="bodyLarge" style={styles.emptyText}>
                   {searchQuery
                     ? 'No categories found'
-                    : type 
+                    : type
                       ? `No ${type} categories available. Please create one first.`
                       : 'No categories available. Please create one first.'}
                 </Text>
@@ -188,136 +322,3 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  label: {
-    marginBottom: 8,
-  },
-  errorLabel: {
-    color: '#d32f2f',
-  },
-  selector: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    backgroundColor: '#fff',
-    minHeight: 56,
-  },
-  errorSelector: {
-    borderColor: '#d32f2f',
-  },
-  selectedCategory: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-  },
-  iconContainer: {
-    pointerEvents: 'none',
-  },
-  categoryName: {
-    flex: 1,
-  },
-  placeholder: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-  },
-  placeholderText: {
-    flex: 1,
-    opacity: 0.6,
-  },
-  errorText: {
-    color: '#d32f2f',
-    marginTop: 4,
-    marginLeft: 12,
-  },
-  modal: {
-    backgroundColor: 'white',
-    margin: 20,
-    borderRadius: 8,
-    maxHeight: '80%',
-    minHeight: 400,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingLeft: 20,
-    paddingTop: 8,
-  },
-  modalTitle: {
-    fontWeight: 'bold',
-  },
-  searchBar: {
-    margin: 16,
-    marginTop: 0,
-    elevation: 0,
-  },
-  categoryList: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  categoryListItem: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  selectedListItem: {
-    borderColor: '#6200ee',
-    borderWidth: 2,
-    backgroundColor: '#f5f5ff',
-  },
-  categoryListContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-  },
-  categoryListTextContainer: {
-    flex: 1,
-  },
-  categoryListName: {
-    fontWeight: 'bold',
-  },
-  categoryListType: {
-    opacity: 0.6,
-    marginTop: 2,
-  },
-  categoryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 12,
-    gap: 8,
-  },
-  categoryChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 20,
-    paddingRight: 12,
-    maxWidth: '48%',
-    backgroundColor: '#fff',
-  },
-  selectedChip: {
-    borderColor: '#6200ee',
-    borderWidth: 2,
-    backgroundColor: '#f5f5ff',
-  },
-  chipText: {
-    flex: 1,
-  },
-  emptyState: {
-    padding: 32,
-    alignItems: 'center',
-  },
-  emptyText: {
-    opacity: 0.6,
-    textAlign: 'center',
-  },
-});
