@@ -4,8 +4,7 @@ import { List, IconButton, Dialog, Button, Portal, Text, useTheme } from 'react-
 import { TransactionWithCategory } from '../../../types/transaction';
 import { transactionService } from '../../../services/transactionService';
 import { useTransactionStore } from '../../../store/transactionStore';
-import { getCurrencySymbol } from '../../../utils/currency';
-import { useUserStore } from '../../../store/userStore';
+import { PriceText } from '../../../components/PriceText';
 
 interface TransactionListItemProps {
   transaction: TransactionWithCategory;
@@ -17,13 +16,9 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
   onEdit,
 }) => {
   const theme = useTheme();
-  const { profile } = useUserStore();
   const removeTransaction = useTransactionStore((state) => state.removeTransaction);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const currency = profile?.currency || 'USD';
-  const currencySymbol = getCurrencySymbol(currency);
-  const noDecimals = ['VND', 'JPY', 'KRW'].includes(currency.toUpperCase());
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -42,13 +37,6 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
     } finally {
       setIsDeleting(false);
     }
-  };
-
-  const formatAmount = (amount: number) => {
-    return amount.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
   };
 
   const getCategoryInfo = () => {
@@ -82,19 +70,12 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
         )}
         right={() => (
           <View style={styles.rightContent}>
-            <Text
+            <PriceText
+              amount={transaction.amount}
+              type={transaction.type}
               variant="titleMedium"
-              style={[
-                styles.amount,
-                {
-                  color:
-                    transaction.type === 'income' ? theme.colors.income : theme.colors.expense,
-                },
-              ]}
-            >
-              {transaction.type === 'income' ? '+' : '-'}{currencySymbol}
-              {formatAmount(Number(transaction.amount.toFixed(noDecimals ? 0 : 2)))}
-            </Text>
+              showSign
+            />
             <View style={styles.actions}>
               <IconButton
                 icon="pencil"
@@ -124,9 +105,12 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
               Are you sure you want to delete this transaction?
             </Text>
             <View style={[styles.transactionDetails, { backgroundColor: theme.colors.surfaceVariant }]}>
-              <Text variant="bodyMedium" style={styles.detailText}>
-                Amount: {currencySymbol}{formatAmount(Number(transaction.amount.toFixed(noDecimals ? 0 : 2)))}
-              </Text>
+              <View style={styles.detailRow}>
+                <Text variant="bodyMedium" style={styles.detailText}>
+                  Amount:{' '}
+                </Text>
+                <PriceText amount={transaction.amount} variant="bodyMedium" />
+              </View>
               <Text variant="bodyMedium" style={styles.detailText}>
                 Category: {categoryInfo.name}
               </Text>
@@ -170,10 +154,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
-  amount: {
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
   actions: {
     flexDirection: 'row',
     marginTop: -8,
@@ -182,6 +162,11 @@ const styles = StyleSheet.create({
     marginTop: 12,
     padding: 12,
     borderRadius: 4,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   detailText: {
     marginBottom: 4,
