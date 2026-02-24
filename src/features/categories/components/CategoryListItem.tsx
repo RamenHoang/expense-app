@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Alert } from 'react-native';
-import { List, IconButton, Dialog, Button, Portal, Text } from 'react-native-paper';
+import { List, IconButton, Dialog, Button, Portal, Text, useTheme } from 'react-native-paper';
 import { Category } from '../../../types/category';
 import { categoryService } from '../../../services/categoryService';
 import { useCategoryStore } from '../../../store/categoryStore';
@@ -11,6 +11,7 @@ interface CategoryListItemProps {
 }
 
 export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, onEdit }) => {
+  const theme = useTheme();
   const removeCategory = useCategoryStore((state) => state.removeCategory);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -40,7 +41,7 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
   };
 
   const getIconColor = () => {
-    return category.color || (category.type === 'income' ? '#4caf50' : '#f44336');
+    return category.color || (category.type === 'income' ? theme.colors.income : theme.colors.expense);
   };
 
   return (
@@ -65,12 +66,12 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
             <IconButton
               icon="delete"
               size={20}
-              iconColor="#d32f2f"
+              iconColor={theme.colors.error}
               onPress={handleDeletePress}
             />
           </View>
         )}
-        style={styles.item}
+        style={[styles.item, { backgroundColor: theme.colors.surface }]}
       />
 
       <Portal>
@@ -81,7 +82,7 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
               Are you sure you want to delete "{category.name}"?
             </Text>
             {usageCount !== null && usageCount > 0 && (
-              <Text variant="bodyMedium" style={styles.warningText}>
+              <Text variant="bodyMedium" style={[styles.warningText, { color: theme.colors.error }]}>
                 {'\n'}Warning: This category is used in {usageCount} transaction
                 {usageCount !== 1 ? 's' : ''}. Those transactions will have no category after deletion.
               </Text>
@@ -95,7 +96,7 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
               onPress={handleConfirmDelete}
               loading={isDeleting}
               disabled={isDeleting}
-              textColor="#d32f2f"
+              textColor={theme.colors.error}
             >
               Delete
             </Button>
@@ -108,7 +109,6 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
 
 const styles = StyleSheet.create({
   item: {
-    backgroundColor: '#fff',
     marginHorizontal: 8,
     marginVertical: 2,
     borderRadius: 8,
@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   warningText: {
-    color: '#f44336',
     marginTop: 8,
   },
 });

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Text, List, Searchbar, RadioButton, Button, ActivityIndicator } from 'react-native-paper';
+import { Text, List, Searchbar, RadioButton, Button, ActivityIndicator, useTheme } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useUserStore } from '../../../store/userStore';
 import { userService } from '../../../services/userService';
@@ -29,6 +29,7 @@ const CURRENCIES = [
 ];
 
 export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenProps) => {
+  const theme = useTheme();
   const { profile, fetchProfile, updateProfile } = useUserStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState(profile?.currency || 'USD');
@@ -72,7 +73,7 @@ export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenP
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Searchbar
         placeholder="Search currencies"
         onChangeText={setSearchQuery}
@@ -103,7 +104,8 @@ export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenP
               onPress={() => setSelectedCurrency(currency.code)}
               style={[
                 styles.listItem,
-                selectedCurrency === currency.code && styles.selectedItem,
+                { backgroundColor: theme.colors.surface },
+                selectedCurrency === currency.code && { backgroundColor: theme.colors.primaryContainer },
               ]}
             />
           ))}
@@ -118,7 +120,7 @@ export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenP
         )}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { backgroundColor: theme.colors.surface, borderTopColor: theme.colors.outline }]}>
         <Button
           mode="outlined"
           onPress={() => navigation.goBack()}
@@ -144,7 +146,6 @@ export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenP
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   searchBar: {
     margin: 16,
@@ -154,11 +155,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listItem: {
-    backgroundColor: '#fff',
     marginBottom: 1,
-  },
-  selectedItem: {
-    backgroundColor: '#f0f0ff',
   },
   radioContainer: {
     justifyContent: 'center',
@@ -179,9 +176,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 16,
     gap: 12,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
   },
   cancelButton: {
     flex: 1,
