@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Text, TextInput, Button, SegmentedButtons, Snackbar } from 'react-native-paper';
+import { Text, TextInput, Button, SegmentedButtons, Snackbar, useTheme } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CategorySelector } from '../../categories/components/CategorySelector';
 import { budgetService } from '../../../services/budgetService';
@@ -14,6 +14,7 @@ type SetBudgetScreenProps = {
 };
 
 export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
+  const theme = useTheme();
   const { fetchBudgetUsage } = useBudgetStore();
   const { profile, fetchProfile } = useUserStore();
   
@@ -137,7 +138,7 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.scrollContent}>
       <View style={styles.form}>
         <Text variant="titleMedium" style={styles.title}>
           Set a Budget Limit
@@ -180,7 +181,7 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
         />
 
         {selectedCategory && amount && (
-          <View style={styles.summary}>
+          <View style={[styles.summary, { backgroundColor: theme.colors.surface }]}>
             <Text variant="titleSmall" style={styles.summaryLabel}>
               Summary
             </Text>
@@ -198,7 +199,7 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
             </View>
             <View style={styles.summaryRow}>
               <Text variant="bodyMedium">Budget Limit:</Text>
-              <Text variant="titleMedium" style={[styles.summaryValue, { color: '#6200ee' }]}>
+              <Text variant="titleMedium" style={[styles.summaryValue, { color: theme.colors.primary }]}>
                 {formatCurrency(parseFloat(amount || '0'), currency)}
               </Text>
             </View>
@@ -242,7 +243,7 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
         visible={!!success}
         onDismiss={() => setSuccess('')}
         duration={2000}
-        style={{ backgroundColor: '#4caf50' }}
+        style={{ backgroundColor: theme.colors.income }}
       >
         {success}
       </Snackbar>
@@ -279,7 +280,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   summary: {
-    backgroundColor: '#fff',
     padding: 16,
     borderRadius: 8,
     marginBottom: 24,

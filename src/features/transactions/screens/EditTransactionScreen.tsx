@@ -14,6 +14,7 @@ import {
   Button,
   SegmentedButtons,
   Snackbar,
+  useTheme,
 } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -34,6 +35,7 @@ export const EditTransactionScreen = ({
   navigation,
   route,
 }: EditTransactionScreenProps) => {
+  const theme = useTheme();
   const { transactionId } = route.params;
   const updateTransactionInStore = useTransactionStore((state) => state.updateTransaction);
 
@@ -155,7 +157,7 @@ export const EditTransactionScreen = ({
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
         <ActivityIndicator size="large" />
         <Text variant="bodyLarge" style={styles.loadingText}>
           Loading transaction...
@@ -167,7 +169,7 @@ export const EditTransactionScreen = ({
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.form}>
@@ -265,7 +267,7 @@ export const EditTransactionScreen = ({
         visible={!!success}
         onDismiss={() => setSuccess('')}
         duration={2000}
-        style={{ backgroundColor: '#4caf50' }}
+        style={{ backgroundColor: theme.colors.income }}
       >
         {success}
       </Snackbar>
@@ -276,13 +278,11 @@ export const EditTransactionScreen = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
   },
   loadingText: {
     marginTop: 16,

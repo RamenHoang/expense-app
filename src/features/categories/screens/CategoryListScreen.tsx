@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Text, FAB, SegmentedButtons, Snackbar, Portal, Searchbar } from 'react-native-paper';
+import { Text, FAB, SegmentedButtons, Snackbar, Portal, Searchbar, useTheme } from 'react-native-paper';
 import { useCategoryStore } from '../../../store/categoryStore';
 import { CategoryListItem } from '../components/CategoryListItem';
 import { CategoryModal } from '../components/CategoryModal';
 import { Category } from '../../../types/category';
 
 export const CategoryListScreen = () => {
+  const theme = useTheme();
   const { categories, isLoading, error, fetchCategories, clearError } = useCategoryStore();
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,8 +53,8 @@ export const CategoryListScreen = () => {
   const expenseCategories = filteredCategories.filter((cat) => cat.type === 'expense');
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
         <Searchbar
           placeholder="Search categories"
           onChangeText={setSearchQuery}
@@ -157,10 +158,8 @@ export const CategoryListScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: '#fff',
     padding: 16,
     paddingBottom: 8,
   },

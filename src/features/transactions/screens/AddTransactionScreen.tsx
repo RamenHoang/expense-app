@@ -13,6 +13,7 @@ import {
   Button,
   SegmentedButtons,
   Snackbar,
+  useTheme,
 } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CategorySelector } from '../../categories/components/CategorySelector';
@@ -30,6 +31,7 @@ type AddTransactionScreenProps = {
 };
 
 export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) => {
+  const theme = useTheme();
   const addTransaction = useTransactionStore((state) => state.addTransaction);
   const { profile, fetchProfile } = useUserStore();
   
@@ -153,7 +155,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.form}>
@@ -220,7 +222,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
             disabled={loading}
           />
 
-          <View style={styles.summary}>
+          <View style={[styles.summary, { backgroundColor: theme.colors.surface }]}>
             <Text variant="titleMedium" style={styles.summaryLabel}>
               Summary
             </Text>
@@ -230,7 +232,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
                 variant="bodyLarge"
                 style={[
                   styles.summaryValue,
-                  { color: type === 'income' ? '#4caf50' : '#f44336' },
+                  { color: type === 'income' ? theme.colors.income : theme.colors.expense },
                 ]}
               >
                 {type === 'income' ? 'Income' : 'Expense'}
@@ -242,7 +244,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
                 variant="titleLarge"
                 style={[
                   styles.summaryValue,
-                  { color: type === 'income' ? '#4caf50' : '#f44336' },
+                  { color: type === 'income' ? theme.colors.income : theme.colors.expense },
                 ]}
               >
                 {amount ? formatCurrency(parseFloat(amount.replace(/,/g, '')), currency) : formatCurrency(0, currency)}
@@ -294,7 +296,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
         visible={!!success}
         onDismiss={() => setSuccess('')}
         duration={2000}
-        style={{ backgroundColor: '#4caf50' }}
+        style={{ backgroundColor: theme.colors.income }}
       >
         {success}
       </Snackbar>
@@ -305,7 +307,6 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   scrollContent: {
     flexGrow: 1,
@@ -325,7 +326,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   summary: {
-    backgroundColor: '#fff',
     padding: 16,
     borderRadius: 8,
     marginTop: 8,
