@@ -153,11 +153,17 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
         <View style={styles.form}>
           <Text variant="labelLarge" style={styles.label}>
             Type
@@ -300,7 +306,8 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
       >
         {success}
       </Snackbar>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 };
 
@@ -311,6 +318,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 16,
+    paddingBottom: 32,
   },
   form: {
     flex: 1,
