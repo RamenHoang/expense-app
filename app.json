@@ -14,7 +14,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.expenseapp.personalfinance"
+      "bundleIdentifier": "com.expenseapp.personalfinance",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs camera access to take photos of receipts.",
+        "NSPhotoLibraryUsageDescription": "This app needs photo library access to select receipt images."
+      }
     },
     "android": {
       "package": "com.expenseapp.personalfinance",
@@ -22,6 +26,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
