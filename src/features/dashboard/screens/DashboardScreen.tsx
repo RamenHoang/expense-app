@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { Text, Card, Button, IconButton, SegmentedButtons, useTheme } from 'react-native-paper';
 import { useUserStore } from '../../../store/userStore';
 import { dashboardService, DashboardSummary, CategorySummary } from '../../../services/dashboardService';
-import { formatCurrency } from '../../../utils/currency';
+import { PriceText } from '../../../components/PriceText';
 import { useNavigation } from '@react-navigation/native';
 
 export const DashboardScreen = () => {
@@ -124,12 +124,12 @@ export const DashboardScreen = () => {
           </Text>
 
           <View style={styles.balanceContainer}>
-            <Text variant="headlineLarge" style={[
-              styles.balanceAmount,
-              { color: (summary?.balance || 0) >= 0 ? theme.colors.income : theme.colors.expense }
-            ]}>
-              {formatCurrency(summary?.balance || 0, currency)}
-            </Text>
+            <PriceText
+              amount={summary?.balance || 0}
+              type={(summary?.balance || 0) >= 0 ? 'income' : 'expense'}
+              variant="headlineLarge"
+              style={styles.balanceAmount}
+            />
             <Text variant="bodySmall" style={styles.balanceLabel}>
               Net Balance
             </Text>
@@ -143,9 +143,11 @@ export const DashboardScreen = () => {
               <Text variant="labelSmall" style={styles.summaryItemLabel}>
                 Income
               </Text>
-              <Text variant="titleMedium" style={[styles.summaryItemValue, { color: theme.colors.income }]}>
-                {formatCurrency(summary?.totalIncome || 0, currency)}
-              </Text>
+              <PriceText
+                amount={summary?.totalIncome || 0}
+                type="income"
+                variant="titleMedium"
+              />
               <Text variant="bodySmall" style={styles.summaryItemCount}>
                 {summary?.incomeCount || 0} transactions
               </Text>
@@ -158,9 +160,11 @@ export const DashboardScreen = () => {
               <Text variant="labelSmall" style={styles.summaryItemLabel}>
                 Expense
               </Text>
-              <Text variant="titleMedium" style={[styles.summaryItemValue, { color: theme.colors.expense }]}>
-                {formatCurrency(summary?.totalExpense || 0, currency)}
-              </Text>
+              <PriceText
+                amount={summary?.totalExpense || 0}
+                type="expense"
+                variant="titleMedium"
+              />
               <Text variant="bodySmall" style={styles.summaryItemCount}>
                 {summary?.expenseCount || 0} transactions
               </Text>
@@ -204,9 +208,11 @@ export const DashboardScreen = () => {
                   </View>
                 </View>
                 <View style={styles.categoryAmount}>
-                  <Text variant="titleSmall" style={styles.categoryTotal}>
-                    {formatCurrency(category.total, currency)}
-                  </Text>
+                  <PriceText
+                    amount={category.total}
+                    variant="titleSmall"
+                    style={styles.categoryTotal}
+                  />
                   <Text variant="bodySmall" style={styles.categoryPercentage}>
                     {category.percentage.toFixed(1)}%
                   </Text>
@@ -249,16 +255,12 @@ export const DashboardScreen = () => {
                     {new Date(transaction.transaction_date).toLocaleDateString()}
                   </Text>
                 </View>
-                <Text
+                <PriceText
+                  amount={transaction.amount}
+                  type={transaction.type}
                   variant="titleSmall"
-                  style={[
-                    styles.transactionAmount,
-                    { color: transaction.type === 'income' ? theme.colors.income : theme.colors.expense },
-                  ]}
-                >
-                  {transaction.type === 'income' ? '+' : '-'}
-                  {formatCurrency(transaction.amount, currency)}
-                </Text>
+                  showSign
+                />
               </View>
             ))}
           </Card.Content>
