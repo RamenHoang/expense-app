@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from 'react-native-paper';
 import { MainTabParamList } from '../types/navigation';
 import { DashboardScreen } from '../features/dashboard/screens/DashboardScreen';
 import { TransactionsScreen } from '../features/transactions/screens/TransactionsScreen';
@@ -10,12 +11,21 @@ import { SettingsScreen } from '../features/settings/screens/SettingsScreen';
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainNavigator = () => {
+  const theme = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: true,
-        tabBarActiveTintColor: '#6200ee',
-        tabBarInactiveTintColor: '#666',
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
+        tabBarStyle: {
+          backgroundColor: theme.colors.surface,
+        },
+        headerStyle: {
+          backgroundColor: theme.colors.surface,
+        },
+        headerTintColor: theme.colors.onSurface,
       }}
     >
       <Tab.Screen
