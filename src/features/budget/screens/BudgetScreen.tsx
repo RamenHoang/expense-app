@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-native';
-import { Text, Card, Button, IconButton, SegmentedButtons, FAB, ProgressBar } from 'react-native-paper';
+import { Text, Card, Button, IconButton, SegmentedButtons, FAB, ProgressBar, useTheme } from 'react-native-paper';
 import { useUserStore } from '../../../store/userStore';
 import { useBudgetStore } from '../../../store/budgetStore';
 import { formatCurrency } from '../../../utils/currency';
@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 
 export const BudgetScreen = () => {
   const navigation = useNavigation();
+  const theme = useTheme();
   const { profile, fetchProfile } = useUserStore();
   const { budgetUsage, fetchBudgetUsage, isLoading } = useBudgetStore();
   
@@ -71,7 +72,7 @@ export const BudgetScreen = () => {
   return (
     <>
       <ScrollView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -104,13 +105,13 @@ export const BudgetScreen = () => {
                 </View>
                 <View style={styles.statItem}>
                   <Text variant="bodySmall" style={styles.statLabel}>Spent</Text>
-                  <Text variant="titleMedium" style={[styles.statValue, { color: '#f44336' }]}>
+                  <Text variant="titleMedium" style={[styles.statValue, { color: theme.colors.expense }]}>
                     {formatCurrency(getTotalSpent(), currency)}
                   </Text>
                 </View>
                 <View style={styles.statItem}>
                   <Text variant="bodySmall" style={styles.statLabel}>Remaining</Text>
-                  <Text variant="titleMedium" style={[styles.statValue, { color: '#4caf50' }]}>
+                  <Text variant="titleMedium" style={[styles.statValue, { color: theme.colors.income }]}>
                     {formatCurrency(getTotalRemaining(), currency)}
                   </Text>
                 </View>
@@ -174,7 +175,7 @@ export const BudgetScreen = () => {
                 </View>
                 <View style={styles.amountRow}>
                   <Text variant="bodyMedium">Spent:</Text>
-                  <Text variant="bodyMedium" style={[styles.amountValue, { color: '#f44336' }]}>
+                  <Text variant="bodyMedium" style={[styles.amountValue, { color: theme.colors.expense }]}>
                     {formatCurrency(item.spent, currency)}
                   </Text>
                 </View>
@@ -184,7 +185,7 @@ export const BudgetScreen = () => {
                     variant="bodyMedium" 
                     style={[
                       styles.amountValue, 
-                      { color: item.remaining >= 0 ? '#4caf50' : '#f44336' }
+                      { color: item.remaining >= 0 ? theme.colors.income : theme.colors.expense }
                     ]}
                   >
                     {formatCurrency(item.remaining, currency)}
@@ -198,12 +199,12 @@ export const BudgetScreen = () => {
                     {item.percentage.toFixed(1)}% used
                   </Text>
                   {item.isOverBudget && (
-                    <Text variant="bodySmall" style={styles.overBudgetText}>
+                    <Text variant="bodySmall" style={[styles.overBudgetText, { color: theme.colors.error }]}>
                       Over Budget!
                     </Text>
                   )}
                   {item.isWarning && !item.isOverBudget && (
-                    <Text variant="bodySmall" style={styles.warningText}>
+                    <Text variant="bodySmall" style={[styles.warningText, { color: theme.colors.warning }]}>
                       Warning
                     </Text>
                   )}
@@ -351,11 +352,9 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   overBudgetText: {
-    color: '#f44336',
     fontWeight: 'bold',
   },
   warningText: {
-    color: '#ff9800',
     fontWeight: 'bold',
   },
   progressBar: {
