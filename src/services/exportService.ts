@@ -1,0 +1,155 @@
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import { transactionService } from './transactionService';
+import { categoryService } from './categoryService';
+import { budgetService } from './budgetService';
+import { userService } from './userService';
+
+export const exportService = {
+  /**
+   * Export all data as JSON
+   */
+  exportDataAsJSON: async (): Promise<string> => {
+    try {
+      // Fetch all data
+      const [transactions, categories, budgets, profile] = await Promise.all([
+        transactionService.getTransactions(),
+        categoryService.getCategories(),
+        budgetService.getBudgets(),
+        userService.getProfile(),
+      ]);
+
+      const exportData = {
+        exportDate: new Date().toISOString(),
+        version: '1.0',
+        profile: {
+          fullName: profile?.full_name,
+          currency: profile?.currency,
+        },
+        categories: categories.map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          type: cat.type,
+          icon: cat.icon,
+          color: cat.color,
+        })),
+        transactions: transactions.map(tx => ({
+          id: tx.id,
+          type: tx.type,
+          amount: tx.amount,
+          date: tx.transaction_date,
+          note: tx.note,
+          categoryId: tx.category_id,
+          categoryName: tx.category?.name,
+          receiptUrl: tx.receipt_url,
+          createdAt: tx.created_at,
+        })),
+        budgets: budgets.map(budget => ({
+          id: budget.id,
+          categoryId: budget.category_id,
+          categoryName: budget.category?.name,
+          amount: budget.amount,
+          period: budget.period,
+          startDate: budget.start_date,
+          endDate: budget.end_date,
+        })),
+      };
+
+      return JSON.stringify(exportData, null, 2);
+    } catch (error: any) {
+      throw new Error(`Export failed: ${error.message}`);
+    }
+  },
+
+  /**
+   * Export data as CSV
+   */
+  exportDataAsCSV: async (): Promise<{ transactions: string; categories: string; budgets: string }> => {
+    try {
+      const [transactions, categories, budgets] = await Promise.all([
+        transactionService.getTransactions(),
+        categoryService.getCategories(),
+        budgetService.getBudgets(),
+      ]);
+
+      // Transactions CSV
+      const transactionsCsv = [
+        'Date,Type,Category,Amount,Note,Created At',
+        ...transactions.map(tx =>
+          `"${tx.transaction_date}","${tx.type}","${tx.category?.name || 'Uncategorized'}",${tx.amount},"${tx.note || ''}","${tx.created_at}"`
+        ),
+      ].join('\n');
+
+      // Categories CSV
+      const categoriesCsv = [
+        'Name,Type,Icon,Color',
+        ...categories.map(cat =>
+          `"${cat.name}","${cat.type}","${cat.icon || ''}","${cat.color || ''}"`
+        ),
+      ].join('\n');
+
+      // Budgets CSV
+      const budgetsCsv = [
+        'Category,Amount,Period,Start Date,End Date',
+        ...budgets.map(budget =>
+          `"${budget.category?.name || ''}",${budget.amount},"${budget.period}","${budget.start_date}","${budget.end_date || ''}"`
+        ),
+      ].join('\n');
+
+      return {
+        transactions: transactionsCsv,
+        categories: categoriesCsv,
+        budgets: budgetsCsv,
+      };
+    } catch (error: any) {
+      throw new Error(`CSV export failed: ${error.message}`);
+    }
+  },
+
+  /**
+   * Save and share export file
+   */
+  saveAndShareFile: async (content: string, filename: string): Promise<void> => {
+    try {
+      const fileUri = `${FileSystem.documentDirectory}${filename}`;
+      
+      // Write file
+      await FileSystem.writeAsStringAsync(fileUri, content, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+
+      // Share file
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: filename.endsWith('.json') ? 'application/json' : 'text/csv',
+          dialogTitle: 'Export Data',
+        });
+      } else {
+        throw new Error('Sharing is not available on this device');
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to save file: ${error.message}`);
+    }
+  },
+
+  /**
+   * Export all data and share as JSON
+   */
+  exportAndShareJSON: async (): Promise<void> => {
+    const jsonData = await exportService.exportDataAsJSON();
+    const filename = `personal-finance-backup-${new Date().toISOString().split('T')[0]}.json`;
+    await exportService.saveAndShareFile(jsonData, filename);
+  },
+
+  /**
+   * Export transactions as CSV and share
+   */
+  exportAndShareCSV: async (): Promise<void> => {
+    const csvData = await exportService.exportDataAsCSV();
+    const date = new Date().toISOString().split('T')[0];
+    
+    // For now, export transactions (most important data)
+    const filename = `transactions-${date}.csv`;
+    await exportService.saveAndShareFile(csvData.transactions, filename);
+  },
+};
