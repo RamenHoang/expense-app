@@ -19,7 +19,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CategorySelector } from '../../categories/components/CategorySelector';
 import { DatePickerInput } from '../components/DatePickerInput';
 import { AmountInput } from '../components/AmountInput';
-import { ReceiptUpload } from '../components/ReceiptUpload';
+// import { ReceiptUpload } from '../components/ReceiptUpload';
 import { transactionService } from '../../../services/transactionService';
 import { useTransactionStore } from '../../../store/transactionStore';
 import { useUserStore } from '../../../store/userStore';
@@ -40,8 +40,8 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [date, setDate] = useState(new Date());
   const [note, setNote] = useState('');
-  const [receiptUri, setReceiptUri] = useState('');
-  const [receiptFileName, setReceiptFileName] = useState('');
+  // const [receiptUri, setReceiptUri] = useState('');
+  // const [receiptFileName, setReceiptFileName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -142,15 +142,15 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
     }
   };
 
-  const handleReceiptUpload = (uri: string, fileName: string) => {
-    setReceiptUri(uri);
-    setReceiptFileName(fileName);
-  };
+  // const handleReceiptUpload = (uri: string, fileName: string) => {
+  //   setReceiptUri(uri);
+  //   setReceiptFileName(fileName);
+  // };
 
-  const handleReceiptDelete = () => {
-    setReceiptUri('');
-    setReceiptFileName('');
-  };
+  // const handleReceiptDelete = () => {
+  //   setReceiptUri('');
+  //   setReceiptFileName('');
+  // };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -221,12 +221,13 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
             placeholder="Add a note about this transaction"
           />
 
-          <ReceiptUpload
+          {/* Receipt upload - commented out for now */}
+          {/* <ReceiptUpload
             receiptUrl={receiptUri}
             onUpload={handleReceiptUpload}
             onDelete={handleReceiptDelete}
             disabled={loading}
-          />
+          /> */}
 
           <View style={[styles.summary, { backgroundColor: theme.colors.surface }]}>
             <Text variant="titleMedium" style={styles.summaryLabel}>
