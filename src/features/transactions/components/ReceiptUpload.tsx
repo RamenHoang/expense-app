@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Image, Alert, TouchableOpacity } from 'react-native';
 import { Text, Button, IconButton, Card, ActivityIndicator } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 
 interface ReceiptUploadProps {
@@ -16,14 +17,15 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
   onDelete,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
   const [uploading, setUploading] = useState(false);
 
   const requestPermissions = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert(
-        'Permission Required',
-        'Please grant camera roll permissions to upload receipts.'
+        t('transactions.permissionDenied'),
+        t('transactions.libraryPermissionMessage')
       );
       return false;
     }
@@ -48,7 +50,7 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
         onUpload(uri, fileName);
       }
     } catch (error: any) {
-      Alert.alert('Error', 'Failed to pick image: ' + error.message);
+      Alert.alert(t('common.error'), t('transactions.failedToPickImage') + ': ' + error.message);
     }
   };
 
@@ -56,8 +58,8 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert(
-        'Permission Required',
-        'Please grant camera permissions to take photos.'
+        t('transactions.permissionDenied'),
+        t('transactions.cameraPermissionMessage')
       );
       return;
     }
@@ -75,25 +77,25 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
         onUpload(uri, fileName);
       }
     } catch (error: any) {
-      Alert.alert('Error', 'Failed to take photo: ' + error.message);
+      Alert.alert(t('common.error'), t('transactions.failedToTakePhoto') + ': ' + error.message);
     }
   };
 
   const showUploadOptions = () => {
     Alert.alert(
-      'Upload Receipt',
-      'Choose an option',
+      t('transactions.receiptOptions'),
+      '',
       [
         {
-          text: 'Take Photo',
+          text: t('transactions.takePhoto'),
           onPress: takePhoto,
         },
         {
-          text: 'Choose from Gallery',
+          text: t('transactions.chooseFromLibrary'),
           onPress: pickImage,
         },
         {
-          text: 'Cancel',
+          text: t('common.cancel'),
           style: 'cancel',
         },
       ],
@@ -103,15 +105,15 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
 
   const handleDelete = () => {
     Alert.alert(
-      'Delete Receipt',
-      'Are you sure you want to delete this receipt?',
+      t('transactions.deleteReceipt'),
+      t('transactions.confirmDeleteReceipt'),
       [
         {
-          text: 'Cancel',
+          text: t('common.cancel'),
           style: 'cancel',
         },
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: onDelete,
         },
@@ -124,7 +126,7 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
       <Card style={styles.card}>
         <Card.Content>
           <Text variant="labelLarge" style={styles.label}>
-            Receipt
+            {t('transactions.receipt')}
           </Text>
           <TouchableOpacity onPress={() => {/* TODO: Open full screen */}}>
             <Image
@@ -140,7 +142,7 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
             icon="delete"
             style={styles.deleteButton}
           >
-            Remove Receipt
+            {t('transactions.deleteReceipt')}
           </Button>
         </Card.Content>
       </Card>
@@ -151,7 +153,7 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
     <Card style={styles.card}>
       <Card.Content>
         <Text variant="labelLarge" style={styles.label}>
-          Receipt (Optional)
+          {t('transactions.receipt')} ({t('transactions.enterDescription').replace('Nhập mô tả ', '').replace('(', '').replace(')', '')})
         </Text>
         <View style={styles.uploadContainer}>
           <IconButton
@@ -161,7 +163,7 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
             style={styles.uploadIcon}
           />
           <Text variant="bodyMedium" style={styles.uploadText}>
-            Add a receipt photo
+            {t('transactions.addReceipt')}
           </Text>
           <Button
             mode="outlined"
@@ -170,7 +172,7 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
             icon="upload"
             style={styles.uploadButton}
           >
-            {uploading ? 'Uploading...' : 'Upload Receipt'}
+            {uploading ? t('common.loading') : t('transactions.addReceipt')}
           </Button>
         </View>
       </Card.Content>
