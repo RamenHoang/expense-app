@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { Text, Card, Button, IconButton, SegmentedButtons, useTheme, Portal, Dialog, Divider, FAB } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
 import { dashboardService, DashboardSummary, CategorySummary } from '../../../services/dashboardService';
 import { PriceText } from '../../../components/PriceText';
@@ -8,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { CalendarPicker } from '../../../components/CalendarPicker';
 
 export const DashboardScreen = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const theme = useTheme();
   const { profile, fetchProfile } = useUserStore();
@@ -295,7 +297,7 @@ export const DashboardScreen = () => {
                 </View>
                 <View style={styles.transactionDetails}>
                   <Text variant="bodyMedium" style={styles.transactionCategory}>
-                    {transaction.category?.name || 'Uncategorized'}
+                    {transaction.category?.name || t('common.uncategorized')}
                   </Text>
                   <Text variant="bodySmall" style={styles.transactionDate}>
                     {new Date(transaction.transaction_date).toLocaleDateString()}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Alert } from 'react-native';
 import { List, IconButton, Dialog, Button, Portal, Text, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { Category } from '../../../types/category';
 import { categoryService } from '../../../services/categoryService';
 import { useCategoryStore } from '../../../store/categoryStore';
@@ -11,6 +12,7 @@ interface CategoryListItemProps {
 }
 
 export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, onEdit }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const removeCategory = useCategoryStore((state) => state.removeCategory);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
@@ -23,7 +25,7 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
       setUsageCount(count);
       setDeleteDialogVisible(true);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to check category usage');
+      Alert.alert(t('common.error'), error.message || t('categories.failedToCheckUsage'));
     }
   };
 
@@ -34,7 +36,7 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
       removeCategory(category.id);
       setDeleteDialogVisible(false);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to delete category');
+      Alert.alert(t('common.error'), error.message || t('common.failedToDelete'));
     } finally {
       setIsDeleting(false);
     }
@@ -48,7 +50,7 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
     <>
       <List.Item
         title={category.name}
-        description={category.type === 'income' ? 'Income' : 'Expense'}
+        description={category.type === 'income' ? t('categories.income') : t('categories.expense')}
         left={(props) => (
           <List.Icon
             {...props}
@@ -76,21 +78,20 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
 
       <Portal>
         <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
-          <Dialog.Title>Delete Category</Dialog.Title>
+          <Dialog.Title>{t('categories.deleteCategory')}</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium">
-              Are you sure you want to delete "{category.name}"?
+              {t('categories.confirmDelete').replace('danh mục này', `"${category.name}"`)}
             </Text>
             {usageCount !== null && usageCount > 0 && (
               <Text variant="bodyMedium" style={[styles.warningText, { color: theme.colors.error }]}>
-                {'\n'}Warning: This category is used in {usageCount} transaction
-                {usageCount !== 1 ? 's' : ''}. Those transactions will have no category after deletion.
+                {'\n'}{t('categories.categoryInUseMessage', { count: usageCount })}
               </Text>
             )}
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setDeleteDialogVisible(false)} disabled={isDeleting}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onPress={handleConfirmDelete}
@@ -98,7 +99,7 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
               disabled={isDeleting}
               textColor={theme.colors.error}
             >
-              Delete
+              {t('common.delete')}
             </Button>
           </Dialog.Actions>
         </Dialog>

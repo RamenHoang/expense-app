@@ -15,7 +15,19 @@
     "error": "Lỗi",
     "success": "Thành công",
     "apply": "Áp dụng",
-    "reset": "Đặt lại"
+    "reset": "Đặt lại",
+    "uncategorized": "Chưa phân loại",
+    "noNote": "Không có ghi chú",
+    "amount": "Số tiền",
+    "category": "Danh mục",
+    "note": "Ghi chú",
+    "areYouSure": "Bạn có chắc chắn?",
+    "failedToDelete": "Không thể xóa",
+    "deleteSuccess": "Đã xóa thành công",
+    "updateSuccess": "Đã cập nhật thành công",
+    "createSuccess": "Đã tạo thành công",
+    "yes": "Có",
+    "no": "Không"
   },
   "auth": {
     "login": "Đăng nhập",
@@ -96,7 +108,20 @@
     "yesterday": "Hôm qua",
     "thisWeek": "Tuần này",
     "thisMonth": "Tháng này",
-    "older": "Cũ hơn"
+    "older": "Cũ hơn",
+    "failedToLoadTransaction": "Không thể tải giao dịch",
+    "receipt": "Hóa đơn",
+    "addReceipt": "Thêm hóa đơn",
+    "receiptOptions": "Tùy chọn hóa đơn",
+    "takePhoto": "Chụp ảnh",
+    "chooseFromLibrary": "Chọn từ thư viện",
+    "deleteReceipt": "Xóa hóa đơn",
+    "confirmDeleteReceipt": "Bạn có chắc muốn xóa hóa đơn này?",
+    "permissionDenied": "Quyền truy cập bị từ chối",
+    "cameraPermissionMessage": "Chúng tôi cần quyền truy cập máy ảnh để chụp ảnh hóa đơn.",
+    "libraryPermissionMessage": "Chúng tôi cần quyền truy cập thư viện ảnh để chọn hình ảnh.",
+    "failedToPickImage": "Không thể chọn hình ảnh",
+    "failedToTakePhoto": "Không thể chụp ảnh"
   },
   "budgets": {
     "title": "Ngân sách",
@@ -186,7 +211,10 @@
     "business": "Kinh doanh",
     "investment": "Đầu tư",
     "gifts": "Quà tặng",
-    "other": "Khác"
+    "other": "Khác",
+    "failedToCheckUsage": "Không thể kiểm tra sử dụng danh mục",
+    "cannotDeleteInUse": "Không thể xóa danh mục đang được sử dụng",
+    "categoryInUseMessage": "Danh mục này đang được sử dụng trong {{count}} giao dịch. Vui lòng xóa hoặc cập nhật các giao dịch này trước."
   },
   "settings": {
     "title": "Cài đặt",
@@ -242,7 +270,9 @@
     "exportCSVSuccess": "Đã xuất giao dịch dưới dạng CSV!",
     "signOut": "Đăng xuất",
     "signOutConfirm": "Bạn có chắc muốn đăng xuất?",
-    "signOutError": "Không thể đăng xuất"
+    "signOutError": "Không thể đăng xuất",
+    "currencyUpdated": "Đã cập nhật tiền tệ",
+    "failedToUpdateCurrency": "Không thể cập nhật tiền tệ"
   },
   "onboarding": {
     "welcome": "Chào mừng!",
