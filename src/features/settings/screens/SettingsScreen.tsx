@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { Text, List, Avatar, Divider, Dialog, Button, Portal, Switch, useTheme } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../../../store/authStore';
 import { useUserStore } from '../../../store/userStore';
 import { useThemeStore } from '../../../store/themeStore';
@@ -60,6 +61,34 @@ export const SettingsScreen = () => {
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleReplayOnboarding = async () => {
+    Alert.alert(
+      'Replay Tutorial',
+      'This will show the onboarding tutorial again. You will need to restart the app.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Confirm',
+          onPress: async () => {
+            try {
+              await AsyncStorage.removeItem('onboarding_completed');
+              Alert.alert(
+                'Success',
+                'Onboarding reset! Please close and restart the app to see the tutorial.',
+                [{ text: 'OK' }]
+              );
+            } catch (error) {
+              Alert.alert('Error', 'Failed to reset onboarding');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const getInitials = (name?: string) => {
@@ -127,6 +156,18 @@ export const SettingsScreen = () => {
               onValueChange={toggleTheme}
             />
           )}
+        />
+      </List.Section>
+      
+      {/* App Settings */}
+      <List.Section>
+        <List.Subheader>App</List.Subheader>
+        <List.Item
+          title="Replay Tutorial"
+          description="View the onboarding tutorial again"
+          left={(props) => <List.Icon {...props} icon="school" />}
+          right={(props) => <List.Icon {...props} icon="chevron-right" />}
+          onPress={handleReplayOnboarding}
         />
       </List.Section>
       
