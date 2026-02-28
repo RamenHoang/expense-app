@@ -97,21 +97,21 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
       });
 
       // Upload receipt if provided
-      let receiptUrl;
-      if (receiptUri && receiptFileName) {
-        try {
-          receiptUrl = await transactionService.uploadReceipt(
-            transaction.id,
-            receiptUri,
-            receiptFileName
-          );
-          // Update transaction with receipt URL
-          await transactionService.updateTransaction(transaction.id, { receipt_url: receiptUrl });
-        } catch (uploadError: any) {
-          console.error('Receipt upload failed:', uploadError);
-          // Don't fail the whole transaction if receipt upload fails
-        }
-      }
+      // let receiptUrl;
+      // if (receiptUri && receiptFileName) {
+      //   try {
+      //     receiptUrl = await transactionService.uploadReceipt(
+      //       transaction.id,
+      //       receiptUri,
+      //       receiptFileName
+      //     );
+      //     // Update transaction with receipt URL
+      //     await transactionService.updateTransaction(transaction.id, { receipt_url: receiptUrl });
+      //   } catch (uploadError: any) {
+      //     console.error('Receipt upload failed:', uploadError);
+      //     // Don't fail the whole transaction if receipt upload fails
+      //   }
+      // }
 
       // Fetch the created transaction with category details
       const transactionWithCategory = await transactionService.getTransactionById(
