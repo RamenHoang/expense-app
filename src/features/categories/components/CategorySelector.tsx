@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Text, Portal, Modal, IconButton, Searchbar, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { useCategoryStore } from '../../../store/categoryStore';
 import { Category } from '../../../types/category';
 
@@ -16,9 +17,10 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
   selectedCategoryId,
   onSelectCategory,
   type,
-  label = 'Category',
+  label,
   error = false,
 }) => {
+  const { t } = useTranslation();
   const { categories, fetchCategories, isLoading, error: fetchError } = useCategoryStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -184,7 +186,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
     <>
       <View style={styles.container}>
         <Text variant="labelLarge" style={[styles.label, error && styles.errorLabel]}>
-          {label}
+          {label || t('common.category')}
         </Text>
         <TouchableOpacity
           style={[styles.selector, error && styles.errorSelector]}
@@ -222,7 +224,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
             <View style={styles.placeholder} pointerEvents="none">
               <IconButton icon="tag-outline" size={20} iconColor="#999" />
               <Text variant="bodyLarge" style={styles.placeholderText}>
-                Select a category
+                {t('transactions.selectCategory')}
               </Text>
               <IconButton icon="chevron-down" size={20} iconColor="#999" />
             </View>
@@ -230,7 +232,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
         </TouchableOpacity>
         {error && (
           <Text variant="bodySmall" style={styles.errorText}>
-            Please select a category
+            {t('transactions.categoryRequired')}
           </Text>
         )}
       </View>
@@ -243,13 +245,13 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
         >
           <View style={styles.modalHeader}>
             <Text variant="headlineSmall" style={styles.modalTitle}>
-              Select Category
+              {t('transactions.selectCategory')}
             </Text>
             <IconButton icon="close" onPress={() => setModalVisible(false)} />
           </View>
 
           <Searchbar
-            placeholder="Search categories"
+            placeholder={t('categories.searchCategories')}
             onChangeText={setSearchQuery}
             value={searchQuery}
             style={styles.searchBar}
@@ -259,23 +261,23 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
             {isLoading ? (
               <View style={styles.emptyState}>
                 <Text variant="bodyLarge" style={styles.emptyText}>
-                  Loading categories...
+                  {t('common.loading')}
                 </Text>
               </View>
             ) : fetchError ? (
               <View style={styles.emptyState}>
                 <Text variant="bodyLarge" style={[styles.emptyText, { color: '#d32f2f' }]}>
-                  Error: {fetchError}
+                  {t('common.error')}: {fetchError}
                 </Text>
               </View>
             ) : filteredCategories.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text variant="bodyLarge" style={styles.emptyText}>
                   {searchQuery
-                    ? 'No categories found'
+                    ? t('categories.noCategoriesFound')
                     : type
-                      ? `No ${type} categories available. Please create one first.`
-                      : 'No categories available. Please create one first.'}
+                      ? t('categories.noCategoriesAvailable', { type: t(`categories.${type}`) })
+                      : t('categories.noCategoriesYet')}
                 </Text>
               </View>
             ) : (
@@ -301,7 +303,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
                           {category.name}
                         </Text>
                         <Text variant="bodySmall" style={styles.categoryListType}>
-                          {category.type === 'income' ? 'Income' : 'Expense'}
+                          {t(`categories.${category.type}`)}
                         </Text>
                       </View>
                       {selectedCategoryId === category.id && (

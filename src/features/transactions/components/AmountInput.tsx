@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
 import { getCurrencySymbol } from '../../../utils/currency';
 
@@ -19,8 +20,9 @@ export const AmountInput: React.FC<AmountInputProps> = ({
   error = false,
   disabled = false,
   type = 'expense',
-  label = 'Amount',
+  label,
 }) => {
+  const { t } = useTranslation();
   const { profile, fetchProfile } = useUserStore();
   
   useEffect(() => {
@@ -76,7 +78,7 @@ export const AmountInput: React.FC<AmountInputProps> = ({
 
   return (
     <TextInput
-      label={label}
+      label={label || t('common.amount')}
       value={formatDisplayValue()}
       onChangeText={handleChangeText}
       mode="outlined"

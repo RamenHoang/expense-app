@@ -19,6 +19,7 @@ import {
   Button,
   Divider,
 } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { useTransactionStore } from '../../../store/transactionStore';
 import { TransactionListItem } from '../components/TransactionListItem';
@@ -28,6 +29,7 @@ import { PriceText } from '../../../components/PriceText';
 import { CalendarPicker } from '../../../components/CalendarPicker';
 
 export const TransactionListScreen = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const theme = useTheme();
   const {
@@ -206,8 +208,8 @@ export const TransactionListScreen = () => {
       day: 'numeric',
     });
 
-    if (isToday) dateLabel = 'Today';
-    if (isYesterday) dateLabel = 'Yesterday';
+    if (isToday) dateLabel = t('transactions.today');
+    if (isYesterday) dateLabel = t('transactions.yesterday');
 
     return (
       <View style={[styles.sectionHeader, { backgroundColor: theme.colors.surfaceVariant }]}>
@@ -243,7 +245,7 @@ export const TransactionListScreen = () => {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
         <Searchbar
-          placeholder="Search transactions"
+          placeholder={t('common.search')}
           onChangeText={handleSearch}
           value={searchQuery}
           style={styles.searchBar}
@@ -253,9 +255,9 @@ export const TransactionListScreen = () => {
           value={filterType}
           onValueChange={handleFilterChange}
           buttons={[
-            { value: 'all', label: 'All' },
-            { value: 'income', label: 'Income' },
-            { value: 'expense', label: 'Expense' },
+            { value: 'all', label: t('common.all') },
+            { value: 'income', label: t('transactions.income') },
+            { value: 'expense', label: t('transactions.expense') },
           ]}
           style={styles.segmentedButtons}
         />
@@ -264,10 +266,10 @@ export const TransactionListScreen = () => {
           value={dateFilter}
           onValueChange={handleDateFilterChange}
           buttons={[
-            { value: 'month', label: 'Month' },
-            { value: 'year', label: 'Year' },
-            { value: 'custom', label: 'Custom' },
-            { value: 'all', label: 'All' },
+            { value: 'month', label: t('dateFilter.month') },
+            { value: 'year', label: t('dateFilter.year') },
+            { value: 'custom', label: t('dateFilter.custom') },
+            { value: 'all', label: t('dateFilter.all') },
           ]}
           style={styles.segmentedButtons}
         />
@@ -297,7 +299,7 @@ export const TransactionListScreen = () => {
             <View style={styles.loadingMore}>
               <ActivityIndicator size="small" color={theme.colors.primary} />
               <Text variant="bodySmall" style={styles.loadingText}>
-                Loading more...
+                {t('transactions.loadingMore')}
               </Text>
             </View>
           ) : null
@@ -307,8 +309,8 @@ export const TransactionListScreen = () => {
             <View style={styles.emptyState}>
               <Text variant="bodyLarge" style={styles.emptyText}>
                 {searchQuery
-                  ? 'No transactions found'
-                  : 'No transactions yet. Tap + to add one!'}
+                  ? t('common.noResults')
+                  : t('transactions.noTransactions')}
               </Text>
             </View>
           ) : null
@@ -320,7 +322,7 @@ export const TransactionListScreen = () => {
         icon="plus"
         style={styles.fab}
         onPress={handleAddTransaction}
-        label="Add"
+        label={t('common.add')}
       />
 
       <Snackbar
@@ -328,7 +330,7 @@ export const TransactionListScreen = () => {
         onDismiss={clearError}
         duration={3000}
         action={{
-          label: 'Dismiss',
+          label: t('common.close'),
           onPress: clearError,
         }}
       >
@@ -341,12 +343,12 @@ export const TransactionListScreen = () => {
           onDismiss={handleCancelCustomRange}
           style={styles.dialog}
         >
-          <Dialog.Title>Select Date Range</Dialog.Title>
+          <Dialog.Title>{t('dateFilter.selectRange')}</Dialog.Title>
           <Dialog.ScrollArea style={styles.scrollArea}>
             <ScrollView contentContainerStyle={styles.dialogScrollContent}>
               <View style={styles.dialogContent}>
                 <Text variant="labelMedium" style={styles.dialogLabel}>
-                  From Date
+                  {t('dashboard.fromDate')}
                 </Text>
                 <Text variant="bodySmall" style={styles.selectedDateText}>
                   {customStartDate.toLocaleDateString('en-US', { 
@@ -364,7 +366,7 @@ export const TransactionListScreen = () => {
                 <Divider style={styles.divider} />
                 
                 <Text variant="labelMedium" style={styles.dialogLabel}>
-                  To Date
+                  {t('dashboard.toDate')}
                 </Text>
                 <Text variant="bodySmall" style={styles.selectedDateText}>
                   {customEndDate.toLocaleDateString('en-US', { 
@@ -383,8 +385,8 @@ export const TransactionListScreen = () => {
             </ScrollView>
           </Dialog.ScrollArea>
           <Dialog.Actions>
-            <Button onPress={handleCancelCustomRange}>Cancel</Button>
-            <Button mode="contained" onPress={handleApplyCustomRange}>Apply</Button>
+            <Button onPress={handleCancelCustomRange}>{t('common.cancel')}</Button>
+            <Button mode="contained" onPress={handleApplyCustomRange}>{t('common.apply')}</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>

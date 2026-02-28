@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Text, TextInput, Portal, Modal, Button, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 
 interface DatePickerInputProps {
   value: Date;
@@ -15,12 +16,13 @@ interface DatePickerInputProps {
 export const DatePickerInput: React.FC<DatePickerInputProps> = ({
   value,
   onChange,
-  label = 'Date',
+  label,
   disabled = false,
   error = false,
   minDate,
   maxDate,
 }) => {
+  const { t } = useTranslation();
   const [showPicker, setShowPicker] = useState(false);
   const [tempDate, setTempDate] = useState(value);
   const theme = useTheme();
@@ -76,7 +78,7 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
   });
 
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(t('common.locale'), {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -122,11 +124,11 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
     yesterday.setDate(today.getDate() - 1);
 
     if (date.toDateString() === today.toDateString()) {
-      return 'Today';
+      return t('transactions.today');
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
+      return t('transactions.yesterday');
     } else {
-      return date.toLocaleDateString('en-US', {
+      return date.toLocaleDateString(t('common.locale'), {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
@@ -137,7 +139,7 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
   return (
     <View style={styles.container}>
       <TextInput
-        label={label}
+        label={label || t('transactions.date')}
         value={formatDate(value)}
         mode="outlined"
         editable={false}
@@ -160,7 +162,7 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
           contentContainerStyle={styles.modal}
         >
           <Text variant="headlineSmall" style={styles.modalTitle}>
-            Select Date
+            {t('dateFilter.selectRange')}
           </Text>
 
           <ScrollView style={styles.dateList}>
@@ -188,7 +190,7 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
                       isSelected && styles.selectedDateText,
                     ]}
                   >
-                    {date.toLocaleDateString('en-US', {
+                    {date.toLocaleDateString(t('common.locale'), {
                       month: 'long',
                       day: 'numeric',
                       year: 'numeric',
@@ -200,9 +202,9 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
           </ScrollView>
 
           <View style={styles.actions}>
-            <Button onPress={handleCancel}>Cancel</Button>
+            <Button onPress={handleCancel}>{t('common.cancel')}</Button>
             <Button mode="contained" onPress={handleConfirm}>
-              Confirm
+              {t('common.confirm')}
             </Button>
           </View>
         </Modal>

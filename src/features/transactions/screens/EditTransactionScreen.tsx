@@ -93,7 +93,7 @@ export const EditTransactionScreen = ({
 
     if (!amount || parseFloat(amount) <= 0) {
       setAmountError(true);
-      setError('Please enter a valid amount');
+      setError(t('transactions.amountRequired'));
       isValid = false;
     } else {
       setAmountError(false);
@@ -101,7 +101,7 @@ export const EditTransactionScreen = ({
 
     if (!selectedCategory) {
       setCategoryError(true);
-      if (isValid) setError('Please select a category');
+      if (isValid) setError(t('transactions.categoryRequired'));
       isValid = false;
     } else {
       setCategoryError(false);
@@ -135,13 +135,13 @@ export const EditTransactionScreen = ({
       );
 
       updateTransactionInStore(transactionId, transactionWithCategory);
-      setSuccess('Transaction updated successfully!');
+      setSuccess(t('transactions.transactionUpdated'));
 
       setTimeout(() => {
         navigation.goBack();
       }, 1000);
     } catch (err: any) {
-      setError(err.message || 'Failed to update transaction');
+      setError(err.message || t('common.error'));
     } finally {
       setSaving(false);
     }
@@ -162,7 +162,7 @@ export const EditTransactionScreen = ({
       <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
         <ActivityIndicator size="large" />
         <Text variant="bodyLarge" style={styles.loadingText}>
-          Loading transaction...
+          {t('common.loading')}
         </Text>
       </View>
     );
@@ -176,7 +176,7 @@ export const EditTransactionScreen = ({
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.form}>
           <Text variant="labelLarge" style={styles.label}>
-            Type
+            {t('transactions.type')}
           </Text>
           <SegmentedButtons
             value={type}
@@ -184,12 +184,12 @@ export const EditTransactionScreen = ({
             buttons={[
               {
                 value: 'income',
-                label: 'Income',
+                label: t('transactions.income'),
                 icon: 'cash-plus',
               },
               {
                 value: 'expense',
-                label: 'Expense',
+                label: t('transactions.expense'),
                 icon: 'cash-minus',
               },
             ]}
@@ -215,12 +215,12 @@ export const EditTransactionScreen = ({
           <DatePickerInput
             value={date}
             onChange={setDate}
-            label="Date"
+            label={t('transactions.date')}
             disabled={saving}
           />
 
           <TextInput
-            label="Note (Optional)"
+            label={t('transactions.enterDescription')}
             value={note}
             onChangeText={setNote}
             mode="outlined"
@@ -228,7 +228,7 @@ export const EditTransactionScreen = ({
             numberOfLines={3}
             disabled={saving}
             style={styles.input}
-            placeholder="Add a note about this transaction"
+            placeholder={t('transactions.enterDescription')}
           />
 
           <View style={styles.actions}>
@@ -238,7 +238,7 @@ export const EditTransactionScreen = ({
               disabled={saving}
               style={styles.cancelButton}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               mode="contained"
@@ -247,7 +247,7 @@ export const EditTransactionScreen = ({
               disabled={saving}
               style={styles.submitButton}
             >
-              Save Changes
+              {t('common.save')}
             </Button>
           </View>
         </View>
@@ -258,7 +258,7 @@ export const EditTransactionScreen = ({
         onDismiss={() => setError('')}
         duration={3000}
         action={{
-          label: 'Dismiss',
+          label: t('common.close'),
           onPress: () => setError(''),
         }}
       >

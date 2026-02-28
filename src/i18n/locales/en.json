@@ -30,7 +30,8 @@
     "no": "No",
     "noResults": "No results found",
     "viewAll": "View All",
-    "noDataAvailable": "No data available"
+    "noDataAvailable": "No data available",
+    "locale": "en-US"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -230,6 +231,7 @@
     "expenseCategories": "Expense Categories",
     "noCategoriesFound": "No categories found",
     "noCategoriesYet": "No categories yet. Tap + to add!",
+    "noCategoriesAvailable": "No {{type}} categories available. Please create one first.",
     "food": "Food",
     "transport": "Transport",
     "shopping": "Shopping",
