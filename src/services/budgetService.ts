@@ -100,11 +100,11 @@ export const budgetService = {
     // Get current period dates
     const now = new Date();
     const startDate = new Date(now.getFullYear(), period === 'monthly' ? now.getMonth() : 0, 1);
-    const endDate = new Date(
-      now.getFullYear(),
-      period === 'monthly' ? now.getMonth() + 1 : 12,
-      0
-    );
+    
+    // Fix: endDate should be the last day of current month, not previous month
+    const endDate = period === 'monthly'
+      ? new Date(now.getFullYear(), now.getMonth() + 1, 0) // Last day of current month
+      : new Date(now.getFullYear(), 11, 31); // Dec 31 of current year
 
     // Get budgets for current period
     const { data: budgets, error: budgetError } = await supabase
