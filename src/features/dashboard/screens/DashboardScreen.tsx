@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Text, Card, Button, IconButton, SegmentedButtons, useTheme } from 'react-native-paper';
+import { Text, Card, Button, IconButton, SegmentedButtons, useTheme, Portal, Dialog, Divider } from 'react-native-paper';
 import { useUserStore } from '../../../store/userStore';
 import { dashboardService, DashboardSummary, CategorySummary } from '../../../services/dashboardService';
 import { PriceText } from '../../../components/PriceText';
 import { useNavigation } from '@react-navigation/native';
+import { CalendarPicker } from '../../../components/CalendarPicker';
 
 export const DashboardScreen = () => {
   const navigation = useNavigation();
@@ -14,9 +15,13 @@ export const DashboardScreen = () => {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [categoryBreakdown, setCategoryBreakdown] = useState<CategorySummary[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
-  const [dateFilter, setDateFilter] = useState<'month' | 'year' | 'all'>('month');
+  const [dateFilter, setDateFilter] = useState<'month' | 'year' | 'all' | 'custom'>('month');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showCustomDialog, setShowCustomDialog] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState(new Date());
+  const [customEndDate, setCustomEndDate] = useState(new Date());
+  const [appliedCustomRange, setAppliedCustomRange] = useState<{ start: Date; end: Date } | null>(null);
 
   useEffect(() => {
     if (!profile) {
@@ -39,6 +44,14 @@ export const DashboardScreen = () => {
       case 'year':
         startDate.setMonth(0, 1);
         break;
+      case 'custom':
+        if (appliedCustomRange) {
+          return {
+            startDate: appliedCustomRange.start.toISOString().split('T')[0],
+            endDate: appliedCustomRange.end.toISOString().split('T')[0],
+          };
+        }
+        return { startDate: undefined, endDate: undefined };
       case 'all':
         return { startDate: undefined, endDate: undefined };
     }
@@ -84,8 +97,39 @@ export const DashboardScreen = () => {
         return 'This Month';
       case 'year':
         return 'This Year';
+      case 'custom':
+        if (appliedCustomRange) {
+          const start = appliedCustomRange.start;
+          const end = appliedCustomRange.end;
+          const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          return `${startStr} - ${endStr}`;
+        }
+        return 'Custom Range';
       case 'all':
         return 'All Time';
+    }
+  };
+
+  const handleFilterChange = (value: string) => {
+    if (value === 'custom') {
+      setShowCustomDialog(true);
+    } else {
+      setDateFilter(value as any);
+    }
+  };
+
+  const handleApplyCustomRange = () => {
+    setAppliedCustomRange({ start: customStartDate, end: customEndDate });
+    setDateFilter('custom');
+    setShowCustomDialog(false);
+  };
+
+  const handleCancelCustomRange = () => {
+    setShowCustomDialog(false);
+    // Reset to previous filter if custom was not applied
+    if (dateFilter === 'custom' && !appliedCustomRange) {
+      setDateFilter('month');
     }
   };
 
@@ -98,20 +142,22 @@ export const DashboardScreen = () => {
   }
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-      contentContainerStyle={styles.scrollContent}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
       <View style={styles.filterContainer}>
         <SegmentedButtons
           value={dateFilter}
-          onValueChange={(value) => setDateFilter(value as any)}
+          onValueChange={handleFilterChange}
           buttons={[
             { value: 'month', label: 'Month' },
             { value: 'year', label: 'Year' },
+            { value: 'custom', label: 'Custom' },
             { value: 'all', label: 'All' },
           ]}
         />
@@ -278,6 +324,61 @@ export const DashboardScreen = () => {
         </Button>
       </View>
     </ScrollView>
+
+    <Portal>
+      <Dialog 
+        visible={showCustomDialog} 
+        onDismiss={handleCancelCustomRange}
+        style={styles.dialog}
+      >
+        <Dialog.Title>Select Date Range</Dialog.Title>
+        <Dialog.ScrollArea style={styles.scrollArea}>
+          <ScrollView contentContainerStyle={styles.dialogScrollContent}>
+            <View style={styles.dialogContent}>
+              <Text variant="labelMedium" style={styles.dialogLabel}>
+                From Date
+              </Text>
+              <Text variant="bodySmall" style={styles.selectedDateText}>
+                {customStartDate.toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                })}
+              </Text>
+              <CalendarPicker
+                selectedDate={customStartDate}
+                onSelectDate={setCustomStartDate}
+                maxDate={customEndDate}
+              />
+              
+              <Divider style={styles.divider} />
+              
+              <Text variant="labelMedium" style={styles.dialogLabel}>
+                To Date
+              </Text>
+              <Text variant="bodySmall" style={styles.selectedDateText}>
+                {customEndDate.toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                })}
+              </Text>
+              <CalendarPicker
+                selectedDate={customEndDate}
+                onSelectDate={setCustomEndDate}
+                minDate={customStartDate}
+                maxDate={new Date()}
+              />
+            </View>
+          </ScrollView>
+        </Dialog.ScrollArea>
+        <Dialog.Actions>
+          <Button onPress={handleCancelCustomRange}>Cancel</Button>
+          <Button mode="contained" onPress={handleApplyCustomRange}>Apply</Button>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
+  </View>
   );
 };
 
@@ -418,5 +519,29 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     paddingVertical: 8,
+  },
+  dialogLabel: {
+    marginBottom: 8,
+    marginTop: 8,
+  },
+  selectedDateText: {
+    marginBottom: 12,
+    opacity: 0.7,
+  },
+  divider: {
+    marginVertical: 16,
+  },
+  dialog: {
+    maxHeight: '85%',
+  },
+  scrollArea: {
+    maxHeight: 500,
+    paddingHorizontal: 0,
+  },
+  dialogScrollContent: {
+    paddingBottom: 8,
+  },
+  dialogContent: {
+    paddingHorizontal: 24,
   },
 });

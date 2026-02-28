@@ -43,6 +43,15 @@ export const transactionService = {
       query = query.ilike('note', `%${filters.search}%`);
     }
 
+    // Pagination support
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+
+    if (filters?.offset) {
+      query = query.range(filters.offset, filters.offset + (filters.limit || 20) - 1);
+    }
+
     const { data, error } = await query;
 
     if (error) throw error;

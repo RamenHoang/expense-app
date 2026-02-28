@@ -4,6 +4,8 @@ import {
   StyleSheet,
   FlatList,
   RefreshControl,
+  ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import {
   Text,
@@ -12,6 +14,10 @@ import {
   SegmentedButtons,
   Snackbar,
   useTheme,
+  Portal,
+  Dialog,
+  Button,
+  Divider,
 } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { useTransactionStore } from '../../../store/transactionStore';
@@ -19,6 +25,7 @@ import { TransactionListItem } from '../components/TransactionListItem';
 import { TransactionWithCategory } from '../../../types/transaction';
 import { useUserStore } from '../../../store/userStore';
 import { PriceText } from '../../../components/PriceText';
+import { CalendarPicker } from '../../../components/CalendarPicker';
 
 export const TransactionListScreen = () => {
   const navigation = useNavigation();
@@ -26,28 +33,69 @@ export const TransactionListScreen = () => {
   const {
     transactions,
     isLoading,
+    isLoadingMore,
+    hasMore,
     error,
     filters,
     fetchTransactions,
+    loadMoreTransactions,
     setFilters,
     clearError,
+    resetPagination,
   } = useTransactionStore();
   const { profile } = useUserStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
+  const [dateFilter, setDateFilter] = useState<'month' | 'year' | 'custom' | 'all'>('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [showCustomDialog, setShowCustomDialog] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState(new Date());
+  const [customEndDate, setCustomEndDate] = useState(new Date());
+  const [appliedCustomRange, setAppliedCustomRange] = useState<{ start: Date; end: Date } | null>(null);
 
   useEffect(() => {
     loadTransactions();
-  }, []);
+  }, [dateFilter]);
+
+  const getDateRange = () => {
+    const endDate = new Date();
+    const startDate = new Date();
+
+    switch (dateFilter) {
+      case 'month':
+        startDate.setDate(1);
+        break;
+      case 'year':
+        startDate.setMonth(0, 1);
+        break;
+      case 'custom':
+        if (appliedCustomRange) {
+          return {
+            start_date: appliedCustomRange.start.toISOString().split('T')[0],
+            end_date: appliedCustomRange.end.toISOString().split('T')[0],
+          };
+        }
+        return {};
+      case 'all':
+        return {};
+    }
+
+    return {
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0],
+    };
+  };
 
   const loadTransactions = async () => {
+    resetPagination();
+    const dateRange = getDateRange();
     await fetchTransactions({
       ...filters,
+      ...dateRange,
       type: filterType === 'all' ? undefined : filterType,
       search: searchQuery || undefined,
-    });
+    }, true);
   };
 
   const onRefresh = async () => {
@@ -56,16 +104,56 @@ export const TransactionListScreen = () => {
     setRefreshing(false);
   };
 
+  const handleLoadMore = () => {
+    if (!isLoadingMore && hasMore) {
+      loadMoreTransactions();
+    }
+  };
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    setFilters({ ...filters, search: query || undefined });
+    const dateRange = getDateRange();
+    resetPagination();
+    fetchTransactions({ 
+      ...filters, 
+      ...dateRange,
+      search: query || undefined,
+      type: filterType === 'all' ? undefined : filterType,
+    }, true);
   };
 
   const handleFilterChange = (value: string) => {
     setFilterType(value as 'all' | 'income' | 'expense');
     const newType = value === 'all' ? undefined : (value as 'income' | 'expense');
-    setFilters({ ...filters, type: newType });
-    fetchTransactions({ ...filters, type: newType });
+    const dateRange = getDateRange();
+    resetPagination();
+    fetchTransactions({ 
+      ...filters, 
+      ...dateRange,
+      type: newType,
+      search: searchQuery || undefined,
+    }, true);
+  };
+
+  const handleDateFilterChange = (value: string) => {
+    if (value === 'custom') {
+      setShowCustomDialog(true);
+    } else {
+      setDateFilter(value as any);
+    }
+  };
+
+  const handleApplyCustomRange = () => {
+    setAppliedCustomRange({ start: customStartDate, end: customEndDate });
+    setDateFilter('custom');
+    setShowCustomDialog(false);
+  };
+
+  const handleCancelCustomRange = () => {
+    setShowCustomDialog(false);
+    if (dateFilter === 'custom' && !appliedCustomRange) {
+      setDateFilter('all');
+    }
   };
 
   const handleAddTransaction = () => {
@@ -93,7 +181,10 @@ export const TransactionListScreen = () => {
     }));
   };
 
-  const groupedTransactions = groupTransactionsByDate(transactions);
+  const groupedTransactions = React.useMemo(
+    () => groupTransactionsByDate(transactions),
+    [transactions]
+  );
 
   const calculateDayTotal = (dayTransactions: TransactionWithCategory[]) => {
     return dayTransactions.reduce((sum, t) => {
@@ -101,7 +192,7 @@ export const TransactionListScreen = () => {
     }, 0);
   };
 
-  const renderSectionHeader = ({ item }: any) => {
+  const renderSectionHeader = React.useCallback(({ item }: any) => {
     const total = calculateDayTotal(item.transactions);
     const date = new Date(item.date);
     const isToday = date.toDateString() === new Date().toDateString();
@@ -131,9 +222,9 @@ export const TransactionListScreen = () => {
         />
       </View>
     );
-  };
+  }, [theme.colors.surfaceVariant]);
 
-  const renderItem = ({ item }: any) => {
+  const renderItem = React.useCallback(({ item }: any) => {
     return (
       <View>
         {renderSectionHeader({ item })}
@@ -146,7 +237,7 @@ export const TransactionListScreen = () => {
         ))}
       </View>
     );
-  };
+  }, [renderSectionHeader]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -168,6 +259,18 @@ export const TransactionListScreen = () => {
           ]}
           style={styles.segmentedButtons}
         />
+
+        <SegmentedButtons
+          value={dateFilter}
+          onValueChange={handleDateFilterChange}
+          buttons={[
+            { value: 'month', label: 'Month' },
+            { value: 'year', label: 'Year' },
+            { value: 'custom', label: 'Custom' },
+            { value: 'all', label: 'All' },
+          ]}
+          style={styles.segmentedButtons}
+        />
       </View>
 
       <FlatList
@@ -176,6 +279,28 @@ export const TransactionListScreen = () => {
         keyExtractor={(item) => item.date}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        initialNumToRender={5}
+        windowSize={10}
+        removeClippedSubviews={true}
+        getItemLayout={(data, index) => ({
+          length: 150,
+          offset: 150 * index,
+          index,
+        })}
+        ListFooterComponent={
+          isLoadingMore ? (
+            <View style={styles.loadingMore}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <Text variant="bodySmall" style={styles.loadingText}>
+                Loading more...
+              </Text>
+            </View>
+          ) : null
         }
         ListEmptyComponent={
           !isLoading ? (
@@ -209,6 +334,60 @@ export const TransactionListScreen = () => {
       >
         {error}
       </Snackbar>
+
+      <Portal>
+        <Dialog 
+          visible={showCustomDialog} 
+          onDismiss={handleCancelCustomRange}
+          style={styles.dialog}
+        >
+          <Dialog.Title>Select Date Range</Dialog.Title>
+          <Dialog.ScrollArea style={styles.scrollArea}>
+            <ScrollView contentContainerStyle={styles.dialogScrollContent}>
+              <View style={styles.dialogContent}>
+                <Text variant="labelMedium" style={styles.dialogLabel}>
+                  From Date
+                </Text>
+                <Text variant="bodySmall" style={styles.selectedDateText}>
+                  {customStartDate.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                  })}
+                </Text>
+                <CalendarPicker
+                  selectedDate={customStartDate}
+                  onSelectDate={setCustomStartDate}
+                  maxDate={customEndDate}
+                />
+                
+                <Divider style={styles.divider} />
+                
+                <Text variant="labelMedium" style={styles.dialogLabel}>
+                  To Date
+                </Text>
+                <Text variant="bodySmall" style={styles.selectedDateText}>
+                  {customEndDate.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                  })}
+                </Text>
+                <CalendarPicker
+                  selectedDate={customEndDate}
+                  onSelectDate={setCustomEndDate}
+                  minDate={customStartDate}
+                  maxDate={new Date()}
+                />
+              </View>
+            </ScrollView>
+          </Dialog.ScrollArea>
+          <Dialog.Actions>
+            <Button onPress={handleCancelCustomRange}>Cancel</Button>
+            <Button mode="contained" onPress={handleApplyCustomRange}>Apply</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 };
@@ -255,10 +434,42 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     textAlign: 'center',
   },
+  loadingMore: {
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 8,
+    opacity: 0.6,
+  },
   fab: {
     position: 'absolute',
     margin: 16,
     right: 0,
     bottom: 0,
+  },
+  dialog: {
+    maxHeight: '85%',
+  },
+  scrollArea: {
+    maxHeight: 500,
+    paddingHorizontal: 0,
+  },
+  dialogScrollContent: {
+    paddingBottom: 8,
+  },
+  dialogContent: {
+    paddingHorizontal: 24,
+  },
+  dialogLabel: {
+    marginBottom: 8,
+    marginTop: 8,
+  },
+  selectedDateText: {
+    marginBottom: 12,
+    opacity: 0.7,
+  },
+  divider: {
+    marginVertical: 16,
   },
 });

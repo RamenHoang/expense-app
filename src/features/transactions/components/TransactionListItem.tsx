@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { List, IconButton, Dialog, Button, Portal, Text, useTheme } from 'react-native-paper';
 import { TransactionWithCategory } from '../../../types/transaction';
@@ -11,7 +11,7 @@ interface TransactionListItemProps {
   onEdit: (transaction: TransactionWithCategory) => void;
 }
 
-export const TransactionListItem: React.FC<TransactionListItemProps> = ({
+const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
   transaction,
   onEdit,
 }) => {
@@ -142,6 +142,21 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
     </>
   );
 };
+
+// Memoize component to prevent unnecessary re-renders
+export const TransactionListItem = memo(
+  TransactionListItemComponent,
+  (prevProps, nextProps) => {
+    // Only re-render if transaction data actually changed
+    return (
+      prevProps.transaction.id === nextProps.transaction.id &&
+      prevProps.transaction.amount === nextProps.transaction.amount &&
+      prevProps.transaction.note === nextProps.transaction.note &&
+      prevProps.transaction.transaction_date === nextProps.transaction.transaction_date &&
+      prevProps.transaction.type === nextProps.transaction.type
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   item: {

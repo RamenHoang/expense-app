@@ -8,6 +8,8 @@ interface DatePickerInputProps {
   label?: string;
   disabled?: boolean;
   error?: boolean;
+  minDate?: Date;
+  maxDate?: Date;
 }
 
 export const DatePickerInput: React.FC<DatePickerInputProps> = ({
@@ -16,6 +18,8 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
   label = 'Date',
   disabled = false,
   error = false,
+  minDate,
+  maxDate,
 }) => {
   const [showPicker, setShowPicker] = useState(false);
   const [tempDate, setTempDate] = useState(value);
@@ -81,14 +85,18 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
 
   const generateDates = () => {
     const dates = [];
-    const today = new Date();
+    const today = maxDate || new Date();
+    const startFrom = minDate || new Date(today.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-    // Generate last 60 days
-    for (let i = 0; i < 60; i++) {
-      const date = new Date();
-      date.setDate(today.getDate() - i);
-      dates.push(date);
+    // Generate dates from minDate to maxDate
+    let currentDate = new Date(today);
+    const endDate = new Date(startFrom);
+    
+    while (currentDate >= endDate) {
+      dates.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() - 1);
     }
+    
     return dates;
   };
 
