@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { Text, FAB, SegmentedButtons, Snackbar, Portal, Searchbar, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { useCategoryStore } from '../../../store/categoryStore';
 import { CategoryListItem } from '../components/CategoryListItem';
 import { CategoryModal } from '../components/CategoryModal';
 import { Category } from '../../../types/category';
 
 export const CategoryListScreen = () => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { categories, isLoading, error, fetchCategories, clearError } = useCategoryStore();
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
@@ -56,7 +58,7 @@ export const CategoryListScreen = () => {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
         <Searchbar
-          placeholder="Search categories"
+          placeholder={t('categories.searchCategories')}
           onChangeText={setSearchQuery}
           value={searchQuery}
           style={styles.searchBar}
@@ -66,9 +68,9 @@ export const CategoryListScreen = () => {
           value={filterType}
           onValueChange={(value) => setFilterType(value as 'all' | 'income' | 'expense')}
           buttons={[
-            { value: 'all', label: 'All' },
-            { value: 'income', label: 'Income' },
-            { value: 'expense', label: 'Expense' },
+            { value: 'all', label: t('common.all') },
+            { value: 'income', label: t('categories.income') },
+            { value: 'expense', label: t('categories.expense') },
           ]}
           style={styles.segmentedButtons}
         />
@@ -83,7 +85,7 @@ export const CategoryListScreen = () => {
         {(filterType === 'all' || filterType === 'income') && incomeCategories.length > 0 && (
           <View style={styles.section}>
             <Text variant="titleMedium" style={styles.sectionTitle}>
-              Income Categories
+              {t('categories.incomeCategories')}
             </Text>
             {incomeCategories.map((category) => (
               <CategoryListItem
@@ -98,7 +100,7 @@ export const CategoryListScreen = () => {
         {(filterType === 'all' || filterType === 'expense') && expenseCategories.length > 0 && (
           <View style={styles.section}>
             <Text variant="titleMedium" style={styles.sectionTitle}>
-              Expense Categories
+              {t('categories.expenseCategories')}
             </Text>
             {expenseCategories.map((category) => (
               <CategoryListItem
@@ -114,8 +116,8 @@ export const CategoryListScreen = () => {
           <View style={styles.emptyState}>
             <Text variant="bodyLarge" style={styles.emptyText}>
               {searchQuery
-                ? 'No categories found'
-                : 'No categories yet. Tap + to add one!'}
+                ? t('categories.noCategoriesFound')
+                : t('categories.noCategoriesYet')}
             </Text>
           </View>
         )}
@@ -125,7 +127,7 @@ export const CategoryListScreen = () => {
         icon="plus"
         style={styles.fab}
         onPress={handleAddCategory}
-        label="Add Category"
+        label={t('categories.addCategory')}
       />
 
       <Portal>
@@ -145,7 +147,7 @@ export const CategoryListScreen = () => {
         onDismiss={clearError}
         duration={3000}
         action={{
-          label: 'Dismiss',
+          label: t('common.close'),
           onPress: clearError,
         }}
       >
