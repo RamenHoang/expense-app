@@ -1,28 +1,12 @@
 {
-  "cli": {
-    "version": ">= 18.0.3",
-    "appVersionSource": "remote"
-  },
   "build": {
-    "preview": {
-      "android": {
-        "buildType": "apk"
-      }
-    },
-    "preview2": {
-      "android": {
-        "gradleCommand": ":app:assembleRelease"
-      }
-    },
-    "preview3": {
-      "developmentClient": true
-    },
-    "preview4": {
+    "development": {
+      "developmentClient": true,
       "distribution": "internal"
     },
-    "production": {}
-  },
-  "submit": {
+    "preview": {
+      "distribution": "internal"
+    },
     "production": {}
   }
 }
