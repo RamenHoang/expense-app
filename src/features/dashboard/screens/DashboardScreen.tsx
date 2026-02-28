@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Text, Card, Button, IconButton, SegmentedButtons, useTheme, Portal, Dialog, Divider } from 'react-native-paper';
+import { Text, Card, Button, IconButton, SegmentedButtons, useTheme, Portal, Dialog, Divider, FAB } from 'react-native-paper';
 import { useUserStore } from '../../../store/userStore';
 import { dashboardService, DashboardSummary, CategorySummary } from '../../../services/dashboardService';
 import { PriceText } from '../../../components/PriceText';
@@ -314,14 +314,15 @@ export const DashboardScreen = () => {
       )}
 
       <View style={styles.quickActions}>
-        <Button
-          mode="contained"
+        <FAB
+          // mode="contained"
           icon="plus"
           onPress={() => navigation.navigate('AddTransaction' as never)}
           style={styles.actionButton}
+          label='Add Transaction'
         >
-          Add Transaction
-        </Button>
+          {/* Add Transaction */}
+        </FAB>
       </View>
     </ScrollView>
 
