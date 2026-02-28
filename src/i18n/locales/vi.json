@@ -278,7 +278,9 @@
     "signOutConfirm": "Bạn có chắc muốn đăng xuất?",
     "signOutError": "Không thể đăng xuất",
     "currencyUpdated": "Đã cập nhật tiền tệ",
-    "failedToUpdateCurrency": "Không thể cập nhật tiền tệ"
+    "failedToUpdateCurrency": "Không thể cập nhật tiền tệ",
+    "languageChanged": "Đã thay đổi ngôn ngữ",
+    "languageChangeError": "Không thể thay đổi ngôn ngữ"
   },
   "onboarding": {
     "welcome": "Chào mừng!",

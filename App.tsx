@@ -5,6 +5,7 @@ import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { useAuthStore } from './src/store/authStore';
 import { useThemeStore } from './src/store/themeStore';
@@ -22,6 +23,7 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
+  const { i18n } = useTranslation();
   const initialize = useAuthStore((state) => state.initialize);
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
@@ -29,7 +31,19 @@ export default function App() {
   useEffect(() => {
     initialize();
     checkOnboarding();
+    loadLanguagePreference();
   }, [initialize]);
+
+  const loadLanguagePreference = async () => {
+    try {
+      const savedLanguage = await AsyncStorage.getItem('user_language');
+      if (savedLanguage) {
+        await i18n.changeLanguage(savedLanguage);
+      }
+    } catch (error) {
+      console.error('Error loading language preference:', error);
+    }
+  };
 
   const checkOnboarding = async () => {
     try {
