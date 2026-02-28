@@ -15,6 +15,7 @@ import {
   Snackbar,
   useTheme,
 } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CategorySelector } from '../../categories/components/CategorySelector';
 import { DatePickerInput } from '../components/DatePickerInput';
@@ -31,6 +32,7 @@ type AddTransactionScreenProps = {
 };
 
 export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const addTransaction = useTransactionStore((state) => state.addTransaction);
   const { profile, fetchProfile } = useUserStore();
@@ -63,7 +65,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
 
     if (!amount || parseFloat(amount) <= 0) {
       setAmountError(true);
-      setError('Please enter a valid amount');
+      setError(t('transactions.amountRequired'));
       isValid = false;
     } else {
       setAmountError(false);
@@ -71,7 +73,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
 
     if (!selectedCategory) {
       setCategoryError(true);
-      if (isValid) setError('Please select a category');
+      if (isValid) setError(t('transactions.categoryRequired'));
       isValid = false;
     } else {
       setCategoryError(false);
@@ -119,14 +121,14 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
       );
 
       addTransaction(transactionWithCategory);
-      setSuccess('Transaction added successfully!');
+      setSuccess(t('transactions.transactionAdded'));
 
       // Reset form
       setTimeout(() => {
         navigation.goBack();
       }, 1000);
     } catch (err: any) {
-      setError(err.message || 'Failed to add transaction');
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -166,7 +168,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
         >
         <View style={styles.form}>
           <Text variant="labelLarge" style={styles.label}>
-            Type
+            {t('transactions.type')}
           </Text>
           <SegmentedButtons
             value={type}
@@ -174,12 +176,12 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
             buttons={[
               {
                 value: 'income',
-                label: 'Income',
+                label: t('transactions.income'),
                 icon: 'cash-plus',
               },
               {
                 value: 'expense',
-                label: 'Expense',
+                label: t('transactions.expense'),
                 icon: 'cash-minus',
               },
             ]}
@@ -205,12 +207,12 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
           <DatePickerInput
             value={date}
             onChange={setDate}
-            label="Date"
+            label={t('transactions.date')}
             disabled={loading}
           />
 
           <TextInput
-            label="Note (Optional)"
+            label={t('transactions.enterDescription')}
             value={note}
             onChangeText={setNote}
             mode="outlined"
@@ -218,7 +220,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
             numberOfLines={3}
             disabled={loading}
             style={styles.input}
-            placeholder="Add a note about this transaction"
+            placeholder={t('transactions.enterDescription')}
           />
 
           {/* Receipt upload - commented out for now */}
@@ -231,10 +233,10 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
 
           <View style={[styles.summary, { backgroundColor: theme.colors.surface }]}>
             <Text variant="titleMedium" style={styles.summaryLabel}>
-              Summary
+              {t('dashboard.summary')}
             </Text>
             <View style={styles.summaryRow}>
-              <Text variant="bodyLarge">Type:</Text>
+              <Text variant="bodyLarge">{t('transactions.type')}:</Text>
               <Text
                 variant="bodyLarge"
                 style={[
@@ -242,11 +244,11 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
                   { color: type === 'income' ? theme.colors.income : theme.colors.expense },
                 ]}
               >
-                {type === 'income' ? 'Income' : 'Expense'}
+                {type === 'income' ? t('transactions.income') : t('transactions.expense')}
               </Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text variant="bodyLarge">Amount:</Text>
+              <Text variant="bodyLarge">{t('common.amount')}:</Text>
               <Text
                 variant="titleLarge"
                 style={[
@@ -258,9 +260,9 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
               </Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text variant="bodyLarge">Category:</Text>
+              <Text variant="bodyLarge">{t('common.category')}:</Text>
               <Text variant="bodyLarge" style={styles.summaryValue}>
-                {selectedCategory?.name || 'None'}
+                {selectedCategory?.name || t('common.uncategorized')}
               </Text>
             </View>
           </View>
@@ -272,7 +274,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
               disabled={loading}
               style={styles.cancelButton}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               mode="contained"
@@ -281,7 +283,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
               disabled={loading}
               style={styles.submitButton}
             >
-              Add Transaction
+              {t('transactions.addTransaction')}
             </Button>
           </View>
         </View>
@@ -292,7 +294,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
         onDismiss={() => setError('')}
         duration={3000}
         action={{
-          label: 'Dismiss',
+          label: t('common.close'),
           onPress: () => setError(''),
         }}
       >

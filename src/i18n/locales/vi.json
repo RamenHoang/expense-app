@@ -30,7 +30,8 @@
     "no": "Không",
     "noResults": "Không tìm thấy kết quả",
     "viewAll": "Xem tất cả",
-    "noDataAvailable": "Không có dữ liệu"
+    "noDataAvailable": "Không có dữ liệu",
+    "locale": "vi-VN"
   },
   "auth": {
     "login": "Đăng nhập",
@@ -220,6 +221,7 @@
     "expenseCategories": "Danh mục Chi tiêu",
     "noCategoriesFound": "Không tìm thấy danh mục",
     "noCategoriesYet": "Chưa có danh mục nào. Nhấn + để thêm!",
+    "noCategoriesAvailable": "Chưa có danh mục {{type}}. Vui lòng tạo danh mục trước.",
     "food": "Ăn uống",
     "transport": "Di chuyển",
     "shopping": "Mua sắm",
