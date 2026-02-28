@@ -12,6 +12,7 @@ import { EditTransactionScreen } from '../features/transactions/screens/EditTran
 import { SetBudgetScreen } from '../features/budget/screens/SetBudgetScreen';
 import { CurrencySelectionScreen } from '../features/settings/screens/CurrencySelectionScreen';
 import { useAuthStore } from '../store/authStore';
+import { t } from 'i18next';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -33,7 +34,7 @@ export const RootNavigator = () => {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
         <ActivityIndicator size="large" />
-        <Text variant="bodyLarge" style={styles.loadingText}>Loading...</Text>
+        <Text variant="bodyLarge" style={styles.loadingText}>{t('common.loading')}</Text>
       </View>
     );
   }
@@ -57,40 +58,40 @@ export const RootNavigator = () => {
               name="Categories" 
               component={CategoryListScreen}
               options={{ 
-                title: 'Manage Categories',
-                headerBackTitle: 'Back',
+                title: t('categories.manageCategories'),
+                headerBackTitle: t('common.back'),
               }}
             />
             <Stack.Screen 
               name="AddTransaction" 
               component={AddTransactionScreen}
               options={{ 
-                title: 'Add Transaction',
-                headerBackTitle: 'Back',
+                title: t('transactions.addTransaction'),
+                headerBackTitle: t('common.back'),
               }}
             />
             <Stack.Screen 
               name="EditTransaction" 
               component={EditTransactionScreen}
               options={{ 
-                title: 'Edit Transaction',
-                headerBackTitle: 'Back',
+                title: t('transactions.editTransaction'),
+                headerBackTitle: t('common.back'),
               }}
             />
             <Stack.Screen 
               name="SetBudget" 
               component={SetBudgetScreen}
               options={{ 
-                title: 'Set Budget',
-                headerBackTitle: 'Back',
+                title: t('budgets.setBudget'),
+                headerBackTitle: t('common.back'),
               }}
             />
             <Stack.Screen 
               name="CurrencySelection" 
               component={CurrencySelectionScreen}
               options={{ 
-                title: 'Select Currency',
-                headerBackTitle: 'Back',
+                title: t('settings.selectCurrency'),
+                headerBackTitle: t('common.back'),
               }}
             />
           </>
