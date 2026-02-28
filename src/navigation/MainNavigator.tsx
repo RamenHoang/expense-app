@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { MainTabParamList } from '../types/navigation';
 import { DashboardScreen } from '../features/dashboard/screens/DashboardScreen';
 import { TransactionsScreen } from '../features/transactions/screens/TransactionsScreen';
@@ -12,6 +13,7 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainNavigator = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   return (
     <Tab.Navigator
@@ -35,6 +37,7 @@ export const MainNavigator = () => {
         name="Dashboard"
         component={DashboardScreen}
         options={{
+          title: t('navigation.dashboard'),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="view-dashboard" size={size} color={color} />
           ),
@@ -44,6 +47,7 @@ export const MainNavigator = () => {
         name="Transactions"
         component={TransactionsScreen}
         options={{
+          title: t('navigation.transactions'),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="format-list-bulleted" size={size} color={color} />
           ),
@@ -53,6 +57,7 @@ export const MainNavigator = () => {
         name="Budget"
         component={BudgetScreen}
         options={{
+          title: t('navigation.budgets'),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="wallet" size={size} color={color} />
           ),
@@ -62,6 +67,7 @@ export const MainNavigator = () => {
         name="Settings"
         component={SettingsScreen}
         options={{
+          title: t('navigation.settings'),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="cog" size={size} color={color} />
           ),

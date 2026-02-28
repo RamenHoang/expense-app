@@ -5,7 +5,6 @@ import vi from './locales/vi.json';
 i18n
   .use(initReactI18next)
   .init({
-    compatibilityJSON: 'v3',
     lng: 'vi',
     fallbackLng: 'vi',
     resources: {
