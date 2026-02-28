@@ -96,20 +96,20 @@ export const DashboardScreen = () => {
   const getDateFilterLabel = () => {
     switch (dateFilter) {
       case 'month':
-        return 'This Month';
+        return t('dashboard.thisMonth');
       case 'year':
-        return 'This Year';
+        return t('dashboard.thisYear');
       case 'custom':
         if (appliedCustomRange) {
           const start = appliedCustomRange.start;
           const end = appliedCustomRange.end;
-          const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-          const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          const startStr = start.toLocaleDateString('vi-VN', { month: 'short', day: 'numeric', year: 'numeric' });
+          const endStr = end.toLocaleDateString('vi-VN', { month: 'short', day: 'numeric', year: 'numeric' });
           return `${startStr} - ${endStr}`;
         }
-        return 'Custom Range';
+        return t('dashboard.customRange');
       case 'all':
-        return 'All Time';
+        return t('dashboard.allTime');
     }
   };
 
@@ -138,7 +138,7 @@ export const DashboardScreen = () => {
   if (loading && !refreshing) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
-        <Text variant="bodyLarge">Loading dashboard...</Text>
+        <Text variant="bodyLarge">{t('dashboard.loadingDashboard')}</Text>
       </View>
     );
   }
@@ -157,10 +157,10 @@ export const DashboardScreen = () => {
           value={dateFilter}
           onValueChange={handleFilterChange}
           buttons={[
-            { value: 'month', label: 'Month' },
-            { value: 'year', label: 'Year' },
-            { value: 'custom', label: 'Custom' },
-            { value: 'all', label: 'All' },
+            { value: 'month', label: t('dashboard.month') },
+            { value: 'year', label: t('dashboard.year') },
+            { value: 'custom', label: t('dashboard.custom') },
+            { value: 'all', label: t('common.all') },
           ]}
         />
       </View>
@@ -168,7 +168,7 @@ export const DashboardScreen = () => {
       <Card style={styles.summaryCard}>
         <Card.Content>
           <Text variant="titleMedium" style={styles.cardTitle}>
-            {getDateFilterLabel()} Summary
+            {getDateFilterLabel()} {t('dashboard.summary')}
           </Text>
 
           <View style={styles.balanceContainer}>
@@ -179,7 +179,7 @@ export const DashboardScreen = () => {
               style={styles.balanceAmount}
             />
             <Text variant="bodySmall" style={styles.balanceLabel}>
-              Net Balance
+              {t('dashboard.netBalance')}
             </Text>
           </View>
 
@@ -189,7 +189,7 @@ export const DashboardScreen = () => {
                 <IconButton icon="arrow-down" iconColor={theme.colors.income} size={20} />
               </View>
               <Text variant="labelSmall" style={styles.summaryItemLabel}>
-                Income
+                {t('dashboard.income')}
               </Text>
               <PriceText
                 amount={summary?.totalIncome || 0}
@@ -197,7 +197,7 @@ export const DashboardScreen = () => {
                 variant="titleMedium"
               />
               <Text variant="bodySmall" style={styles.summaryItemCount}>
-                {summary?.incomeCount || 0} transactions
+                {summary?.incomeCount || 0} {t('dashboard.transactions')}
               </Text>
             </View>
 
@@ -206,7 +206,7 @@ export const DashboardScreen = () => {
                 <IconButton icon="arrow-up" iconColor={theme.colors.expense} size={20} />
               </View>
               <Text variant="labelSmall" style={styles.summaryItemLabel}>
-                Expense
+                {t('dashboard.expense')}
               </Text>
               <PriceText
                 amount={summary?.totalExpense || 0}
@@ -214,7 +214,7 @@ export const DashboardScreen = () => {
                 variant="titleMedium"
               />
               <Text variant="bodySmall" style={styles.summaryItemCount}>
-                {summary?.expenseCount || 0} transactions
+                {summary?.expenseCount || 0} {t('dashboard.transactions')}
               </Text>
             </View>
           </View>
@@ -226,7 +226,7 @@ export const DashboardScreen = () => {
           <Card.Content>
             <View style={styles.cardHeader}>
               <Text variant="titleMedium" style={styles.cardTitle}>
-                Top Spending Categories
+                {t('dashboard.topSpendingCategories')}
               </Text>
             </View>
 
@@ -276,13 +276,13 @@ export const DashboardScreen = () => {
           <Card.Content>
             <View style={styles.cardHeader}>
               <Text variant="titleMedium" style={styles.cardTitle}>
-                Recent Transactions
+                {t('dashboard.recentTransactions')}
               </Text>
               <Button
                 mode="text"
                 onPress={() => navigation.navigate('Transactions' as never)}
               >
-                View All
+                {t('common.viewAll')}
               </Button>
             </View>
 
@@ -317,14 +317,11 @@ export const DashboardScreen = () => {
 
       <View style={styles.quickActions}>
         <FAB
-          // mode="contained"
           icon="plus"
           onPress={() => navigation.navigate('AddTransaction' as never)}
           style={styles.actionButton}
-          label='Add Transaction'
-        >
-          {/* Add Transaction */}
-        </FAB>
+          label={t('dashboard.addTransaction')}
+        />
       </View>
     </ScrollView>
 
@@ -334,15 +331,15 @@ export const DashboardScreen = () => {
         onDismiss={handleCancelCustomRange}
         style={styles.dialog}
       >
-        <Dialog.Title>Select Date Range</Dialog.Title>
+        <Dialog.Title>{t('dashboard.selectDateRange')}</Dialog.Title>
         <Dialog.ScrollArea style={styles.scrollArea}>
           <ScrollView contentContainerStyle={styles.dialogScrollContent}>
             <View style={styles.dialogContent}>
               <Text variant="labelMedium" style={styles.dialogLabel}>
-                From Date
+                {t('dashboard.fromDate')}
               </Text>
               <Text variant="bodySmall" style={styles.selectedDateText}>
-                {customStartDate.toLocaleDateString('en-US', { 
+                {customStartDate.toLocaleDateString('vi-VN', { 
                   month: 'short', 
                   day: 'numeric', 
                   year: 'numeric' 
@@ -357,10 +354,10 @@ export const DashboardScreen = () => {
               <Divider style={styles.divider} />
               
               <Text variant="labelMedium" style={styles.dialogLabel}>
-                To Date
+                {t('dashboard.toDate')}
               </Text>
               <Text variant="bodySmall" style={styles.selectedDateText}>
-                {customEndDate.toLocaleDateString('en-US', { 
+                {customEndDate.toLocaleDateString('vi-VN', { 
                   month: 'short', 
                   day: 'numeric', 
                   year: 'numeric' 
@@ -376,8 +373,8 @@ export const DashboardScreen = () => {
           </ScrollView>
         </Dialog.ScrollArea>
         <Dialog.Actions>
-          <Button onPress={handleCancelCustomRange}>Cancel</Button>
-          <Button mode="contained" onPress={handleApplyCustomRange}>Apply</Button>
+          <Button onPress={handleCancelCustomRange}>{t('common.cancel')}</Button>
+          <Button mode="contained" onPress={handleApplyCustomRange}>{t('common.apply')}</Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>

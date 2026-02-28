@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { Text } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { BarChart } from 'react-native-chart-kit';
 import { MonthlyTrend } from '../../../services/dashboardService';
 
@@ -9,13 +10,14 @@ interface MonthlyTrendChartProps {
 }
 
 export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) => {
+  const { t } = useTranslation();
   const screenWidth = Dimensions.get('window').width;
 
   if (data.length === 0) {
     return (
       <View style={styles.emptyContainer}>
         <Text variant="bodyMedium" style={styles.emptyText}>
-          No data available
+          {t('common.noDataAvailable')}
         </Text>
       </View>
     );
@@ -24,7 +26,7 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) =>
   // Format month labels (e.g., "2024-02" -> "Feb")
   const labels = data.map((item) => {
     const [year, month] = item.month.split('-');
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthNames = ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'];
     return monthNames[parseInt(month) - 1];
   });
 
@@ -33,14 +35,14 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) =>
     datasets: [
       {
         data: data.map((item) => item.income),
-        color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`, // Green for income
+        color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
       },
       {
         data: data.map((item) => item.expense),
-        color: (opacity = 1) => `rgba(244, 67, 54, ${opacity})`, // Red for expense
+        color: (opacity = 1) => `rgba(244, 67, 54, ${opacity})`,
       },
     ],
-    legend: ['Income', 'Expense'],
+    legend: [t('dashboard.income'), t('dashboard.expense')],
   };
 
   const chartConfig = {
