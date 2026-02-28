@@ -28,7 +28,9 @@
     "createSuccess": "Đã tạo thành công",
     "yes": "Có",
     "no": "Không",
-    "noResults": "Không tìm thấy kết quả"
+    "noResults": "Không tìm thấy kết quả",
+    "viewAll": "Xem tất cả",
+    "noDataAvailable": "Không có dữ liệu"
   },
   "auth": {
     "login": "Đăng nhập",
@@ -78,7 +80,19 @@
     "to": "Đến",
     "spent": "Đã chi",
     "remaining": "Còn lại",
-    "of": "của"
+    "of": "của",
+    "loadingDashboard": "Đang tải trang tổng quan...",
+    "thisMonth": "Tháng này",
+    "thisYear": "Năm nay",
+    "customRange": "Khoảng tùy chỉnh",
+    "allTime": "Tất cả",
+    "summary": "Tóm tắt",
+    "netBalance": "Số dư ròng",
+    "transactions": "giao dịch",
+    "topSpendingCategories": "Danh mục chi tiêu hàng đầu",
+    "addTransaction": "Thêm giao dịch",
+    "fromDate": "Từ ngày",
+    "toDate": "Đến ngày"
   },
   "transactions": {
     "title": "Giao dịch",

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { Text } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { PieChart } from 'react-native-chart-kit';
 import { CategorySummary } from '../../../services/dashboardService';
 
@@ -10,13 +11,14 @@ interface CategoryPieChartProps {
 }
 
 export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data, currency }) => {
+  const { t } = useTranslation();
   const screenWidth = Dimensions.get('window').width;
 
   if (data.length === 0) {
     return (
       <View style={styles.emptyContainer}>
         <Text variant="bodyMedium" style={styles.emptyText}>
-          No data available
+          {t('common.noDataAvailable')}
         </Text>
       </View>
     );

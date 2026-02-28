@@ -28,7 +28,31 @@
     "createSuccess": "Created successfully",
     "yes": "Yes",
     "no": "No",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "viewAll": "View All",
+    "noDataAvailable": "No data available"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "loadingDashboard": "Loading dashboard...",
+    "month": "Month",
+    "year": "Year",
+    "custom": "Custom",
+    "thisMonth": "This Month",
+    "thisYear": "This Year",
+    "customRange": "Custom Range",
+    "allTime": "All Time",
+    "summary": "Summary",
+    "netBalance": "Net Balance",
+    "income": "Income",
+    "expense": "Expense",
+    "transactions": "transactions",
+    "topSpendingCategories": "Top Spending Categories",
+    "recentTransactions": "Recent Transactions",
+    "addTransaction": "Add Transaction",
+    "selectDateRange": "Select Date Range",
+    "fromDate": "From Date",
+    "toDate": "To Date"
   },
   "auth": {
     "login": "Login",

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Text, IconButton, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 
 interface CalendarPickerProps {
   selectedDate: Date;
@@ -19,11 +20,30 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({
 }) => {
   const theme = useTheme();
   const [currentMonth, setCurrentMonth] = useState(selectedDate);
+  const { t } = useTranslation();
 
-  const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  const daysOfWeek = [
+    t('calendar.sunday'),
+    t('calendar.monday'),
+    t('calendar.tuesday'),
+    t('calendar.wednesday'),
+    t('calendar.thursday'),
+    t('calendar.friday'),
+    t('calendar.saturday'),
+  ];
   const monthNames = [
-    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+    t('calendar.january'),
+    t('calendar.february'),
+    t('calendar.march'),
+    t('calendar.april'),
+    t('calendar.may'),
+    t('calendar.june'),
+    t('calendar.july'),
+    t('calendar.august'),
+    t('calendar.september'),
+    t('calendar.october'),
+    t('calendar.november'),
+    t('calendar.december')
   ];
 
   const getDaysInMonth = (date: Date) => {
@@ -51,10 +71,10 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({
 
   const isDateDisabled = (date: Date | null): boolean => {
     if (!date) return true;
-    
+
     if (minDate && date < minDate) return true;
     if (maxDate && date > maxDate) return true;
-    
+
     return false;
   };
 
@@ -123,7 +143,7 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({
         {daysOfWeek.map((day) => (
           <View key={day} style={styles.dayOfWeekCell}>
             <Text variant="labelSmall" style={styles.dayOfWeekText}>
-              {day.substring(0, 1)}
+              {day.substring(0, 2)}
             </Text>
           </View>
         ))}
