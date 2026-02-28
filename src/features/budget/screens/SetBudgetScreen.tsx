@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text, Button, SegmentedButtons, Snackbar, useTheme } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { CategorySelector } from '../../categories/components/CategorySelector';
 import { AmountInput } from '../../transactions/components/AmountInput';
 import { budgetService } from '../../../services/budgetService';
@@ -15,6 +16,7 @@ type SetBudgetScreenProps = {
 };
 
 export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { fetchBudgetUsage } = useBudgetStore();
   const { profile, fetchProfile } = useUserStore();
@@ -42,7 +44,7 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
 
     if (!amount || parseFloat(amount) <= 0) {
       setAmountError(true);
-      setError('Please enter a valid amount');
+      setError(t('budgets.amountRequired'));
       isValid = false;
     } else {
       setAmountError(false);
@@ -50,7 +52,7 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
 
     if (!selectedCategory) {
       setCategoryError(true);
-      if (isValid) setError('Please select a category');
+      if (isValid) setError(t('budgets.categoryRequired'));
       isValid = false;
     } else {
       setCategoryError(false);
@@ -72,12 +74,15 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
       
       if (exists) {
         Alert.alert(
-          'Budget Exists',
-          `A ${period} budget already exists for ${selectedCategory!.name}. Do you want to update it?`,
+          t('budgets.budgetExists'),
+          t('budgets.budgetExistsMessage', { 
+            period: period === 'monthly' ? t('budgets.monthly').toLowerCase() : t('budgets.yearly').toLowerCase(), 
+            category: selectedCategory!.name 
+          }),
           [
-            { text: 'Cancel', style: 'cancel' },
+            { text: t('common.cancel'), style: 'cancel' },
             {
-              text: 'Update',
+              text: t('budgets.update'),
               onPress: async () => {
                 // For simplicity, create a new one (should ideally update the existing)
                 await createBudget();
@@ -91,7 +96,7 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
 
       await createBudget();
     } catch (err: any) {
-      setError(err.message || 'Failed to set budget');
+      setError(err.message || t('budgets.budgetSetError'));
       setLoading(false);
     }
   };
@@ -111,7 +116,7 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
       // Refresh budget usage
       await fetchBudgetUsage(period);
 
-      setSuccess('Budget set successfully!');
+      setSuccess(t('budgets.budgetSetSuccess'));
 
       setTimeout(() => {
         navigation.goBack();
@@ -137,21 +142,21 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.scrollContent}>
       <View style={styles.form}>
         <Text variant="titleMedium" style={styles.title}>
-          Set a Budget Limit
+          {t('budgets.setBudgetLimit')}
         </Text>
         <Text variant="bodyMedium" style={styles.subtitle}>
-          Choose a category and set a spending limit to track your expenses.
+          {t('budgets.setBudgetDescription')}
         </Text>
 
         <Text variant="labelLarge" style={styles.label}>
-          Budget Period
+          {t('budgets.budgetPeriod')}
         </Text>
         <SegmentedButtons
           value={period}
           onValueChange={(value) => setPeriod(value as any)}
           buttons={[
-            { value: 'monthly', label: 'Monthly' },
-            { value: 'yearly', label: 'Yearly' },
+            { value: 'monthly', label: t('budgets.monthly') },
+            { value: 'yearly', label: t('budgets.yearly') },
           ]}
           style={styles.segmentedButtons}
         />
@@ -173,22 +178,22 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
         {selectedCategory && amount && (
           <View style={[styles.summary, { backgroundColor: theme.colors.surface }]}>
             <Text variant="titleSmall" style={styles.summaryLabel}>
-              Summary
+              {t('budgets.summary')}
             </Text>
             <View style={styles.summaryRow}>
-              <Text variant="bodyMedium">Category:</Text>
+              <Text variant="bodyMedium">{t('budgets.category')}:</Text>
               <Text variant="bodyMedium" style={styles.summaryValue}>
                 {selectedCategory.name}
               </Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text variant="bodyMedium">Period:</Text>
+              <Text variant="bodyMedium">{t('budgets.period')}:</Text>
               <Text variant="bodyMedium" style={styles.summaryValue}>
-                {period === 'monthly' ? 'Monthly' : 'Yearly'}
+                {period === 'monthly' ? t('budgets.monthly') : t('budgets.yearly')}
               </Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text variant="bodyMedium">Budget Limit:</Text>
+              <Text variant="bodyMedium">{t('budgets.budgetLimit')}:</Text>
               <Text variant="titleMedium" style={[styles.summaryValue, { color: theme.colors.primary }]}>
                 {formatCurrency(parseFloat(amount || '0'), currency)}
               </Text>
@@ -203,7 +208,7 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
             disabled={loading}
             style={styles.cancelButton}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             mode="contained"
@@ -212,7 +217,7 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
             disabled={loading}
             style={styles.submitButton}
           >
-            Set Budget
+            {t('budgets.setBudget')}
           </Button>
         </View>
       </View>
@@ -222,7 +227,7 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
         onDismiss={() => setError('')}
         duration={3000}
         action={{
-          label: 'Dismiss',
+          label: t('common.close'),
           onPress: () => setError(''),
         }}
       >
