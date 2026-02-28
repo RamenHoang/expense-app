@@ -5,30 +5,77 @@ import { transactionService } from '../services/transactionService';
 interface TransactionState {
   transactions: TransactionWithCategory[];
   isLoading: boolean;
+  isLoadingMore: boolean;
+  hasMore: boolean;
   error: string | null;
   filters: TransactionFilters;
-  fetchTransactions: (filters?: TransactionFilters) => Promise<void>;
+  currentOffset: number;
+  pageSize: number;
+  fetchTransactions: (filters?: TransactionFilters, reset?: boolean) => Promise<void>;
+  loadMoreTransactions: () => Promise<void>;
   addTransaction: (transaction: TransactionWithCategory) => void;
   updateTransaction: (id: string, transaction: Partial<TransactionWithCategory>) => void;
   removeTransaction: (id: string) => void;
   setFilters: (filters: TransactionFilters) => void;
   clearError: () => void;
+  resetPagination: () => void;
 }
 
 export const useTransactionStore = create<TransactionState>((set, get) => ({
   transactions: [],
   isLoading: false,
+  isLoadingMore: false,
+  hasMore: true,
   error: null,
   filters: {},
+  currentOffset: 0,
+  pageSize: 30,
 
-  fetchTransactions: async (filters?: TransactionFilters) => {
+  fetchTransactions: async (filters?: TransactionFilters, reset = true) => {
     set({ isLoading: true, error: null });
     try {
       const newFilters = filters || get().filters;
-      const transactions = await transactionService.getTransactions(newFilters);
-      set({ transactions, filters: newFilters, isLoading: false });
+      const { pageSize } = get();
+      
+      const transactions = await transactionService.getTransactions({
+        ...newFilters,
+        limit: pageSize,
+        offset: reset ? 0 : undefined,
+      });
+      
+      set({ 
+        transactions, 
+        filters: newFilters, 
+        isLoading: false,
+        currentOffset: reset ? pageSize : get().currentOffset,
+        hasMore: transactions.length === pageSize,
+      });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
+    }
+  },
+
+  loadMoreTransactions: async () => {
+    const { isLoadingMore, hasMore, currentOffset, pageSize, filters, transactions } = get();
+    
+    if (isLoadingMore || !hasMore) return;
+
+    set({ isLoadingMore: true, error: null });
+    try {
+      const moreTransactions = await transactionService.getTransactions({
+        ...filters,
+        limit: pageSize,
+        offset: currentOffset,
+      });
+
+      set({
+        transactions: [...transactions, ...moreTransactions],
+        currentOffset: currentOffset + pageSize,
+        hasMore: moreTransactions.length === pageSize,
+        isLoadingMore: false,
+      });
+    } catch (error: any) {
+      set({ error: error.message, isLoadingMore: false });
     }
   },
 
@@ -65,4 +112,6 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   },
 
   clearError: () => set({ error: null }),
+
+  resetPagination: () => set({ currentOffset: 0, hasMore: true }),
 }));
