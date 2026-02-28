@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, Button, TextInput, Snackbar, ActivityIndicator } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../config/supabase';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../../types/navigation';
@@ -11,6 +12,7 @@ type LoginScreenProps = {
 };
 
 export const LoginScreen = ({ navigation }: LoginScreenProps) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -65,19 +67,19 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
 
   const validateForm = () => {
     if (!email.trim()) {
-      setError('Email is required');
+      setError(t('auth.emailRequired'));
       return false;
     }
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setError('Please enter a valid email');
+      setError(t('auth.invalidEmail'));
       return false;
     }
     if (!password) {
-      setError('Password is required');
+      setError(t('auth.passwordRequired'));
       return false;
     }
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('auth.passwordTooShort'));
       return false;
     }
     return true;
@@ -98,7 +100,7 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
       if (error) throw error;
       // Navigation handled by auth state change
     } catch (err: any) {
-      setError(err.message || 'Failed to login');
+      setError(err.message || t('auth.loginError'));
     } finally {
       setLoading(false);
     }
@@ -111,13 +113,13 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text variant="displaySmall" style={styles.title}>Welcome Back</Text>
-          <Text variant="bodyLarge" style={styles.subtitle}>Sign in to continue</Text>
+          <Text variant="displaySmall" style={styles.title}>{t('auth.login')}</Text>
+          <Text variant="bodyLarge" style={styles.subtitle}>{t('auth.signIn')}</Text>
         </View>
 
         <View style={styles.form}>
           <TextInput
-            label="Email"
+            label={t('auth.email')}
             value={email}
             onChangeText={setEmail}
             mode="outlined"
@@ -129,7 +131,7 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
           />
 
           <TextInput
-            label="Password"
+            label={t('auth.password')}
             value={password}
             onChangeText={setPassword}
             mode="outlined"
@@ -152,7 +154,7 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
             disabled={loading}
             style={styles.forgotButton}
           >
-            Forgot Password?
+            {t('auth.forgotPassword')}
           </Button>
 
           <Button
@@ -162,18 +164,18 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
             disabled={loading}
             style={styles.loginButton}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {t('auth.login')}
           </Button>
 
           <View style={styles.registerContainer}>
-            <Text variant="bodyMedium">Don't have an account? </Text>
+            <Text variant="bodyMedium">{t('auth.noAccount')} </Text>
             <Button
               mode="text"
               onPress={() => navigation.navigate('Register')}
               disabled={loading}
               compact
             >
-              Sign Up
+              {t('auth.signUp')}
             </Button>
           </View>
         </View>
@@ -184,7 +186,7 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
         onDismiss={() => setError('')}
         duration={3000}
         action={{
-          label: 'Dismiss',
+          label: t('common.close'),
           onPress: () => setError(''),
         }}
       >
