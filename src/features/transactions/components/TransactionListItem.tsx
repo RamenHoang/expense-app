@@ -1,6 +1,7 @@
 import React, { useState, memo } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { List, IconButton, Dialog, Button, Portal, Text, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { TransactionWithCategory } from '../../../types/transaction';
 import { transactionService } from '../../../services/transactionService';
 import { useTransactionStore } from '../../../store/transactionStore';
@@ -15,6 +16,7 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
   transaction,
   onEdit,
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const removeTransaction = useTransactionStore((state) => state.removeTransaction);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
@@ -33,7 +35,7 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
       removeTransaction(transaction.id);
       setDeleteDialogVisible(false);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to delete transaction');
+      Alert.alert(t('common.error'), error.message || t('common.failedToDelete'));
     } finally {
       setIsDeleting(false);
     }
@@ -50,7 +52,7 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
     return {
       icon: transaction.type === 'income' ? 'cash-plus' : 'cash-minus',
       color: transaction.type === 'income' ? theme.colors.income : theme.colors.expense,
-      name: 'Uncategorized',
+      name: t('common.uncategorized'),
     };
   };
 
@@ -60,7 +62,7 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
     <>
       <List.Item
         title={categoryInfo.name}
-        description={transaction.note || 'No note'}
+        description={transaction.note || t('common.noNote')}
         left={(props) => (
           <List.Icon
             {...props}
@@ -99,24 +101,24 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
           visible={deleteDialogVisible}
           onDismiss={() => setDeleteDialogVisible(false)}
         >
-          <Dialog.Title>Delete Transaction</Dialog.Title>
+          <Dialog.Title>{t('transactions.deleteTransaction')}</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium">
-              Are you sure you want to delete this transaction?
+              {t('transactions.confirmDelete')}
             </Text>
             <View style={[styles.transactionDetails, { backgroundColor: theme.colors.surfaceVariant }]}>
               <View style={styles.detailRow}>
                 <Text variant="bodyMedium" style={styles.detailText}>
-                  Amount:{' '}
+                  {t('common.amount')}:{' '}
                 </Text>
                 <PriceText amount={transaction.amount} variant="bodyMedium" />
               </View>
               <Text variant="bodyMedium" style={styles.detailText}>
-                Category: {categoryInfo.name}
+                {t('common.category')}: {categoryInfo.name}
               </Text>
               {transaction.note && (
                 <Text variant="bodyMedium" style={styles.detailText}>
-                  Note: {transaction.note}
+                  {t('common.note')}: {transaction.note}
                 </Text>
               )}
             </View>
@@ -126,7 +128,7 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
               onPress={() => setDeleteDialogVisible(false)}
               disabled={isDeleting}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onPress={handleDelete}
@@ -134,7 +136,7 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
               disabled={isDeleting}
               textColor={theme.colors.error}
             >
-              Delete
+              {t('common.delete')}
             </Button>
           </Dialog.Actions>
         </Dialog>

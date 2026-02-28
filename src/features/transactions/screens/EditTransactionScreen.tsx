@@ -16,6 +16,7 @@ import {
   Snackbar,
   useTheme,
 } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { CategorySelector } from '../../categories/components/CategorySelector';
@@ -35,6 +36,7 @@ export const EditTransactionScreen = ({
   navigation,
   route,
 }: EditTransactionScreenProps) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { transactionId } = route.params;
   const updateTransactionInStore = useTransactionStore((state) => state.updateTransaction);
@@ -79,7 +81,7 @@ export const EditTransactionScreen = ({
         });
       }
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Failed to load transaction');
+      Alert.alert(t('common.error'), err.message || t('transactions.failedToLoadTransaction'));
       navigation.goBack();
     } finally {
       setLoading(false);
