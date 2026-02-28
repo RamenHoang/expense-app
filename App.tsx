@@ -10,6 +10,7 @@ import { useAuthStore } from './src/store/authStore';
 import { useThemeStore } from './src/store/themeStore';
 import { lightTheme, darkTheme } from './src/theme/theme';
 import { OnboardingScreen } from './src/features/onboarding';
+import './src/i18n';
 
 const queryClient = new QueryClient({
   defaultOptions: {
