@@ -147,13 +147,15 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
 export const TransactionListItem = memo(
   TransactionListItemComponent,
   (prevProps, nextProps) => {
-    // Only re-render if transaction data actually changed
+    // Return true if props are equal (SKIP re-render)
+    // Return false if props changed (DO re-render)
     return (
       prevProps.transaction.id === nextProps.transaction.id &&
       prevProps.transaction.amount === nextProps.transaction.amount &&
       prevProps.transaction.note === nextProps.transaction.note &&
       prevProps.transaction.transaction_date === nextProps.transaction.transaction_date &&
-      prevProps.transaction.type === nextProps.transaction.type
+      prevProps.transaction.type === nextProps.transaction.type &&
+      prevProps.transaction.category?.id === nextProps.transaction.category?.id
     );
   }
 );
