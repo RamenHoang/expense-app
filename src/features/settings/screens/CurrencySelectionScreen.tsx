@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text, List, Searchbar, RadioButton, Button, ActivityIndicator, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useUserStore } from '../../../store/userStore';
 import { userService } from '../../../services/userService';
@@ -29,6 +30,7 @@ const CURRENCIES = [
 ];
 
 export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenProps) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { profile, fetchProfile, updateProfile } = useUserStore();
   const [searchQuery, setSearchQuery] = useState('');
@@ -61,12 +63,12 @@ export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenP
       await fetchProfile();
       
       Alert.alert(
-        'Currency Updated',
-        `Your currency has been changed to ${selectedCurrency}`,
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
+        t('settings.currencyUpdated'),
+        `${t('settings.currency')}: ${selectedCurrency}`,
+        [{ text: t('common.confirm'), onPress: () => navigation.goBack() }]
       );
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to update currency');
+      Alert.alert(t('common.error'), error.message || t('settings.failedToUpdateCurrency'));
     } finally {
       setLoading(false);
     }
@@ -75,7 +77,7 @@ export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenP
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Searchbar
-        placeholder="Search currencies"
+        placeholder={t('common.search')}
         onChangeText={setSearchQuery}
         value={searchQuery}
         style={styles.searchBar}
@@ -114,7 +116,7 @@ export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenP
         {filteredCurrencies.length === 0 && (
           <View style={styles.emptyState}>
             <Text variant="bodyMedium" style={styles.emptyText}>
-              No currencies found
+              {t('common.noResults', { defaultValue: 'Không tìm thấy kết quả' })}
             </Text>
           </View>
         )}
@@ -127,7 +129,7 @@ export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenP
           disabled={loading}
           style={styles.cancelButton}
         >
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button
           mode="contained"
@@ -136,7 +138,7 @@ export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenP
           disabled={loading || selectedCurrency === profile?.currency}
           style={styles.saveButton}
         >
-          Save
+          {t('common.save')}
         </Button>
       </View>
     </View>
