@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { Platform } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -54,7 +55,11 @@ export default function App() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <PaperProvider theme={theme}>
-          <StatusBar style={isDarkMode ? "light" : "dark"} />
+          <StatusBar 
+            style={isDarkMode ? "light" : "dark"}
+            backgroundColor={theme.colors.surface}
+            translucent={false}
+          />
           {showOnboarding ? (
             <OnboardingScreen onComplete={handleOnboardingComplete} />
           ) : (

@@ -26,6 +26,9 @@ export const MainNavigator = () => {
           backgroundColor: theme.colors.surface,
         },
         headerTintColor: theme.colors.onSurface,
+        sceneStyle: {
+          backgroundColor: theme.colors.background,
+        },
       }}
     >
       <Tab.Screen
