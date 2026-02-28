@@ -69,27 +69,27 @@ export const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
 
   const validateForm = () => {
     if (!fullName.trim()) {
-      setError('Full name is required');
+      setError('Vui lòng nhập họ tên');
       return false;
     }
     if (!email.trim()) {
-      setError('Email is required');
+      setError('Vui lòng nhập email');
       return false;
     }
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setError('Please enter a valid email');
+      setError('Vui lòng nhập email hợp lệ');
       return false;
     }
     if (!password) {
-      setError('Password is required');
+      setError('Vui lòng nhập mật khẩu');
       return false;
     }
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError('Mật khẩu phải có ít nhất 6 ký tự');
       return false;
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Mật khẩu không khớp');
       return false;
     }
     return true;
@@ -116,13 +116,13 @@ export const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
       if (error) throw error;
 
       if (data.user) {
-        setSuccess('Account created successfully! Please check your email to verify.');
+        setSuccess('Tạo tài khoản thành công! Vui lòng kiểm tra email để xác minh.');
         setTimeout(() => {
           navigation.navigate('Login');
         }, 2000);
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to create account');
+      setError(err.message || 'Không thể tạo tài khoản');
     } finally {
       setLoading(false);
     }
@@ -135,13 +135,13 @@ export const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text variant="displaySmall" style={styles.title}>Create Account</Text>
-          <Text variant="bodyLarge" style={styles.subtitle}>Sign up to get started</Text>
+          <Text variant="displaySmall" style={styles.title}>Tạo Tài Khoản</Text>
+          <Text variant="bodyLarge" style={styles.subtitle}>Đăng ký để bắt đầu</Text>
         </View>
 
         <View style={styles.form}>
           <TextInput
-            label="Full Name"
+            label="Họ và tên"
             value={fullName}
             onChangeText={setFullName}
             mode="outlined"
@@ -164,7 +164,7 @@ export const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
           />
 
           <TextInput
-            label="Password"
+            label="Mật khẩu"
             value={password}
             onChangeText={setPassword}
             mode="outlined"
@@ -182,7 +182,7 @@ export const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
           />
 
           <TextInput
-            label="Confirm Password"
+            label="Xác nhận mật khẩu"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             mode="outlined"
@@ -206,18 +206,18 @@ export const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
             disabled={loading}
             style={styles.registerButton}
           >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? 'Đang tạo tài khoản...' : 'Đăng ký'}
           </Button>
 
           <View style={styles.loginContainer}>
-            <Text variant="bodyMedium">Already have an account? </Text>
+            <Text variant="bodyMedium">Đã có tài khoản? </Text>
             <Button
               mode="text"
               onPress={() => navigation.navigate('Login')}
               disabled={loading}
               compact
             >
-              Sign In
+              Đăng nhập
             </Button>
           </View>
         </View>
@@ -228,7 +228,7 @@ export const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
         onDismiss={() => setError('')}
         duration={3000}
         action={{
-          label: 'Dismiss',
+          label: 'Đóng',
           onPress: () => setError(''),
         }}
       >

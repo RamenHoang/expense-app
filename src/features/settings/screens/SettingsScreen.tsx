@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { Text, List, Avatar, Divider, Dialog, Button, Portal, Switch, useTheme } from 'react-native-paper';
+import { Text, List, Avatar, Divider, Dialog, Button, Portal, Switch, useTheme, RadioButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../../store/authStore';
@@ -10,7 +10,7 @@ import { exportService } from '../../../services/exportService';
 import { useNavigation } from '@react-navigation/native';
 
 export const SettingsScreen = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigation = useNavigation();
   const theme = useTheme();
   const { user, signOut } = useAuthStore();
@@ -18,8 +18,10 @@ export const SettingsScreen = () => {
   const { isDarkMode, toggleTheme } = useThemeStore();
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
   const [exportDialogVisible, setExportDialogVisible] = useState(false);
+  const [languageDialogVisible, setLanguageDialogVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
 
   useEffect(() => {
     if (!profile) {
@@ -93,6 +95,29 @@ export const SettingsScreen = () => {
     );
   };
 
+  const handleChangeLanguage = async (language: string) => {
+    try {
+      await i18n.changeLanguage(language);
+      setSelectedLanguage(language);
+      await AsyncStorage.setItem('user_language', language);
+      setLanguageDialogVisible(false);
+      Alert.alert(t('common.success'), t('settings.languageChanged'));
+    } catch (error) {
+      Alert.alert(t('common.error'), t('settings.languageChangeError'));
+    }
+  };
+
+  const getLanguageName = (code: string) => {
+    switch (code) {
+      case 'en':
+        return 'English';
+      case 'vi':
+        return 'Tiếng Việt';
+      default:
+        return code;
+    }
+  };
+
   const getInitials = (name?: string) => {
     if (!name) return 'U';
     return name
@@ -148,6 +173,13 @@ export const SettingsScreen = () => {
       {/* Appearance Settings */}
       <List.Section>
         <List.Subheader>{t('settings.appearance')}</List.Subheader>
+        <List.Item
+          title={t('settings.language')}
+          description={getLanguageName(i18n.language)}
+          left={(props) => <List.Icon {...props} icon="translate" />}
+          right={(props) => <List.Icon {...props} icon="chevron-right" />}
+          onPress={() => setLanguageDialogVisible(true)}
+        />
         <List.Item
           title={t('settings.darkMode')}
           description={isDarkMode ? t('settings.darkModeEnabled') : t('settings.darkModeDisabled')}
@@ -238,6 +270,22 @@ export const SettingsScreen = () => {
           <Dialog.Actions>
             <Button onPress={() => setExportDialogVisible(false)} disabled={exporting}>
               {t('common.cancel')}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        {/* Language Selection Dialog */}
+        <Dialog visible={languageDialogVisible} onDismiss={() => setLanguageDialogVisible(false)}>
+          <Dialog.Title>{t('settings.selectLanguage')}</Dialog.Title>
+          <Dialog.Content>
+            <RadioButton.Group onValueChange={handleChangeLanguage} value={selectedLanguage}>
+              <RadioButton.Item label="English" value="en" />
+              <RadioButton.Item label="Tiếng Việt" value="vi" />
+            </RadioButton.Group>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setLanguageDialogVisible(false)}>
+              {t('common.close')}
             </Button>
           </Dialog.Actions>
         </Dialog>
