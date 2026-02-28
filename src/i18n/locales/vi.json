@@ -27,7 +27,8 @@
     "updateSuccess": "Đã cập nhật thành công",
     "createSuccess": "Đã tạo thành công",
     "yes": "Có",
-    "no": "Không"
+    "no": "Không",
+    "noResults": "Không tìm thấy kết quả"
   },
   "auth": {
     "login": "Đăng nhập",
