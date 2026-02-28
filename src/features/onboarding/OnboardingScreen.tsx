@@ -17,29 +17,29 @@ interface Slide {
 const slides: Slide[] = [
   {
     key: '1',
-    title: 'Welcome to Personal Finance Manager',
-    text: 'Take control of your finances with easy expense tracking',
+    title: 'Chào mừng đến với Quản Lý Tài Chính Cá Nhân',
+    text: 'Kiểm soát tài chính của bạn với tính năng theo dõi chi tiêu dễ dàng',
     icon: '💰',
     backgroundColor: '#6366f1',
   },
   {
     key: '2',
-    title: 'Track Every Transaction',
-    text: 'Easily log income and expenses with categories and notes',
+    title: 'Theo Dõi Mọi Giao Dịch',
+    text: 'Dễ dàng ghi lại thu nhập và chi tiêu với danh mục và ghi chú',
     icon: '💸',
     backgroundColor: '#8b5cf6',
   },
   {
     key: '3',
-    title: 'Visual Insights',
-    text: 'See where your money goes with beautiful charts and reports',
+    title: 'Thống Kê Trực Quan',
+    text: 'Xem tiền của bạn đi đâu với biểu đồ và báo cáo đẹp mắt',
     icon: '📊',
     backgroundColor: '#06b6d4',
   },
   {
     key: '4',
-    title: 'Set Budgets & Goals',
-    text: 'Stay on track with budget alerts and spending limits',
+    title: 'Đặt Ngân Sách & Mục Tiêu',
+    text: 'Luôn theo dõi với cảnh báo ngân sách và giới hạn chi tiêu',
     icon: '🎯',
     backgroundColor: '#10b981',
   },
@@ -116,7 +116,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
     return (
       <View style={styles.skipButton}>
         <Text style={[styles.skipText, { color: theme.dark ? theme.colors.onBackground : '#fff' }]}>
-          Skip
+          Bỏ qua
         </Text>
       </View>
     );

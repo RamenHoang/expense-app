@@ -60,11 +60,11 @@ export const ForgotPasswordScreen = ({ navigation }: ForgotPasswordScreenProps) 
 
   const validateEmail = () => {
     if (!email.trim()) {
-      setError('Email is required');
+      setError('Vui lòng nhập email');
       return false;
     }
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setError('Please enter a valid email');
+      setError('Vui lòng nhập email hợp lệ');
       return false;
     }
     return true;
@@ -84,12 +84,12 @@ export const ForgotPasswordScreen = ({ navigation }: ForgotPasswordScreenProps) 
 
       if (error) throw error;
 
-      setSuccess('Password reset link sent! Check your email.');
+      setSuccess('Đã gửi liên kết đặt lại mật khẩu! Kiểm tra email của bạn.');
       setTimeout(() => {
         navigation.navigate('Login');
       }, 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to send reset email');
+      setError(err.message || 'Không thể gửi email đặt lại mật khẩu');
     } finally {
       setLoading(false);
     }
@@ -102,9 +102,9 @@ export const ForgotPasswordScreen = ({ navigation }: ForgotPasswordScreenProps) 
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text variant="displaySmall" style={styles.title}>Reset Password</Text>
+          <Text variant="displaySmall" style={styles.title}>Đặt Lại Mật Khẩu</Text>
           <Text variant="bodyLarge" style={styles.subtitle}>
-            Enter your email address and we'll send you a link to reset your password.
+            Nhập địa chỉ email của bạn và chúng tôi sẽ gửi cho bạn liên kết để đặt lại mật khẩu.
           </Text>
         </View>
 
@@ -128,7 +128,7 @@ export const ForgotPasswordScreen = ({ navigation }: ForgotPasswordScreenProps) 
             disabled={loading}
             style={styles.resetButton}
           >
-            {loading ? 'Sending...' : 'Send Reset Link'}
+            {loading ? 'Đang gửi...' : 'Gửi Liên Kết'}
           </Button>
 
           <View style={styles.backContainer}>
@@ -138,7 +138,7 @@ export const ForgotPasswordScreen = ({ navigation }: ForgotPasswordScreenProps) 
               disabled={loading}
               icon="arrow-left"
             >
-              Back to Sign In
+              Quay lại Đăng Nhập
             </Button>
           </View>
         </View>
@@ -149,7 +149,7 @@ export const ForgotPasswordScreen = ({ navigation }: ForgotPasswordScreenProps) 
         onDismiss={() => setError('')}
         duration={3000}
         action={{
-          label: 'Dismiss',
+          label: 'Đóng',
           onPress: () => setError(''),
         }}
       >
