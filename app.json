@@ -40,6 +40,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "scheme": "expenseapp",
     "extra": {
       "eas": {
         "projectId": "ccc707be-1016-4e2f-8f5c-29c7d0b0a43f"
