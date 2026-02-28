@@ -11,6 +11,7 @@ import {
   IconButton,
   useTheme,
 } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { Category, CreateCategoryInput, UpdateCategoryInput } from '../../../types/category';
 import { categoryService } from '../../../services/categoryService';
 import { useCategoryStore } from '../../../store/categoryStore';
@@ -84,6 +85,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   onDismiss,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const { addCategory, updateCategory } = useCategoryStore();
   const [name, setName] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
@@ -188,7 +190,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
   const validateForm = () => {
     if (!name.trim()) {
-      setError('Category name is required');
+      setError(t('categories.categoryNameRequired'));
       return false;
     }
     return true;
@@ -224,7 +226,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       }
       onSuccess();
     } catch (err: any) {
-      setError(err.message || 'Failed to save category');
+      setError(err.message || t('categories.failedToSaveCategory'));
     } finally {
       setLoading(false);
     }
@@ -239,11 +241,11 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       >
         <ScrollView>
           <Text variant="headlineSmall" style={styles.title}>
-            {category ? 'Edit Category' : 'Add Category'}
+            {category ? t('categories.editCategory') : t('categories.addCategory')}
           </Text>
 
           <TextInput
-            label="Category Name"
+            label={t('categories.categoryName')}
             value={name}
             onChangeText={setName}
             mode="outlined"
@@ -253,14 +255,14 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
           />
 
           <Text variant="labelLarge" style={styles.label}>
-            Type
+            {t('categories.type')}
           </Text>
           <SegmentedButtons
             value={type}
             onValueChange={(value) => setType(value as 'income' | 'expense')}
             buttons={[
-              { value: 'income', label: 'Income' },
-              { value: 'expense', label: 'Expense' },
+              { value: 'income', label: t('categories.income') },
+              { value: 'expense', label: t('categories.expense') },
             ]}
             disabled={loading}
             style={styles.segmentedButtons}
@@ -269,7 +271,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
           <Divider style={styles.divider} />
 
           <Text variant="labelLarge" style={styles.label}>
-            Color
+            {t('categories.color')}
           </Text>
           <View style={styles.colorGrid}>
             {CATEGORY_COLORS.map((color) => (
@@ -293,7 +295,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
           <Divider style={styles.divider} />
 
           <Text variant="labelLarge" style={styles.label}>
-            Icon
+            {t('categories.icon')}
           </Text>
           <View style={styles.iconGrid}>
             {CATEGORY_ICONS.map((icon) => (
@@ -323,7 +325,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
           <View style={styles.actions}>
             <Button onPress={onDismiss} disabled={loading}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               mode="contained"
@@ -331,7 +333,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               loading={loading}
               disabled={loading}
             >
-              {category ? 'Update' : 'Create'}
+              {category ? t('common.update') : t('common.create')}
             </Button>
           </View>
         </ScrollView>
