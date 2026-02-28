@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { Text, List, Avatar, Divider, Dialog, Button, Portal, Switch, useTheme } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../../store/authStore';
 import { useUserStore } from '../../../store/userStore';
 import { useThemeStore } from '../../../store/themeStore';
@@ -9,6 +10,7 @@ import { exportService } from '../../../services/exportService';
 import { useNavigation } from '@react-navigation/native';
 
 export const SettingsScreen = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const theme = useTheme();
   const { user, signOut } = useAuthStore();
@@ -31,7 +33,7 @@ export const SettingsScreen = () => {
       await signOut();
       setLogoutDialogVisible(false);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to sign out');
+      Alert.alert(t('common.error'), error.message || t('settings.signOutError'));
     } finally {
       setLoading(false);
     }
@@ -42,9 +44,9 @@ export const SettingsScreen = () => {
     setExporting(true);
     try {
       await exportService.exportAndShareJSON();
-      Alert.alert('Success', 'Data exported successfully!');
+      Alert.alert(t('common.success'), t('settings.exportSuccess'));
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to export data');
+      Alert.alert(t('common.error'), error.message || t('settings.exportError'));
     } finally {
       setExporting(false);
     }
@@ -55,9 +57,9 @@ export const SettingsScreen = () => {
     setExporting(true);
     try {
       await exportService.exportAndShareCSV();
-      Alert.alert('Success', 'Transactions exported as CSV!');
+      Alert.alert(t('common.success'), t('settings.exportCSVSuccess'));
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to export CSV');
+      Alert.alert(t('common.error'), error.message || t('settings.exportError'));
     } finally {
       setExporting(false);
     }
@@ -65,25 +67,25 @@ export const SettingsScreen = () => {
 
   const handleReplayOnboarding = async () => {
     Alert.alert(
-      'Replay Tutorial',
-      'This will show the onboarding tutorial again. You will need to restart the app.',
+      t('settings.replayTutorial'),
+      t('settings.replayTutorialConfirm'),
       [
         {
-          text: 'Cancel',
+          text: t('common.cancel'),
           style: 'cancel',
         },
         {
-          text: 'Confirm',
+          text: t('common.confirm'),
           onPress: async () => {
             try {
               await AsyncStorage.removeItem('onboarding_completed');
               Alert.alert(
-                'Success',
-                'Onboarding reset! Please close and restart the app to see the tutorial.',
+                t('common.success'),
+                t('settings.replayTutorialSuccess'),
                 [{ text: 'OK' }]
               );
             } catch (error) {
-              Alert.alert('Error', 'Failed to reset onboarding');
+              Alert.alert(t('common.error'), t('settings.replayTutorialError'));
             }
           },
         },
@@ -120,22 +122,22 @@ export const SettingsScreen = () => {
 
       {/* Account Settings */}
       <List.Section>
-        <List.Subheader>Account</List.Subheader>
+        <List.Subheader>{t('settings.account')}</List.Subheader>
         <List.Item
-          title="Profile"
-          description="Edit your profile information"
+          title={t('settings.profile')}
+          description={t('settings.editProfileDescription')}
           left={(props) => <List.Icon {...props} icon="account" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
         />
         <List.Item
-          title="Manage Categories"
-          description="Add, edit, or delete categories"
+          title={t('categories.manageCategories')}
+          description={t('settings.manageCategoriesDescription')}
           left={(props) => <List.Icon {...props} icon="tag-multiple" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
           onPress={() => navigation.navigate('Categories' as never)}
         />
         <List.Item
-          title="Currency"
+          title={t('settings.currency')}
           description={profile?.currency || 'USD'}
           left={(props) => <List.Icon {...props} icon="currency-usd" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
@@ -145,10 +147,10 @@ export const SettingsScreen = () => {
       
       {/* Appearance Settings */}
       <List.Section>
-        <List.Subheader>Appearance</List.Subheader>
+        <List.Subheader>{t('settings.appearance')}</List.Subheader>
         <List.Item
-          title="Dark Mode"
-          description={isDarkMode ? "Enabled" : "Disabled"}
+          title={t('settings.darkMode')}
+          description={isDarkMode ? t('settings.darkModeEnabled') : t('settings.darkModeDisabled')}
           left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
           right={(props) => (
             <Switch 
@@ -161,10 +163,10 @@ export const SettingsScreen = () => {
       
       {/* App Settings */}
       <List.Section>
-        <List.Subheader>App</List.Subheader>
+        <List.Subheader>{t('settings.app')}</List.Subheader>
         <List.Item
-          title="Replay Tutorial"
-          description="View the onboarding tutorial again"
+          title={t('settings.replayTutorial')}
+          description={t('settings.replayTutorialDescription')}
           left={(props) => <List.Icon {...props} icon="school" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
           onPress={handleReplayOnboarding}
@@ -173,10 +175,10 @@ export const SettingsScreen = () => {
       
       {/* Data Management */}
       <List.Section>
-        <List.Subheader>Data</List.Subheader>
+        <List.Subheader>{t('settings.data')}</List.Subheader>
         <List.Item
-          title="Export Data"
-          description="Backup your data as JSON or CSV"
+          title={t('settings.exportData')}
+          description={t('settings.exportDataDescription')}
           left={(props) => <List.Icon {...props} icon="download" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
           onPress={() => setExportDialogVisible(true)}
@@ -187,7 +189,7 @@ export const SettingsScreen = () => {
       {/* Sign Out */}
       <List.Section>
         <List.Item
-          title="Sign Out"
+          title={t('settings.signOut')}
           titleStyle={styles.signOutText}
           left={(props) => <List.Icon {...props} icon="logout" color="#d32f2f" />}
           onPress={() => setLogoutDialogVisible(true)}
@@ -197,37 +199,37 @@ export const SettingsScreen = () => {
       {/* Logout Confirmation Dialog */}
       <Portal>
         <Dialog visible={logoutDialogVisible} onDismiss={() => setLogoutDialogVisible(false)}>
-          <Dialog.Title>Sign Out</Dialog.Title>
+          <Dialog.Title>{t('settings.signOut')}</Dialog.Title>
           <Dialog.Content>
-            <Text variant="bodyMedium">Are you sure you want to sign out?</Text>
+            <Text variant="bodyMedium">{t('settings.signOutConfirm')}</Text>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setLogoutDialogVisible(false)} disabled={loading}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button onPress={handleSignOut} loading={loading} disabled={loading}>
-              Sign Out
+              {t('settings.signOut')}
             </Button>
           </Dialog.Actions>
         </Dialog>
 
         {/* Export Format Dialog */}
         <Dialog visible={exportDialogVisible} onDismiss={() => setExportDialogVisible(false)}>
-          <Dialog.Title>Export Data</Dialog.Title>
+          <Dialog.Title>{t('settings.exportData')}</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium" style={{ marginBottom: 16 }}>
-              Choose export format:
+              {t('settings.exportFormat')}
             </Text>
             <List.Item
-              title="JSON (Complete Backup)"
-              description="All data including categories, transactions, and budgets"
+              title={t('settings.exportJSON')}
+              description={t('settings.exportJSONDescription')}
               left={(props) => <List.Icon {...props} icon="code-json" />}
               onPress={handleExportJSON}
               disabled={exporting}
             />
             <List.Item
-              title="CSV (Transactions)"
-              description="Transaction history in spreadsheet format"
+              title={t('settings.exportCSV')}
+              description={t('settings.exportCSVDescription')}
               left={(props) => <List.Icon {...props} icon="file-delimited" />}
               onPress={handleExportCSV}
               disabled={exporting}
@@ -235,7 +237,7 @@ export const SettingsScreen = () => {
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setExportDialogVisible(false)} disabled={exporting}>
-              Cancel
+              {t('common.cancel')}
             </Button>
           </Dialog.Actions>
         </Dialog>
