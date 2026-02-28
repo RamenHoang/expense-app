@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { Text, Card, SegmentedButtons, IconButton } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
 import { dashboardService, CategorySummary, MonthlyTrend } from '../../../services/dashboardService';
 import { CategoryPieChart } from '../../dashboard/components/CategoryPieChart';
@@ -8,6 +9,7 @@ import { MonthlyTrendChart } from '../../dashboard/components/MonthlyTrendChart'
 import { formatCurrency } from '../../../utils/currency';
 
 export const ReportsScreen = () => {
+  const { t } = useTranslation();
   const { profile, fetchProfile } = useUserStore();
   
   const [categoryBreakdown, setCategoryBreakdown] = useState<CategorySummary[]>([]);
@@ -86,7 +88,7 @@ export const ReportsScreen = () => {
   if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
-        <Text variant="bodyLarge">Loading reports...</Text>
+        <Text variant="bodyLarge">{t('reports.loading')}</Text>
       </View>
     );
   }
@@ -105,8 +107,8 @@ export const ReportsScreen = () => {
           value={type}
           onValueChange={(value) => setType(value as any)}
           buttons={[
-            { value: 'expense', label: 'Expenses', icon: 'arrow-up' },
-            { value: 'income', label: 'Income', icon: 'arrow-down' },
+            { value: 'expense', label: t('reports.expenses'), icon: 'arrow-up' },
+            { value: 'income', label: t('reports.income'), icon: 'arrow-down' },
           ]}
         />
       </View>
@@ -117,9 +119,9 @@ export const ReportsScreen = () => {
           value={dateFilter}
           onValueChange={(value) => setDateFilter(value as any)}
           buttons={[
-            { value: '3months', label: '3M' },
-            { value: '6months', label: '6M' },
-            { value: '12months', label: '12M' },
+            { value: '3months', label: '3T' },
+            { value: '6months', label: '6T' },
+            { value: '12months', label: '12T' },
           ]}
         />
       </View>
@@ -128,10 +130,10 @@ export const ReportsScreen = () => {
       <Card style={styles.card}>
         <Card.Content>
           <Text variant="titleMedium" style={styles.cardTitle}>
-            {type === 'expense' ? 'Expenses' : 'Income'} by Category
+            {type === 'expense' ? t('reports.expenses') : t('reports.income')} {t('reports.byCategory')}
           </Text>
           <Text variant="bodyMedium" style={styles.totalAmount}>
-            Total: {formatCurrency(getTotalAmount(), currency)}
+            {t('reports.total')}: {formatCurrency(getTotalAmount(), currency)}
           </Text>
           <CategoryPieChart data={categoryBreakdown.slice(0, 8)} currency={currency} />
         </Card.Content>
@@ -141,7 +143,7 @@ export const ReportsScreen = () => {
       <Card style={styles.card}>
         <Card.Content>
           <Text variant="titleMedium" style={styles.cardTitle}>
-            Detailed Breakdown
+            {t('reports.detailedBreakdown')}
           </Text>
 
           {categoryBreakdown.map((category) => (
@@ -178,7 +180,7 @@ export const ReportsScreen = () => {
                     />
                   </View>
                   <Text variant="bodySmall" style={styles.categoryCount}>
-                    {category.count} transactions
+                    {category.count} {t('reports.transactions')}
                   </Text>
                 </View>
               </View>
@@ -196,7 +198,7 @@ export const ReportsScreen = () => {
           {categoryBreakdown.length === 0 && (
             <View style={styles.emptyState}>
               <Text variant="bodyMedium" style={styles.emptyText}>
-                No {type} transactions in this period
+                {t('transactions.noTransactions')}
               </Text>
             </View>
           )}
@@ -207,7 +209,7 @@ export const ReportsScreen = () => {
       <Card style={styles.card}>
         <Card.Content>
           <Text variant="titleMedium" style={styles.cardTitle}>
-            Monthly Trends
+            {t('reports.monthlyTrends')}
           </Text>
           <MonthlyTrendChart data={monthlyTrends} />
         </Card.Content>

@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-native';
 import { Text, Card, Button, IconButton, SegmentedButtons, FAB, ProgressBar, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
 import { useBudgetStore } from '../../../store/budgetStore';
 import { formatCurrency } from '../../../utils/currency';
 import { useNavigation } from '@react-navigation/native';
 
 export const BudgetScreen = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const theme = useTheme();
   const { profile, fetchProfile } = useUserStore();
@@ -64,7 +66,7 @@ export const BudgetScreen = () => {
   if (isLoading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
-        <Text variant="bodyLarge">Loading budgets...</Text>
+        <Text variant="bodyLarge">{t('budgets.loading')}</Text>
       </View>
     );
   }
@@ -83,8 +85,8 @@ export const BudgetScreen = () => {
             value={period}
             onValueChange={(value) => setPeriod(value as any)}
             buttons={[
-              { value: 'monthly', label: 'Monthly' },
-              { value: 'yearly', label: 'Yearly' },
+              { value: 'monthly', label: t('budgets.monthly') },
+              { value: 'yearly', label: t('budgets.yearly') },
             ]}
           />
         </View>
@@ -93,24 +95,24 @@ export const BudgetScreen = () => {
           <Card style={styles.summaryCard}>
             <Card.Content>
               <Text variant="titleMedium" style={styles.cardTitle}>
-                {period === 'monthly' ? 'This Month' : 'This Year'} Overview
+                {period === 'monthly' ? t('budgets.thisMonth') : t('budgets.thisYear')} {t('budgets.overview')}
               </Text>
 
               <View style={styles.overallStats}>
                 <View style={styles.statItem}>
-                  <Text variant="bodySmall" style={styles.statLabel}>Budget</Text>
+                  <Text variant="bodySmall" style={styles.statLabel}>{t('budgets.budget')}</Text>
                   <Text variant="titleMedium" style={styles.statValue}>
                     {formatCurrency(getTotalBudget(), currency)}
                   </Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text variant="bodySmall" style={styles.statLabel}>Spent</Text>
+                  <Text variant="bodySmall" style={styles.statLabel}>{t('budgets.spent')}</Text>
                   <Text variant="titleMedium" style={[styles.statValue, { color: theme.colors.expense }]}>
                     {formatCurrency(getTotalSpent(), currency)}
                   </Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text variant="bodySmall" style={styles.statLabel}>Remaining</Text>
+                  <Text variant="bodySmall" style={styles.statLabel}>{t('budgets.remaining')}</Text>
                   <Text variant="titleMedium" style={[styles.statValue, { color: theme.colors.income }]}>
                     {formatCurrency(getTotalRemaining(), currency)}
                   </Text>
@@ -119,7 +121,7 @@ export const BudgetScreen = () => {
 
               <View style={styles.overallProgress}>
                 <Text variant="bodyMedium" style={styles.overallPercentage}>
-                  {getOverallPercentage().toFixed(1)}% of total budget used
+                  {getOverallPercentage().toFixed(1)}% {t('budgets.used')}
                 </Text>
                 <ProgressBar
                   progress={Math.min(getOverallPercentage() / 100, 1)}
@@ -143,10 +145,10 @@ export const BudgetScreen = () => {
                   />
                   <View style={styles.budgetDetails}>
                     <Text variant="titleMedium" style={styles.categoryName}>
-                      {item.budget.category?.name || 'Category'}
+                      {item.budget.category?.name || t('budgets.category')}
                     </Text>
                     <Text variant="bodySmall" style={styles.budgetPeriod}>
-                      {period === 'monthly' ? 'Monthly Budget' : 'Yearly Budget'}
+                      {period === 'monthly' ? t('budgets.monthlyBudget') : t('budgets.yearlyBudget')}
                     </Text>
                   </View>
                 </View>
@@ -168,19 +170,19 @@ export const BudgetScreen = () => {
 
               <View style={styles.budgetAmounts}>
                 <View style={styles.amountRow}>
-                  <Text variant="bodyMedium">Budget:</Text>
+                  <Text variant="bodyMedium">{t('budgets.budget')}:</Text>
                   <Text variant="bodyMedium" style={styles.amountValue}>
                     {formatCurrency(item.budget.amount, currency)}
                   </Text>
                 </View>
                 <View style={styles.amountRow}>
-                  <Text variant="bodyMedium">Spent:</Text>
+                  <Text variant="bodyMedium">{t('budgets.spent')}:</Text>
                   <Text variant="bodyMedium" style={[styles.amountValue, { color: theme.colors.expense }]}>
                     {formatCurrency(item.spent, currency)}
                   </Text>
                 </View>
                 <View style={styles.amountRow}>
-                  <Text variant="bodyMedium">Remaining:</Text>
+                  <Text variant="bodyMedium">{t('budgets.remaining')}:</Text>
                   <Text 
                     variant="bodyMedium" 
                     style={[
@@ -196,16 +198,16 @@ export const BudgetScreen = () => {
               <View style={styles.progressContainer}>
                 <View style={styles.progressHeader}>
                   <Text variant="bodySmall" style={styles.progressLabel}>
-                    {item.percentage.toFixed(1)}% used
+                    {item.percentage.toFixed(1)}% {t('budgets.used')}
                   </Text>
                   {item.isOverBudget && (
                     <Text variant="bodySmall" style={[styles.overBudgetText, { color: theme.colors.error }]}>
-                      Over Budget!
+                      {t('budgets.overBudget')}
                     </Text>
                   )}
                   {item.isWarning && !item.isOverBudget && (
                     <Text variant="bodySmall" style={[styles.warningText, { color: theme.colors.warning }]}>
-                      Warning
+                      {t('budgets.warning')}
                     </Text>
                   )}
                 </View>
@@ -225,10 +227,10 @@ export const BudgetScreen = () => {
               <View style={styles.emptyState}>
                 <IconButton icon="wallet-outline" size={64} iconColor="#ccc" />
                 <Text variant="titleMedium" style={styles.emptyTitle}>
-                  No Budgets Set
+                  {t('budgets.noBudgetsSet')}
                 </Text>
                 <Text variant="bodyMedium" style={styles.emptyText}>
-                  Create budgets to track your spending and stay on target.
+                  {t('budgets.noBudgetsDescription')}
                 </Text>
                 <Button
                   mode="contained"
@@ -236,7 +238,7 @@ export const BudgetScreen = () => {
                   style={styles.emptyButton}
                   icon="plus"
                 >
-                  Set Your First Budget
+                  {t('budgets.setFirstBudget')}
                 </Button>
               </View>
             </Card.Content>
@@ -248,7 +250,7 @@ export const BudgetScreen = () => {
         icon="plus"
         style={styles.fab}
         onPress={() => navigation.navigate('SetBudget' as never)}
-        label="Add Budget"
+        label={t('budgets.addBudget')}
       />
     </>
   );
