@@ -332,7 +332,7 @@ export const TransactionListScreen = () => {
             </View>
           ) : null
         }
-        contentContainerStyle={transactions.length === 0 ? styles.emptyContainer : undefined}
+        contentContainerStyle={transactions.length === 0 ? styles.emptyContainer : styles.listContent}
       />
 
       <FAB
@@ -420,6 +420,9 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flexGrow: 1,
+  },
+  listContent: {
+    paddingBottom: 80, // Add padding to prevent FAB from covering items
   },
   emptyState: {
     flex: 1,
