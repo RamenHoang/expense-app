@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { Text, Card, Button, IconButton, SegmentedButtons, FAB, ProgressBar, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
 import { useBudgetStore } from '../../../store/budgetStore';
 import { formatCurrency } from '../../../utils/currency';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { budgetService } from '../../../services/budgetService';
 import { LoadingScreen } from '../../../components/LoadingScreen';
 
@@ -28,6 +28,13 @@ export const BudgetScreen = () => {
   useEffect(() => {
     loadBudgetUsage();
   }, [period]);
+
+  // Reload budget data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadBudgetUsage();
+    }, [period])
+  );
 
   const loadBudgetUsage = async () => {
     setRefreshing(true);

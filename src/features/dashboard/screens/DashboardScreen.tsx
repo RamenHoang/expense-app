@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { Text, Card, Button, IconButton, SegmentedButtons, useTheme, Portal, Dialog, Divider, FAB } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
 import { dashboardService, DashboardSummary, CategorySummary } from '../../../services/dashboardService';
 import { PriceText } from '../../../components/PriceText';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { RangeDatePicker } from '../../../components/RangeDatePicker';
 import { LoadingScreen } from '../../../components/LoadingScreen';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
@@ -36,6 +36,13 @@ export const DashboardScreen = () => {
   useEffect(() => {
     loadDashboardData();
   }, [dateFilter, appliedCustomRange]);
+
+  // Reload data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadDashboardData();
+    }, [dateFilter, appliedCustomRange])
+  );
 
   const getDateRange = () => {
     const endDate = new Date();
