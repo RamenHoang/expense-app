@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Text, Button, SegmentedButtons, Snackbar, useTheme } from 'react-native-paper';
+import { Text, Button, SegmentedButtons, Snackbar, useTheme, IconButton } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { CategorySelector } from '../../categories/components/CategorySelector';
@@ -13,18 +13,27 @@ import { formatCurrency } from '../../../utils/currency';
 
 type SetBudgetScreenProps = {
   navigation: NativeStackNavigationProp<any>;
+  route?: {
+    params?: {
+      budgetId?: string;
+    };
+  };
 };
 
-export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
+export const SetBudgetScreen = ({ navigation, route }: SetBudgetScreenProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { fetchBudgetUsage } = useBudgetStore();
   const { profile, fetchProfile } = useUserStore();
   
+  const budgetId = route?.params?.budgetId;
+  const isEditing = !!budgetId;
+  
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [amount, setAmount] = useState('');
   const [period, setPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [loading, setLoading] = useState(false);
+  const [loadingBudget, setLoadingBudget] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -36,6 +45,56 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
       fetchProfile();
     }
   }, []);
+
+  useEffect(() => {
+    if (isEditing) {
+      loadBudget();
+    }
+  }, [budgetId]);
+
+  const loadBudget = async () => {
+    setLoadingBudget(true);
+    try {
+      const budget = await budgetService.getBudgetById(budgetId!);
+      setAmount(budget.amount.toString());
+      setPeriod(budget.period);
+      if (budget.category) {
+        setSelectedCategory(budget.category as Category);
+      }
+    } catch (err: any) {
+      setError(err.message || t('budgets.loadBudgetError'));
+      setTimeout(() => navigation.goBack(), 2000);
+    } finally {
+      setLoadingBudget(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    Alert.alert(
+      t('budgets.deleteBudget'),
+      t('budgets.confirmDeleteBudget'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            setLoading(true);
+            try {
+              await budgetService.deleteBudget(budgetId!);
+              await fetchBudgetUsage(period);
+              setSuccess(t('budgets.budgetDeleteSuccess'));
+              setTimeout(() => navigation.goBack(), 1000);
+            } catch (err: any) {
+              setError(err.message || t('budgets.budgetDeleteError'));
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const currency = profile?.currency || 'USD';
 
@@ -69,34 +128,58 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
     setSuccess('');
 
     try {
-      // Check if budget already exists
-      const exists = await budgetService.hasBudget(selectedCategory!.id, period);
-      
-      if (exists) {
-        Alert.alert(
-          t('budgets.budgetExists'),
-          t('budgets.budgetExistsMessage', { 
-            period: period === 'monthly' ? t('budgets.monthly').toLowerCase() : t('budgets.yearly').toLowerCase(), 
-            category: selectedCategory!.name 
-          }),
-          [
-            { text: t('common.cancel'), style: 'cancel' },
-            {
-              text: t('budgets.update'),
-              onPress: async () => {
-                // For simplicity, create a new one (should ideally update the existing)
-                await createBudget();
+      if (isEditing) {
+        await updateBudget();
+      } else {
+        // Check if budget already exists
+        const exists = await budgetService.hasBudget(selectedCategory!.id, period);
+        
+        if (exists) {
+          Alert.alert(
+            t('budgets.budgetExists'),
+            t('budgets.budgetExistsMessage', { 
+              period: period === 'monthly' ? t('budgets.monthly').toLowerCase() : t('budgets.yearly').toLowerCase(), 
+              category: selectedCategory!.name 
+            }),
+            [
+              { text: t('common.cancel'), style: 'cancel' },
+              {
+                text: t('budgets.update'),
+                onPress: async () => {
+                  await createBudget();
+                },
               },
-            },
-          ]
-        );
-        setLoading(false);
-        return;
-      }
+            ]
+          );
+          setLoading(false);
+          return;
+        }
 
-      await createBudget();
+        await createBudget();
+      }
     } catch (err: any) {
       setError(err.message || t('budgets.budgetSetError'));
+      setLoading(false);
+    }
+  };
+
+  const updateBudget = async () => {
+    try {
+      await budgetService.updateBudget(budgetId!, {
+        amount: parseFloat(amount),
+      });
+
+      // Refresh budget usage
+      await fetchBudgetUsage(period);
+
+      setSuccess(t('budgets.budgetUpdateSuccess'));
+
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1000);
+    } catch (err: any) {
+      throw err;
+    } finally {
       setLoading(false);
     }
   };
@@ -138,15 +221,36 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
     setAmountError(false);
   };
 
+  if (loadingBudget) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text variant="bodyLarge">{t('budgets.loading')}</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.scrollContent}>
       <View style={styles.form}>
-        <Text variant="titleMedium" style={styles.title}>
-          {t('budgets.setBudgetLimit')}
-        </Text>
-        <Text variant="bodyMedium" style={styles.subtitle}>
-          {t('budgets.setBudgetDescription')}
-        </Text>
+        <View style={styles.header}>
+          <View style={styles.headerText}>
+            <Text variant="titleMedium" style={styles.title}>
+              {isEditing ? t('budgets.editBudget') : t('budgets.setBudgetLimit')}
+            </Text>
+            <Text variant="bodyMedium" style={styles.subtitle}>
+              {isEditing ? t('budgets.editBudgetDescription') : t('budgets.setBudgetDescription')}
+            </Text>
+          </View>
+          {isEditing && (
+            <IconButton
+              icon="delete"
+              iconColor={theme.colors.error}
+              size={24}
+              onPress={handleDelete}
+              disabled={loading}
+            />
+          )}
+        </View>
 
         <Text variant="labelLarge" style={styles.label}>
           {t('budgets.budgetPeriod')}
@@ -159,11 +263,12 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
             { value: 'yearly', label: t('budgets.yearly') },
           ]}
           style={styles.segmentedButtons}
+          disabled={isEditing}
         />
 
         <CategorySelector
           selectedCategoryId={selectedCategory?.id}
-          onSelectCategory={handleCategorySelect}
+          onSelectCategory={isEditing ? () => {} : handleCategorySelect}
           type="expense"
           error={categoryError}
         />
@@ -217,7 +322,7 @@ export const SetBudgetScreen = ({ navigation }: SetBudgetScreenProps) => {
             disabled={loading}
             style={styles.submitButton}
           >
-            {t('budgets.setBudget')}
+            {isEditing ? t('budgets.updateBudget') : t('budgets.setBudget')}
           </Button>
         </View>
       </View>
@@ -250,10 +355,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollContent: {
     padding: 16,
   },
   form: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 24,
+  },
+  headerText: {
     flex: 1,
   },
   title: {
@@ -262,7 +381,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     opacity: 0.7,
-    marginBottom: 24,
   },
   label: {
     marginBottom: 8,

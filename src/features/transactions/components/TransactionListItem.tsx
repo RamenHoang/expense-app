@@ -1,5 +1,5 @@
 import React, { useState, memo } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { List, IconButton, Dialog, Button, Portal, Text, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { TransactionWithCategory } from '../../../types/transaction';
@@ -63,6 +63,7 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
       <List.Item
         title={categoryInfo.name}
         description={transaction.note || t('common.noNote')}
+        onPress={() => onEdit(transaction)}
         left={(props) => (
           <List.Icon
             {...props}

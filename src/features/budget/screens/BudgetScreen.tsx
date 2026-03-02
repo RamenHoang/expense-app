@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { Text, Card, Button, IconButton, SegmentedButtons, FAB, ProgressBar, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
 import { useBudgetStore } from '../../../store/budgetStore';
 import { formatCurrency } from '../../../utils/currency';
 import { useNavigation } from '@react-navigation/native';
+import { budgetService } from '../../../services/budgetService';
 
 export const BudgetScreen = () => {
   const { t } = useTranslation();
@@ -35,6 +36,28 @@ export const BudgetScreen = () => {
 
   const onRefresh = () => {
     loadBudgetUsage();
+  };
+
+  const handleDeleteBudget = (budgetId: string) => {
+    Alert.alert(
+      t('budgets.deleteBudget'),
+      t('budgets.confirmDeleteBudget'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await budgetService.deleteBudget(budgetId);
+              await fetchBudgetUsage(period);
+            } catch (err: any) {
+              Alert.alert(t('common.error'), err.message || t('budgets.budgetDeleteError'));
+            }
+          },
+        },
+      ]
+    );
   };
 
   const currency = profile?.currency || 'USD';
@@ -134,91 +157,107 @@ export const BudgetScreen = () => {
         )}
 
         {budgetUsage.map((item) => (
-          <Card key={item.budget.id} style={styles.budgetCard}>
-            <Card.Content>
-              <View style={styles.budgetHeader}>
-                <View style={styles.budgetInfo}>
-                  <IconButton
-                    icon={item.budget.category?.icon || 'tag'}
-                    iconColor={item.budget.category?.color || '#666'}
-                    size={24}
-                  />
-                  <View style={styles.budgetDetails}>
-                    <Text variant="titleMedium" style={styles.categoryName}>
-                      {item.budget.category?.name || t('budgets.category')}
+          <TouchableOpacity 
+            key={item.budget.id}
+            onPress={() => navigation.navigate('SetBudget' as never, { budgetId: item.budget.id } as never)}
+          >
+            <Card style={styles.budgetCard}>
+              <Card.Content>
+                <View style={styles.budgetHeader}>
+                  <View style={styles.budgetInfo}>
+                    <IconButton
+                      icon={item.budget.category?.icon || 'tag'}
+                      iconColor={item.budget.category?.color || '#666'}
+                      size={24}
+                    />
+                    <View style={styles.budgetDetails}>
+                      <Text variant="titleMedium" style={styles.categoryName}>
+                        {item.budget.category?.name || t('budgets.category')}
+                      </Text>
+                      <Text variant="bodySmall" style={styles.budgetPeriod}>
+                        {period === 'monthly' ? t('budgets.monthlyBudget') : t('budgets.yearlyBudget')}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.budgetHeaderActions}>
+                    {item.isOverBudget && (
+                      <IconButton
+                        icon="alert-circle"
+                        iconColor="#f44336"
+                        size={24}
+                      />
+                    )}
+                    {item.isWarning && !item.isOverBudget && (
+                      <IconButton
+                        icon="alert"
+                        iconColor="#ff9800"
+                        size={24}
+                      />
+                    )}
+                    <IconButton
+                      icon="delete"
+                      iconColor={theme.colors.error}
+                      size={20}
+                      onPress={(e) => {
+                        e?.preventDefault?.();
+                        handleDeleteBudget(item.budget.id);
+                      }}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.budgetAmounts}>
+                  <View style={styles.amountRow}>
+                    <Text variant="bodyMedium">{t('budgets.budget')}:</Text>
+                    <Text variant="bodyMedium" style={styles.amountValue}>
+                      {formatCurrency(item.budget.amount, currency)}
                     </Text>
-                    <Text variant="bodySmall" style={styles.budgetPeriod}>
-                      {period === 'monthly' ? t('budgets.monthlyBudget') : t('budgets.yearlyBudget')}
+                  </View>
+                  <View style={styles.amountRow}>
+                    <Text variant="bodyMedium">{t('budgets.spent')}:</Text>
+                    <Text variant="bodyMedium" style={[styles.amountValue, { color: theme.colors.expense }]}>
+                      {formatCurrency(item.spent, currency)}
+                    </Text>
+                  </View>
+                  <View style={styles.amountRow}>
+                    <Text variant="bodyMedium">{t('budgets.remaining')}:</Text>
+                    <Text 
+                      variant="bodyMedium" 
+                      style={[
+                        styles.amountValue, 
+                        { color: item.remaining >= 0 ? theme.colors.income : theme.colors.expense }
+                      ]}
+                    >
+                      {formatCurrency(item.remaining, currency)}
                     </Text>
                   </View>
                 </View>
-                {item.isOverBudget && (
-                  <IconButton
-                    icon="alert-circle"
-                    iconColor="#f44336"
-                    size={24}
-                  />
-                )}
-                {item.isWarning && !item.isOverBudget && (
-                  <IconButton
-                    icon="alert"
-                    iconColor="#ff9800"
-                    size={24}
-                  />
-                )}
-              </View>
 
-              <View style={styles.budgetAmounts}>
-                <View style={styles.amountRow}>
-                  <Text variant="bodyMedium">{t('budgets.budget')}:</Text>
-                  <Text variant="bodyMedium" style={styles.amountValue}>
-                    {formatCurrency(item.budget.amount, currency)}
-                  </Text>
-                </View>
-                <View style={styles.amountRow}>
-                  <Text variant="bodyMedium">{t('budgets.spent')}:</Text>
-                  <Text variant="bodyMedium" style={[styles.amountValue, { color: theme.colors.expense }]}>
-                    {formatCurrency(item.spent, currency)}
-                  </Text>
-                </View>
-                <View style={styles.amountRow}>
-                  <Text variant="bodyMedium">{t('budgets.remaining')}:</Text>
-                  <Text 
-                    variant="bodyMedium" 
-                    style={[
-                      styles.amountValue, 
-                      { color: item.remaining >= 0 ? theme.colors.income : theme.colors.expense }
-                    ]}
-                  >
-                    {formatCurrency(item.remaining, currency)}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.progressContainer}>
-                <View style={styles.progressHeader}>
-                  <Text variant="bodySmall" style={styles.progressLabel}>
-                    {item.percentage.toFixed(1)}% {t('budgets.used')}
-                  </Text>
-                  {item.isOverBudget && (
-                    <Text variant="bodySmall" style={[styles.overBudgetText, { color: theme.colors.error }]}>
-                      {t('budgets.overBudget')}
+                <View style={styles.progressContainer}>
+                  <View style={styles.progressHeader}>
+                    <Text variant="bodySmall" style={styles.progressLabel}>
+                      {item.percentage.toFixed(1)}% {t('budgets.used')}
                     </Text>
-                  )}
-                  {item.isWarning && !item.isOverBudget && (
-                    <Text variant="bodySmall" style={[styles.warningText, { color: theme.colors.warning }]}>
-                      {t('budgets.warning')}
-                    </Text>
-                  )}
+                    {item.isOverBudget && (
+                      <Text variant="bodySmall" style={[styles.overBudgetText, { color: theme.colors.error }]}>
+                        {t('budgets.overBudget')}
+                      </Text>
+                    )}
+                    {item.isWarning && !item.isOverBudget && (
+                      <Text variant="bodySmall" style={[styles.warningText, { color: theme.colors.warning }]}>
+                        {t('budgets.warning')}
+                      </Text>
+                    )}
+                  </View>
+                  <ProgressBar
+                    progress={Math.min(item.percentage / 100, 1)}
+                    color={getProgressBarColor(item.percentage)}
+                    style={styles.progressBar}
+                  />
                 </View>
-                <ProgressBar
-                  progress={Math.min(item.percentage / 100, 1)}
-                  color={getProgressBarColor(item.percentage)}
-                  style={styles.progressBar}
-                />
-              </View>
-            </Card.Content>
-          </Card>
+              </Card.Content>
+            </Card>
+          </TouchableOpacity>
         ))}
 
         {budgetUsage.length === 0 && (
@@ -320,6 +359,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+  },
+  budgetHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   budgetDetails: {
     flex: 1,

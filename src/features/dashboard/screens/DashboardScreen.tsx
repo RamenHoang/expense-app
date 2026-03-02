@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { Text, Card, Button, IconButton, SegmentedButtons, useTheme, Portal, Dialog, Divider, FAB } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
 import { dashboardService, DashboardSummary, CategorySummary } from '../../../services/dashboardService';
 import { PriceText } from '../../../components/PriceText';
 import { useNavigation } from '@react-navigation/native';
-import { CalendarPicker } from '../../../components/CalendarPicker';
+import { RangeDatePicker } from '../../../components/RangeDatePicker';
 
 export const DashboardScreen = () => {
   const { t } = useTranslation();
@@ -119,6 +119,11 @@ export const DashboardScreen = () => {
     } else {
       setDateFilter(value as any);
     }
+  };
+
+  const handleSelectRange = (start: Date, end: Date) => {
+    setCustomStartDate(start);
+    setCustomEndDate(end);
   };
 
   const handleApplyCustomRange = () => {
@@ -287,7 +292,11 @@ export const DashboardScreen = () => {
             </View>
 
             {recentTransactions.map((transaction) => (
-              <View key={transaction.id} style={styles.transactionItem}>
+              <TouchableOpacity 
+                key={transaction.id} 
+                style={styles.transactionItem}
+                onPress={() => navigation.navigate('EditTransaction' as never, { transactionId: transaction.id } as never)}
+              >
                 <View style={styles.transactionIcon}>
                   <IconButton
                     icon={transaction.category?.icon || 'tag'}
@@ -309,7 +318,7 @@ export const DashboardScreen = () => {
                   variant="titleSmall"
                   showSign
                 />
-              </View>
+              </TouchableOpacity>
             ))}
           </Card.Content>
         </Card>
@@ -331,42 +340,14 @@ export const DashboardScreen = () => {
         onDismiss={handleCancelCustomRange}
         style={styles.dialog}
       >
-        <Dialog.Title>{t('dashboard.selectDateRange')}</Dialog.Title>
+        <Dialog.Title>{t('dateFilter.selectRange')}</Dialog.Title>
         <Dialog.ScrollArea style={styles.scrollArea}>
           <ScrollView contentContainerStyle={styles.dialogScrollContent}>
             <View style={styles.dialogContent}>
-              <Text variant="labelMedium" style={styles.dialogLabel}>
-                {t('dashboard.fromDate')}
-              </Text>
-              <Text variant="bodySmall" style={styles.selectedDateText}>
-                {customStartDate.toLocaleDateString('vi-VN', { 
-                  month: 'short', 
-                  day: 'numeric', 
-                  year: 'numeric' 
-                })}
-              </Text>
-              <CalendarPicker
-                selectedDate={customStartDate}
-                onSelectDate={setCustomStartDate}
-                maxDate={customEndDate}
-              />
-              
-              <Divider style={styles.divider} />
-              
-              <Text variant="labelMedium" style={styles.dialogLabel}>
-                {t('dashboard.toDate')}
-              </Text>
-              <Text variant="bodySmall" style={styles.selectedDateText}>
-                {customEndDate.toLocaleDateString('vi-VN', { 
-                  month: 'short', 
-                  day: 'numeric', 
-                  year: 'numeric' 
-                })}
-              </Text>
-              <CalendarPicker
-                selectedDate={customEndDate}
-                onSelectDate={setCustomEndDate}
-                minDate={customStartDate}
+              <RangeDatePicker
+                startDate={customStartDate}
+                endDate={customEndDate}
+                onSelectRange={handleSelectRange}
                 maxDate={new Date()}
               />
             </View>
@@ -374,7 +355,13 @@ export const DashboardScreen = () => {
         </Dialog.ScrollArea>
         <Dialog.Actions>
           <Button onPress={handleCancelCustomRange}>{t('common.cancel')}</Button>
-          <Button mode="contained" onPress={handleApplyCustomRange}>{t('common.apply')}</Button>
+          <Button 
+            mode="contained" 
+            onPress={handleApplyCustomRange}
+            disabled={!customStartDate || !customEndDate}
+          >
+            {t('common.apply')}
+          </Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>

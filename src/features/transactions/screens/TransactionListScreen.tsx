@@ -26,7 +26,7 @@ import { TransactionListItem } from '../components/TransactionListItem';
 import { TransactionWithCategory } from '../../../types/transaction';
 import { useUserStore } from '../../../store/userStore';
 import { PriceText } from '../../../components/PriceText';
-import { CalendarPicker } from '../../../components/CalendarPicker';
+import { RangeDatePicker } from '../../../components/RangeDatePicker';
 
 export const TransactionListScreen = () => {
   const { t } = useTranslation();
@@ -143,6 +143,11 @@ export const TransactionListScreen = () => {
     } else {
       setDateFilter(value as any);
     }
+  };
+
+  const handleSelectRange = (start: Date, end: Date) => {
+    setCustomStartDate(start);
+    setCustomEndDate(end);
   };
 
   const handleApplyCustomRange = () => {
@@ -347,38 +352,10 @@ export const TransactionListScreen = () => {
           <Dialog.ScrollArea style={styles.scrollArea}>
             <ScrollView contentContainerStyle={styles.dialogScrollContent}>
               <View style={styles.dialogContent}>
-                <Text variant="labelMedium" style={styles.dialogLabel}>
-                  {t('dashboard.fromDate')}
-                </Text>
-                <Text variant="bodySmall" style={styles.selectedDateText}>
-                  {customStartDate.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric', 
-                    year: 'numeric' 
-                  })}
-                </Text>
-                <CalendarPicker
-                  selectedDate={customStartDate}
-                  onSelectDate={setCustomStartDate}
-                  maxDate={customEndDate}
-                />
-                
-                <Divider style={styles.divider} />
-                
-                <Text variant="labelMedium" style={styles.dialogLabel}>
-                  {t('dashboard.toDate')}
-                </Text>
-                <Text variant="bodySmall" style={styles.selectedDateText}>
-                  {customEndDate.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric', 
-                    year: 'numeric' 
-                  })}
-                </Text>
-                <CalendarPicker
-                  selectedDate={customEndDate}
-                  onSelectDate={setCustomEndDate}
-                  minDate={customStartDate}
+                <RangeDatePicker
+                  startDate={customStartDate}
+                  endDate={customEndDate}
+                  onSelectRange={handleSelectRange}
                   maxDate={new Date()}
                 />
               </View>
@@ -386,7 +363,13 @@ export const TransactionListScreen = () => {
           </Dialog.ScrollArea>
           <Dialog.Actions>
             <Button onPress={handleCancelCustomRange}>{t('common.cancel')}</Button>
-            <Button mode="contained" onPress={handleApplyCustomRange}>{t('common.apply')}</Button>
+            <Button 
+              mode="contained" 
+              onPress={handleApplyCustomRange}
+              disabled={!customStartDate || !customEndDate}
+            >
+              {t('common.apply')}
+            </Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
