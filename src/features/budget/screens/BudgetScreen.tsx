@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity }
 import { Text, Card, Button, IconButton, SegmentedButtons, FAB, ProgressBar, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
+import { useTransactionStore } from '../../../store/transactionStore';
 import { useBudgetStore } from '../../../store/budgetStore';
 import { formatCurrency } from '../../../utils/currency';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -15,6 +16,7 @@ export const BudgetScreen = () => {
   const theme = useTheme();
   const { profile, fetchProfile } = useUserStore();
   const { budgetUsage, fetchBudgetUsage, isLoading } = useBudgetStore();
+  const { hasChanges, clearHasChanges } = useTransactionStore();
   
   const [period, setPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [refreshing, setRefreshing] = useState(false);
@@ -29,11 +31,14 @@ export const BudgetScreen = () => {
     loadBudgetUsage();
   }, [period]);
 
-  // Reload budget data when screen comes into focus
+  // Reload budget data when screen comes into focus only if there are changes
   useFocusEffect(
     useCallback(() => {
-      loadBudgetUsage();
-    }, [period])
+      if (hasChanges) {
+        loadBudgetUsage();
+        clearHasChanges();
+      }
+    }, [hasChanges, period])
   );
 
   const loadBudgetUsage = async () => {

@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from '
 import { Text, Card, Button, IconButton, SegmentedButtons, useTheme, Portal, Dialog, Divider, FAB } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
+import { useTransactionStore } from '../../../store/transactionStore';
 import { dashboardService, DashboardSummary, CategorySummary } from '../../../services/dashboardService';
 import { PriceText } from '../../../components/PriceText';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -15,6 +16,7 @@ export const DashboardScreen = () => {
   const navigation = useNavigation();
   const theme = useTheme();
   const { profile, fetchProfile } = useUserStore();
+  const { hasChanges, clearHasChanges } = useTransactionStore();
   
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [categoryBreakdown, setCategoryBreakdown] = useState<CategorySummary[]>([]);
@@ -37,11 +39,14 @@ export const DashboardScreen = () => {
     loadDashboardData();
   }, [dateFilter, appliedCustomRange]);
 
-  // Reload data when screen comes into focus
+  // Reload data when screen comes into focus only if there are changes
   useFocusEffect(
     useCallback(() => {
-      loadDashboardData();
-    }, [dateFilter, appliedCustomRange])
+      if (hasChanges) {
+        loadDashboardData();
+        clearHasChanges();
+      }
+    }, [hasChanges, dateFilter, appliedCustomRange])
   );
 
   const getDateRange = () => {
