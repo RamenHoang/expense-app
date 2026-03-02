@@ -193,6 +193,13 @@
     "update": "Cập nhật",
     "budgetSetSuccess": "Đã thiết lập ngân sách thành công!",
     "budgetSetError": "Không thể thiết lập ngân sách",
+    "budgetUpdateSuccess": "Đã cập nhật ngân sách thành công!",
+    "budgetDeleteSuccess": "Đã xóa ngân sách thành công!",
+    "budgetDeleteError": "Không thể xóa ngân sách",
+    "loadBudgetError": "Không thể tải ngân sách",
+    "editBudgetDescription": "Cập nhật giới hạn chi tiêu cho ngân sách này.",
+    "updateBudget": "Cập nhật ngân sách",
+    "confirmDeleteBudget": "Bạn có chắc muốn xóa ngân sách này? Hành động này không thể hoàn tác.",
     "totalBudget": "Tổng ngân sách"
   },
   "categories": {
@@ -328,7 +335,12 @@
     "from": "Từ ngày",
     "to": "Đến ngày",
     "apply": "Áp dụng",
-    "reset": "Đặt lại"
+    "reset": "Đặt lại",
+    "selectStartDate": "Chạm để chọn ngày bắt đầu",
+    "selectEndDate": "Chạm để chọn ngày kết thúc",
+    "rangeSelected": "Đã chọn khoảng thời gian",
+    "selectMonth": "Chọn tháng này",
+    "selectYear": "Chọn năm này"
   },
   "currency": {
     "VND": "₫",
