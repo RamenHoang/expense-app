@@ -191,8 +191,8 @@
         const expiresIn = urlParams.get('expires_in');
 
         // App deeplink scheme - update this to match your app's scheme
-        const APP_SCHEME = 'expenseapp://';
-        const ANDROID_PACKAGE = 'com.expenseapp.personalfinance';
+        const APP_SCHEME = '"vidaukho"://';
+        const ANDROID_PACKAGE = 'com.vidaukho.personalfinance';
         const IOS_APP_STORE_ID = ''; // Add your App Store ID when published
 
         function isIOS() {
@@ -263,12 +263,12 @@
         }
 
         // Auto-open app when page loads
-        window.addEventListener('load', () => {
-            // Wait a moment for the page to render
-            setTimeout(() => {
-                openApp();
-            }, 500);
-        });
+        // window.addEventListener('load', () => {
+        //     // Wait a moment for the page to render
+        //     setTimeout(() => {
+        //         openApp();
+        //     }, 500);
+        // });
 
         // Handle visibility change to detect if user returned to browser
         document.addEventListener('visibilitychange', () => {
