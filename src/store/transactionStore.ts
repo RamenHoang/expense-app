@@ -11,7 +11,7 @@ interface TransactionState {
   filters: TransactionFilters;
   currentOffset: number;
   pageSize: number;
-  hasChanges: boolean; // Track if transactions have been modified
+  lastModifiedTimestamp: number; // Track when last modification occurred
   fetchTransactions: (filters?: TransactionFilters, reset?: boolean) => Promise<void>;
   loadMoreTransactions: () => Promise<void>;
   addTransaction: (transaction: TransactionWithCategory) => void;
@@ -20,7 +20,6 @@ interface TransactionState {
   setFilters: (filters: TransactionFilters) => void;
   clearError: () => void;
   resetPagination: () => void;
-  clearHasChanges: () => void; // Reset the flag after reload
 }
 
 export const useTransactionStore = create<TransactionState>((set, get) => ({
@@ -32,7 +31,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   filters: {},
   currentOffset: 0,
   pageSize: 30,
-  hasChanges: false,
+  lastModifiedTimestamp: 0,
 
   fetchTransactions: async (filters?: TransactionFilters, reset = true) => {
     set({ isLoading: true, error: null });
@@ -89,7 +88,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
           new Date(b.transaction_date).getTime() -
           new Date(a.transaction_date).getTime()
       ),
-      hasChanges: true, // Mark that changes occurred
+      lastModifiedTimestamp: Date.now(), // Update timestamp
     }));
   },
 
@@ -102,14 +101,14 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
             new Date(b.transaction_date).getTime() -
             new Date(a.transaction_date).getTime()
         ),
-      hasChanges: true, // Mark that changes occurred
+      lastModifiedTimestamp: Date.now(), // Update timestamp
     }));
   },
 
   removeTransaction: (id: string) => {
     set((state) => ({
       transactions: state.transactions.filter((t) => t.id !== id),
-      hasChanges: true, // Mark that changes occurred
+      lastModifiedTimestamp: Date.now(), // Update timestamp
     }));
   },
 
@@ -120,6 +119,4 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   clearError: () => set({ error: null }),
 
   resetPagination: () => set({ currentOffset: 0, hasMore: true }),
-
-  clearHasChanges: () => set({ hasChanges: false }),
 }));
