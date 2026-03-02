@@ -49,6 +49,8 @@
     "expense": "Expense",
     "transactions": "transactions",
     "topSpendingCategories": "Top Spending Categories",
+    "spendingByCategory": "Spending by Category",
+    "monthlyTrends": "Monthly Trends",
     "recentTransactions": "Recent Transactions",
     "addTransaction": "Add Transaction",
     "selectDateRange": "Select Date Range",

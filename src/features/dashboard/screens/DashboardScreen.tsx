@@ -7,6 +7,8 @@ import { dashboardService, DashboardSummary, CategorySummary } from '../../../se
 import { PriceText } from '../../../components/PriceText';
 import { useNavigation } from '@react-navigation/native';
 import { RangeDatePicker } from '../../../components/RangeDatePicker';
+import { LoadingScreen } from '../../../components/LoadingScreen';
+import { DateFilterSegment } from '../../../components/DateFilterSegment';
 
 export const DashboardScreen = () => {
   const { t } = useTranslation();
@@ -33,7 +35,7 @@ export const DashboardScreen = () => {
 
   useEffect(() => {
     loadDashboardData();
-  }, [dateFilter]);
+  }, [dateFilter, appliedCustomRange]);
 
   const getDateRange = () => {
     const endDate = new Date();
@@ -76,7 +78,7 @@ export const DashboardScreen = () => {
       ]);
 
       setSummary(summaryData);
-      setCategoryBreakdown(expenseBreakdown.slice(0, 5));
+      setCategoryBreakdown(expenseBreakdown);
       setRecentTransactions(recent);
     } catch (error: any) {
       console.error('Failed to load dashboard:', error);
@@ -115,8 +117,18 @@ export const DashboardScreen = () => {
 
   const handleFilterChange = (value: string) => {
     if (value === 'custom') {
+      // If we already have an applied custom range, use it
+      // Otherwise, reset to current month range
+      if (!appliedCustomRange) {
+        const today = new Date();
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        setCustomStartDate(firstDayOfMonth);
+        setCustomEndDate(today);
+      }
       setShowCustomDialog(true);
     } else {
+      // Clear custom range when switching to other filters
+      setAppliedCustomRange(null);
       setDateFilter(value as any);
     }
   };
@@ -141,11 +153,7 @@ export const DashboardScreen = () => {
   };
 
   if (loading && !refreshing) {
-    return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
-        <Text variant="bodyLarge">{t('dashboard.loadingDashboard')}</Text>
-      </View>
-    );
+    return <LoadingScreen message={t('dashboard.loadingDashboard')} />;
   }
 
   return (
@@ -158,15 +166,9 @@ export const DashboardScreen = () => {
         }
       >
       <View style={styles.filterContainer}>
-        <SegmentedButtons
+        <DateFilterSegment
           value={dateFilter}
           onValueChange={handleFilterChange}
-          buttons={[
-            { value: 'month', label: t('dashboard.month') },
-            { value: 'year', label: t('dashboard.year') },
-            { value: 'custom', label: t('dashboard.custom') },
-            { value: 'all', label: t('common.all') },
-          ]}
         />
       </View>
 
@@ -235,7 +237,7 @@ export const DashboardScreen = () => {
               </Text>
             </View>
 
-            {categoryBreakdown.map((category) => (
+            {categoryBreakdown.slice(0, 5).map((category) => (
               <View key={category.category_id} style={styles.categoryItem}>
                 <View style={styles.categoryInfo}>
                   <IconButton
@@ -275,6 +277,30 @@ export const DashboardScreen = () => {
           </Card.Content>
         </Card>
       )}
+
+      {/* Category Breakdown - Pie Chart */}
+      {/* {categoryBreakdown.length > 0 && (
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.cardTitle}>
+              {t('dashboard.spendingByCategory')}
+            </Text>
+            <CategoryPieChart data={categoryBreakdown.slice(0, 8)} currency={currency} />
+          </Card.Content>
+        </Card>
+      )} */}
+
+      {/* Monthly Trends - Bar Chart */}
+      {/* {monthlyTrends.length > 0 && (
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.cardTitle}>
+              {t('dashboard.monthlyTrends')}
+            </Text>
+            <MonthlyTrendChart data={monthlyTrends} />
+          </Card.Content>
+        </Card>
+      )} */}
 
       {recentTransactions.length > 0 && (
         <Card style={styles.card}>
@@ -376,11 +402,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 32,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   filterContainer: {
     marginBottom: 16,

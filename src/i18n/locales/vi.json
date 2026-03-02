@@ -93,6 +93,7 @@
     "netBalance": "Số dư ròng",
     "transactions": "giao dịch",
     "topSpendingCategories": "Danh mục chi tiêu hàng đầu",
+    "monthlyTrends": "Xu hướng hàng tháng",
     "addTransaction": "Thêm giao dịch",
     "fromDate": "Từ ngày",
     "toDate": "Đến ngày"
@@ -339,8 +340,8 @@
     "selectStartDate": "Chạm để chọn ngày bắt đầu",
     "selectEndDate": "Chạm để chọn ngày kết thúc",
     "rangeSelected": "Đã chọn khoảng thời gian",
-    "selectMonth": "Chọn tháng này",
-    "selectYear": "Chọn năm này"
+    "selectMonth": "Tháng",
+    "selectYear": "Năm"
   },
   "currency": {
     "VND": "₫",
