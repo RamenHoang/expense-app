@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Ví Đau Khổ",
-    "slug": "vi-dau-kho",
+    "slug": "expense-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,14 +14,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vidaukho.personalfinance",
+      "bundleIdentifier": "com.expense-app.personalfinance",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs camera access to take photos of receipts.",
         "NSPhotoLibraryUsageDescription": "This app needs photo library access to select receipt images."
       }
     },
     "android": {
-      "package": "com.vidaukho.personalfinance",
+      "package": "com.expense-app.personalfinance",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -40,11 +40,12 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "vidaukho",
+    "scheme": "expense-app",
     "extra": {
       "eas": {
         "projectId": "ccc707be-1016-4e2f-8f5c-29c7d0b0a43f"
       }
-    }
+    },
+    "owner": "ramenhoang"
   }
 }
