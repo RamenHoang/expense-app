@@ -7,6 +7,7 @@ import { dashboardService, CategorySummary, MonthlyTrend } from '../../../servic
 import { CategoryPieChart } from '../../dashboard/components/CategoryPieChart';
 import { MonthlyTrendChart } from '../../dashboard/components/MonthlyTrendChart';
 import { formatCurrency } from '../../../utils/currency';
+import { LoadingScreen } from '../../../components/LoadingScreen';
 
 export const ReportsScreen = () => {
   const { t } = useTranslation();
@@ -86,11 +87,7 @@ export const ReportsScreen = () => {
   };
 
   if (loading && !refreshing) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text variant="bodyLarge">{t('reports.loading')}</Text>
-      </View>
-    );
+    return <LoadingScreen message={t('reports.loading')} />;
   }
 
   return (
@@ -226,11 +223,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 32,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   filterContainer: {
     marginBottom: 16,

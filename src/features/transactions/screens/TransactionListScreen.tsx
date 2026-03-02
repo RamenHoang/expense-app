@@ -27,6 +27,7 @@ import { TransactionWithCategory } from '../../../types/transaction';
 import { useUserStore } from '../../../store/userStore';
 import { PriceText } from '../../../components/PriceText';
 import { RangeDatePicker } from '../../../components/RangeDatePicker';
+import { DateFilterSegment } from '../../../components/DateFilterSegment';
 
 export const TransactionListScreen = () => {
   const { t } = useTranslation();
@@ -58,7 +59,7 @@ export const TransactionListScreen = () => {
 
   useEffect(() => {
     loadTransactions();
-  }, [dateFilter]);
+  }, [dateFilter, appliedCustomRange]);
 
   const getDateRange = () => {
     const endDate = new Date();
@@ -95,6 +96,9 @@ export const TransactionListScreen = () => {
     await fetchTransactions({
       ...filters,
       ...dateRange,
+      // Explicitly clear date range when not set
+      start_date: dateRange.start_date,
+      end_date: dateRange.end_date,
       type: filterType === 'all' ? undefined : filterType,
       search: searchQuery || undefined,
     }, true);
@@ -119,6 +123,8 @@ export const TransactionListScreen = () => {
     fetchTransactions({ 
       ...filters, 
       ...dateRange,
+      start_date: dateRange.start_date,
+      end_date: dateRange.end_date,
       search: query || undefined,
       type: filterType === 'all' ? undefined : filterType,
     }, true);
@@ -132,6 +138,8 @@ export const TransactionListScreen = () => {
     fetchTransactions({ 
       ...filters, 
       ...dateRange,
+      start_date: dateRange.start_date,
+      end_date: dateRange.end_date,
       type: newType,
       search: searchQuery || undefined,
     }, true);
@@ -139,8 +147,18 @@ export const TransactionListScreen = () => {
 
   const handleDateFilterChange = (value: string) => {
     if (value === 'custom') {
+      // If we already have an applied custom range, use it
+      // Otherwise, reset to current month range
+      if (!appliedCustomRange) {
+        const today = new Date();
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        setCustomStartDate(firstDayOfMonth);
+        setCustomEndDate(today);
+      }
       setShowCustomDialog(true);
     } else {
+      // Clear custom range when switching to other filters
+      setAppliedCustomRange(null);
       setDateFilter(value as any);
     }
   };
@@ -267,15 +285,9 @@ export const TransactionListScreen = () => {
           style={styles.segmentedButtons}
         />
 
-        <SegmentedButtons
+        <DateFilterSegment
           value={dateFilter}
           onValueChange={handleDateFilterChange}
-          buttons={[
-            { value: 'month', label: t('dateFilter.month') },
-            { value: 'year', label: t('dateFilter.year') },
-            { value: 'custom', label: t('dateFilter.custom') },
-            { value: 'all', label: t('dateFilter.all') },
-          ]}
           style={styles.segmentedButtons}
         />
       </View>

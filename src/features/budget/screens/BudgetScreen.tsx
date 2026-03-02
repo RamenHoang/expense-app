@@ -7,6 +7,7 @@ import { useBudgetStore } from '../../../store/budgetStore';
 import { formatCurrency } from '../../../utils/currency';
 import { useNavigation } from '@react-navigation/native';
 import { budgetService } from '../../../services/budgetService';
+import { LoadingScreen } from '../../../components/LoadingScreen';
 
 export const BudgetScreen = () => {
   const { t } = useTranslation();
@@ -87,11 +88,7 @@ export const BudgetScreen = () => {
   };
 
   if (isLoading && !refreshing) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text variant="bodyLarge">{t('budgets.loading')}</Text>
-      </View>
-    );
+    return <LoadingScreen message={t('budgets.loading')} />;
   }
 
   return (
@@ -302,11 +299,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 80,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   filterContainer: {
     marginBottom: 16,

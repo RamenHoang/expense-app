@@ -26,9 +26,14 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) =>
   // Format month labels (e.g., "2024-02" -> "Feb")
   const labels = data.map((item) => {
     const [year, month] = item.month.split('-');
-    const monthNames = ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return monthNames[parseInt(month) - 1];
   });
+
+  // Get max value for better chart scaling
+  const maxIncome = Math.max(...data.map(item => item.income));
+  const maxExpense = Math.max(...data.map(item => item.expense));
+  const maxValue = Math.max(maxIncome, maxExpense);
 
   const chartData = {
     labels,
@@ -66,6 +71,8 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) =>
         data={chartData}
         width={screenWidth - 64}
         height={220}
+        yAxisLabel=""
+        yAxisSuffix=""
         chartConfig={chartConfig}
         verticalLabelRotation={0}
         fromZero

@@ -170,22 +170,28 @@ export const dashboardService = {
 
     if (error) throw error;
 
-    // Group by month
+    // Initialize all months in the range with zero values
     const monthMap = new Map<string, { income: number; expense: number }>();
+    const current = new Date(startDate);
+    
+    while (current <= endDate) {
+      const monthKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+      monthMap.set(monthKey, { income: 0, expense: 0 });
+      current.setMonth(current.getMonth() + 1);
+    }
 
+    // Fill in actual transaction data
     (data || []).forEach((transaction: any) => {
       const date = new Date(transaction.transaction_date);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       
-      if (!monthMap.has(monthKey)) {
-        monthMap.set(monthKey, { income: 0, expense: 0 });
-      }
-
-      const monthData = monthMap.get(monthKey)!;
-      if (transaction.type === 'income') {
-        monthData.income += Number(transaction.amount);
-      } else {
-        monthData.expense += Number(transaction.amount);
+      if (monthMap.has(monthKey)) {
+        const monthData = monthMap.get(monthKey)!;
+        if (transaction.type === 'income') {
+          monthData.income += Number(transaction.amount);
+        } else {
+          monthData.expense += Number(transaction.amount);
+        }
       }
     });
 

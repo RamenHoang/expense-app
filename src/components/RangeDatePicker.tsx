@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, IconButton, useTheme, Button, Menu } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
@@ -31,6 +31,58 @@ export const RangeDatePicker: React.FC<RangeDatePickerProps> = ({
   // Track selected month and year separately
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  
+  // Track if the change is internal (from user selecting month/year)
+  const internalChangeRef = useRef(false);
+
+  // Sync internal state only when props change from outside
+  useEffect(() => {
+    // Skip if this was an internal change
+    if (internalChangeRef.current) {
+      internalChangeRef.current = false;
+      return;
+    }
+    
+    // External change - update state
+    setTempStartDate(startDate || null);
+    setTempEndDate(endDate || null);
+    setCurrentMonth(startDate || new Date());
+    
+    // Try to detect if the range represents a full month or year selection
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      // Check if it's a full month selection
+      const isFirstDayOfMonth = start.getDate() === 1;
+      const isLastDayOfMonth = end.getDate() === new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
+      const isSameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
+      
+      if (isFirstDayOfMonth && isLastDayOfMonth && isSameMonth) {
+        // This is a full month selection
+        setSelectedMonth(start.getMonth());
+        setSelectedYear(start.getFullYear());
+      } else {
+        // Check if it's a full year selection
+        const isFirstDayOfYear = start.getDate() === 1 && start.getMonth() === 0;
+        const isLastDayOfYear = end.getDate() === 31 && end.getMonth() === 11;
+        const isSameYear = start.getFullYear() === end.getFullYear();
+        
+        if (isFirstDayOfYear && isLastDayOfYear && isSameYear) {
+          // This is a full year selection
+          setSelectedMonth(null);
+          setSelectedYear(start.getFullYear());
+        } else {
+          // Custom manual selection
+          setSelectedMonth(null);
+          setSelectedYear(null);
+        }
+      }
+    } else {
+      setSelectedMonth(null);
+      setSelectedYear(null);
+    }
+  }, [startDate, endDate]);
 
   const daysOfWeek = [
     t('calendar.sunday'),
@@ -153,7 +205,8 @@ export const RangeDatePicker: React.FC<RangeDatePickerProps> = ({
       setSelectedMonth(null);
       setSelectedYear(null);
       
-      // Call the callback immediately when both dates are selected
+      // Mark as internal change before calling callback
+      internalChangeRef.current = true;
       onSelectRange(finalStartDate, finalEndDate);
     }
   };
@@ -181,6 +234,9 @@ export const RangeDatePicker: React.FC<RangeDatePickerProps> = ({
     
     setTempStartDate(start);
     setTempEndDate(end);
+    
+    // Mark as internal change before calling callback
+    internalChangeRef.current = true;
     onSelectRange(start, end);
   };
 
@@ -198,6 +254,9 @@ export const RangeDatePicker: React.FC<RangeDatePickerProps> = ({
       const end = new Date(year, selectedMonth + 1, 0);
       setTempStartDate(start);
       setTempEndDate(end);
+      
+      // Mark as internal change before calling callback
+      internalChangeRef.current = true;
       onSelectRange(start, end);
     } else {
       // Otherwise, auto-select the entire year
@@ -205,6 +264,9 @@ export const RangeDatePicker: React.FC<RangeDatePickerProps> = ({
       const end = new Date(year, 11, 31);
       setTempStartDate(start);
       setTempEndDate(end);
+      
+      // Mark as internal change before calling callback
+      internalChangeRef.current = true;
       onSelectRange(start, end);
     }
   };
@@ -270,7 +332,7 @@ export const RangeDatePicker: React.FC<RangeDatePickerProps> = ({
           onDismiss={() => setMonthMenuVisible(false)}
           anchor={
             <Button 
-              mode="outlined" 
+              mode="text" 
               compact 
               onPress={() => setMonthMenuVisible(true)}
               style={styles.quickSelectButton}
@@ -296,7 +358,7 @@ export const RangeDatePicker: React.FC<RangeDatePickerProps> = ({
           onDismiss={() => setYearMenuVisible(false)}
           anchor={
             <Button 
-              mode="outlined" 
+              mode="text" 
               compact 
               onPress={() => setYearMenuVisible(true)}
               style={styles.quickSelectButton}
@@ -441,7 +503,7 @@ const styles = StyleSheet.create({
   },
   quickSelectContainer: {
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'space-evenly',
     marginBottom: 12,
   },
   quickSelectButton: {
