@@ -16,7 +16,7 @@ export const DashboardScreen = () => {
   const navigation = useNavigation();
   const theme = useTheme();
   const { profile, fetchProfile } = useUserStore();
-  const { hasChanges, clearHasChanges } = useTransactionStore();
+  const lastModifiedTimestamp = useTransactionStore((state) => state.lastModifiedTimestamp);
   
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [categoryBreakdown, setCategoryBreakdown] = useState<CategorySummary[]>([]);
@@ -28,6 +28,7 @@ export const DashboardScreen = () => {
   const [customStartDate, setCustomStartDate] = useState(new Date());
   const [customEndDate, setCustomEndDate] = useState(new Date());
   const [appliedCustomRange, setAppliedCustomRange] = useState<{ start: Date; end: Date } | null>(null);
+  const [lastLoadedTimestamp, setLastLoadedTimestamp] = useState(0);
 
   useEffect(() => {
     if (!profile) {
@@ -42,11 +43,11 @@ export const DashboardScreen = () => {
   // Reload data when screen comes into focus only if there are changes
   useFocusEffect(
     useCallback(() => {
-      if (hasChanges) {
+      if (lastModifiedTimestamp > lastLoadedTimestamp) {
         loadDashboardData();
-        clearHasChanges();
+        setLastLoadedTimestamp(Date.now());
       }
-    }, [hasChanges, dateFilter, appliedCustomRange])
+    }, [lastModifiedTimestamp, lastLoadedTimestamp])
   );
 
   const getDateRange = () => {

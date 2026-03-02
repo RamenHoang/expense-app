@@ -16,10 +16,11 @@ export const BudgetScreen = () => {
   const theme = useTheme();
   const { profile, fetchProfile } = useUserStore();
   const { budgetUsage, fetchBudgetUsage, isLoading } = useBudgetStore();
-  const { hasChanges, clearHasChanges } = useTransactionStore();
+  const lastModifiedTimestamp = useTransactionStore((state) => state.lastModifiedTimestamp);
   
   const [period, setPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [refreshing, setRefreshing] = useState(false);
+  const [lastLoadedTimestamp, setLastLoadedTimestamp] = useState(0);
 
   useEffect(() => {
     if (!profile) {
@@ -34,11 +35,11 @@ export const BudgetScreen = () => {
   // Reload budget data when screen comes into focus only if there are changes
   useFocusEffect(
     useCallback(() => {
-      if (hasChanges) {
+      if (lastModifiedTimestamp > lastLoadedTimestamp) {
         loadBudgetUsage();
-        clearHasChanges();
+        setLastLoadedTimestamp(Date.now());
       }
-    }, [hasChanges, period])
+    }, [lastModifiedTimestamp, lastLoadedTimestamp])
   );
 
   const loadBudgetUsage = async () => {
