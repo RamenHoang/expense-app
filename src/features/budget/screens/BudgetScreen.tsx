@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { Text, Card, Button, IconButton, SegmentedButtons, FAB, ProgressBar, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
@@ -167,53 +167,55 @@ export const BudgetScreen = () => {
         )}
 
         {budgetUsage.map((item) => (
-          <Card key={item.budget.id} style={styles.budgetCard}>
-            <Card.Content>
-              <View style={styles.budgetHeader}>
-                <View style={styles.budgetInfo}>
-                  <IconButton
-                    icon={item.budget.category?.icon || 'tag'}
-                    iconColor={item.budget.category?.color || '#666'}
-                    size={24}
-                  />
-                  <View style={styles.budgetDetails}>
-                    <Text variant="titleMedium" style={styles.categoryName}>
-                      {item.budget.category?.name || t('budgets.category')}
-                    </Text>
-                    <Text variant="bodySmall" style={styles.budgetPeriod}>
-                      {period === 'monthly' ? t('budgets.monthlyBudget') : t('budgets.yearlyBudget')}
-                    </Text>
+          <TouchableOpacity 
+            key={item.budget.id}
+            onPress={() => navigation.navigate('SetBudget' as never, { budgetId: item.budget.id } as never)}
+            activeOpacity={1}
+          >
+            <Card style={styles.budgetCard}>
+              <Card.Content>
+                <View style={styles.budgetHeader}>
+                  <View style={styles.budgetInfo}>
+                    <IconButton
+                      icon={item.budget.category?.icon || 'tag'}
+                      iconColor={item.budget.category?.color || '#666'}
+                      size={24}
+                    />
+                    <View style={styles.budgetDetails}>
+                      <Text variant="titleMedium" style={styles.categoryName}>
+                        {item.budget.category?.name || t('budgets.category')}
+                      </Text>
+                      <Text variant="bodySmall" style={styles.budgetPeriod}>
+                        {period === 'monthly' ? t('budgets.monthlyBudget') : t('budgets.yearlyBudget')}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.budgetHeaderActions}>
+                    {item.isOverBudget && (
+                      <IconButton
+                        icon="alert-circle"
+                        iconColor="#f44336"
+                        size={24}
+                      />
+                    )}
+                    {item.isWarning && !item.isOverBudget && (
+                      <IconButton
+                        icon="alert"
+                        iconColor="#ff9800"
+                        size={24}
+                      />
+                    )}
+                    <IconButton
+                      icon="delete"
+                      iconColor={theme.colors.error}
+                      size={20}
+                      onPress={(e) => {
+                        e?.preventDefault?.();
+                        handleDeleteBudget(item.budget.id);
+                      }}
+                    />
                   </View>
                 </View>
-                <View style={styles.budgetHeaderActions}>
-                  {item.isOverBudget && (
-                    <IconButton
-                      icon="alert-circle"
-                      iconColor="#f44336"
-                      size={24}
-                    />
-                  )}
-                  {item.isWarning && !item.isOverBudget && (
-                    <IconButton
-                      icon="alert"
-                      iconColor="#ff9800"
-                      size={24}
-                    />
-                  )}
-                  <IconButton
-                    icon="pencil"
-                    iconColor={theme.colors.primary}
-                    size={20}
-                    onPress={() => navigation.navigate('SetBudget' as never, { budgetId: item.budget.id } as never)}
-                  />
-                  <IconButton
-                    icon="delete"
-                    iconColor={theme.colors.error}
-                    size={20}
-                    onPress={() => handleDeleteBudget(item.budget.id)}
-                  />
-                </View>
-              </View>
 
                 <View style={styles.budgetAmounts}>
                   <View style={styles.amountRow}>
@@ -266,6 +268,7 @@ export const BudgetScreen = () => {
                 </View>
               </Card.Content>
             </Card>
+          </TouchableOpacity>
         ))}
 
         {budgetUsage.length === 0 && (
