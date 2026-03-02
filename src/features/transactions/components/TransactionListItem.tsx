@@ -1,6 +1,6 @@
 import React, { useState, memo } from 'react';
 import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { List, IconButton, Dialog, Button, Portal, Text, useTheme } from 'react-native-paper';
+import { List, IconButton, Dialog, Button, Portal, Text, useTheme, Divider } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { TransactionWithCategory } from '../../../types/transaction';
 import { transactionService } from '../../../services/transactionService';
@@ -81,11 +81,6 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
             />
             <View style={styles.actions}>
               <IconButton
-                icon="pencil"
-                size={20}
-                onPress={() => onEdit(transaction)}
-              />
-              <IconButton
                 icon="delete"
                 size={20}
                 iconColor={theme.colors.error}
@@ -96,6 +91,7 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
         )}
         style={[styles.item, { backgroundColor: theme.colors.surface }]}
       />
+      <Divider style={styles.divider} />
 
       <Portal>
         <Dialog
@@ -168,6 +164,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     marginVertical: 2,
     borderRadius: 8,
+  },
+  divider: {
+    marginHorizontal: 16,
+    marginVertical: 4,
   },
   rightContent: {
     flexDirection: 'column',
