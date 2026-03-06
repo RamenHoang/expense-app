@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import {
   Modal,
   Portal,
@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { Category, CreateCategoryInput, UpdateCategoryInput } from '../../../types/category';
 import { categoryService } from '../../../services/categoryService';
 import { useCategoryStore } from '../../../store/categoryStore';
+import { useFamilyStore } from '../../../store/familyStore';
 
 interface CategoryModalProps {
   visible: boolean;
@@ -87,10 +88,12 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { addCategory, updateCategory } = useCategoryStore();
+  const { family } = useFamilyStore();
   const [name, setName] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [selectedIcon, setSelectedIcon] = useState('cash-minus');
   const [selectedColor, setSelectedColor] = useState('#f44336');
+  const [isShared, setIsShared] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const theme = useTheme();
@@ -116,6 +119,22 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     },
     segmentedButtons: {
       marginBottom: 8,
+    },
+    switchContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 12,
+      marginBottom: 8,
+      paddingVertical: 8,
+    },
+    switchLabel: {
+      flex: 1,
+      marginRight: 16,
+    },
+    switchHint: {
+      marginTop: 4,
+      opacity: 0.7,
     },
     divider: {
       marginVertical: 16,
@@ -175,6 +194,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       setType(category.type);
       setSelectedIcon(category.icon || 'cash-minus');
       setSelectedColor(category.color || '#f44336');
+      setIsShared(category.is_shared || false);
     } else {
       resetForm();
     }
@@ -185,6 +205,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     setType('expense');
     setSelectedIcon('cash-minus');
     setSelectedColor('#f44336');
+    setIsShared(false);
     setError('');
   };
 
@@ -204,22 +225,42 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
     try {
       if (category) {
+        // Check for duplicate when changing sharing status or name
+        const sharingChanged = category.is_shared !== isShared;
+        const nameChanged = category.name !== name.trim();
+        
+        if (sharingChanged || nameChanged) {
+          await categoryService.checkDuplicateName(
+            name.trim(), 
+            type, 
+            isShared && family ? family.id : undefined,
+            category.id  // Exclude current category
+          );
+        }
+
         // Update existing category
         const input: UpdateCategoryInput = {
           name: name.trim(),
           type,
           icon: selectedIcon,
           color: selectedColor,
+          family_id: isShared && family ? family.id : null,
+          is_shared: isShared && family ? true : false,
         };
         const updated = await categoryService.updateCategory(category.id, input);
         updateCategory(category.id, updated);
       } else {
+        // Check for duplicate before creating
+        await categoryService.checkDuplicateName(name.trim(), type, isShared && family ? family.id : undefined);
+
         // Create new category
         const input: CreateCategoryInput = {
           name: name.trim(),
           type,
           icon: selectedIcon,
           color: selectedColor,
+          family_id: isShared && family ? family.id : undefined,
+          is_shared: isShared && family ? true : false,
         };
         const created = await categoryService.createCategory(input);
         addCategory(created);
@@ -267,6 +308,26 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             disabled={loading}
             style={styles.segmentedButtons}
           />
+
+          {/* Share with family toggle - show when user has family */}
+          {family && (
+            <View style={styles.switchContainer}>
+              <View style={styles.switchLabel}>
+                <Text variant="labelLarge">{t('categories.shareWithFamily')}</Text>
+                <Text variant="bodySmall" style={styles.switchHint}>
+                  {category 
+                    ? t('categories.updateSharingDesc', { familyName: family.name })
+                    : t('categories.shareWithFamilyDesc', { familyName: family.name })
+                  }
+                </Text>
+              </View>
+              <Switch
+                value={isShared}
+                onValueChange={setIsShared}
+                disabled={loading}
+              />
+            </View>
+          )}
 
           <Divider style={styles.divider} />
 

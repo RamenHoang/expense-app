@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Switch,
 } from 'react-native';
 import {
   Text,
@@ -24,6 +25,7 @@ import { AmountInput } from '../components/AmountInput';
 import { transactionService } from '../../../services/transactionService';
 import { useTransactionStore } from '../../../store/transactionStore';
 import { useUserStore } from '../../../store/userStore';
+import { useFamilyStore } from '../../../store/familyStore';
 import { Category } from '../../../types/category';
 import { formatCurrency } from '../../../utils/currency';
 
@@ -36,12 +38,14 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
   const theme = useTheme();
   const addTransaction = useTransactionStore((state) => state.addTransaction);
   const { profile, fetchProfile } = useUserStore();
+  const { family } = useFamilyStore();
   
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [date, setDate] = useState(new Date());
   const [note, setNote] = useState('');
+  const [isShared, setIsShared] = useState(false);
   // const [receiptUri, setReceiptUri] = useState('');
   // const [receiptFileName, setReceiptFileName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -96,6 +100,8 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
         category_id: selectedCategory?.id,
         transaction_date: date.toISOString().split('T')[0],
         note: note.trim() || undefined,
+        family_id: isShared && family ? family.id : undefined,
+        is_shared: isShared && family ? true : false,
       });
 
       // Upload receipt if provided
@@ -223,6 +229,23 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
             placeholder={t('transactions.enterDescription')}
           />
 
+          {/* Share with family toggle */}
+          {family && (
+            <View style={styles.switchContainer}>
+              <View style={styles.switchLabel}>
+                <Text variant="labelLarge">{t('transactions.shareWithFamily')}</Text>
+                <Text variant="bodySmall" style={styles.switchHint}>
+                  {t('transactions.shareWithFamilyDesc', { familyName: family.name })}
+                </Text>
+              </View>
+              <Switch
+                value={isShared}
+                onValueChange={setIsShared}
+                disabled={loading}
+              />
+            </View>
+          )}
+
           {/* Receipt upload - commented out for now */}
           {/* <ReceiptUpload
             receiptUrl={receiptUri}
@@ -335,6 +358,21 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 16,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingVertical: 8,
+  },
+  switchLabel: {
+    flex: 1,
+    marginRight: 16,
+  },
+  switchHint: {
+    marginTop: 4,
+    opacity: 0.7,
   },
   summary: {
     padding: 16,

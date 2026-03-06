@@ -14,6 +14,9 @@ export const transactionService = {
   getTransactions: async (
     filters?: TransactionFilters
   ): Promise<TransactionWithCategory[]> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
     let query = supabase
       .from('transactions')
       .select(`
@@ -22,6 +25,16 @@ export const transactionService = {
       `)
       .order('transaction_date', { ascending: false })
       .order('created_at', { ascending: false });
+
+    // Apply scope filter
+    if (filters?.scope === 'mine') {
+      // Only my transactions (not shared)
+      query = query.eq('user_id', user.id).is('is_shared', false);
+    } else if (filters?.scope === 'family') {
+      // Only shared family transactions
+      query = query.eq('is_shared', true);
+    }
+    // 'all' or undefined = default behavior (RLS handles it)
 
     if (filters?.type) {
       query = query.eq('type', filters.type);

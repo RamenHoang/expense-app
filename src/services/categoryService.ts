@@ -58,6 +58,50 @@ export const categoryService = {
   },
 
   /**
+   * Check for duplicate category names
+   */
+  checkDuplicateName: async (
+    name: string, 
+    type: 'income' | 'expense', 
+    familyId?: string,
+    excludeId?: string  // Exclude current category when editing
+  ): Promise<void> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    let query = supabase
+      .from('categories')
+      .select('id')
+      .eq('name', name)
+      .eq('type', type);
+
+    // Exclude current category when editing
+    if (excludeId) {
+      query = query.neq('id', excludeId);
+    }
+
+    if (familyId) {
+      // Check for duplicates in family scope
+      query = query.eq('family_id', familyId).eq('is_shared', true);
+    } else {
+      // Check for duplicates in personal scope
+      query = query.eq('user_id', user.id).is('is_shared', false);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    
+    if (data && data.length > 0) {
+      throw new Error(
+        familyId 
+          ? 'A shared category with this name already exists in your family'
+          : 'A category with this name already exists'
+      );
+    }
+  },
+
+  /**
    * Update an existing category
    */
   updateCategory: async (id: string, input: UpdateCategoryInput): Promise<Category> => {

@@ -22,12 +22,14 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { useTransactionStore } from '../../../store/transactionStore';
+import { useFamilyStore } from '../../../store/familyStore';
 import { TransactionListItem } from '../components/TransactionListItem';
 import { TransactionWithCategory } from '../../../types/transaction';
 import { useUserStore } from '../../../store/userStore';
 import { PriceText } from '../../../components/PriceText';
 import { RangeDatePicker } from '../../../components/RangeDatePicker';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
+import { Chip } from 'react-native-paper';
 
 export const TransactionListScreen = () => {
   const { t } = useTranslation();
@@ -47,9 +49,11 @@ export const TransactionListScreen = () => {
     resetPagination,
   } = useTransactionStore();
   const { profile } = useUserStore();
+  const { family } = useFamilyStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
+  const [scopeFilter, setScopeFilter] = useState<'all' | 'mine' | 'family'>('all');
   const [dateFilter, setDateFilter] = useState<'month' | 'year' | 'custom' | 'all'>('all');
   const [refreshing, setRefreshing] = useState(false);
   const [showCustomDialog, setShowCustomDialog] = useState(false);
@@ -59,7 +63,7 @@ export const TransactionListScreen = () => {
 
   useEffect(() => {
     loadTransactions();
-  }, [dateFilter, appliedCustomRange]);
+  }, [dateFilter, appliedCustomRange, scopeFilter]);
 
   const getDateRange = () => {
     const endDate = new Date();
@@ -101,6 +105,7 @@ export const TransactionListScreen = () => {
       end_date: dateRange.end_date,
       type: filterType === 'all' ? undefined : filterType,
       search: searchQuery || undefined,
+      scope: scopeFilter === 'all' ? undefined : scopeFilter,
     }, true);
   };
 
@@ -290,6 +295,38 @@ export const TransactionListScreen = () => {
           onValueChange={handleDateFilterChange}
           style={styles.segmentedButtons}
         />
+
+        {/* Scope filter chips - only show if user has family */}
+        {family && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.chipContainer}
+            contentContainerStyle={styles.chipContent}
+          >
+            <Chip
+              selected={scopeFilter === 'all'}
+              onPress={() => setScopeFilter('all')}
+              style={styles.chip}
+            >
+              {t('transactions.allTransactions')}
+            </Chip>
+            <Chip
+              selected={scopeFilter === 'mine'}
+              onPress={() => setScopeFilter('mine')}
+              style={styles.chip}
+            >
+              {t('transactions.myTransactions')}
+            </Chip>
+            <Chip
+              selected={scopeFilter === 'family'}
+              onPress={() => setScopeFilter('family')}
+              style={styles.chip}
+            >
+              {t('transactions.familyTransactions')}
+            </Chip>
+          </ScrollView>
+        )}
       </View>
 
       <FlatList
@@ -403,6 +440,17 @@ const styles = StyleSheet.create({
   },
   segmentedButtons: {
     marginBottom: 8,
+  },
+  chipContainer: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  chipContent: {
+    gap: 8,
+    paddingRight: 16,
+  },
+  chip: {
+    marginRight: 0,
   },
   sectionHeader: {
     flexDirection: 'row',

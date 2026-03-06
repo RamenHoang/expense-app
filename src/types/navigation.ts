@@ -4,6 +4,11 @@ export type RootStackParamList = {
   Categories: undefined;
   AddTransaction: undefined;
   EditTransaction: { transactionId: string };
+  SetBudget: { categoryId?: string };
+  CurrencySelection: undefined;
+  CreateFamily: undefined;
+  InviteMember: { familyId: string };
+  EditFamily: { familyId: string };
 };
 
 export type AuthStackParamList = {
@@ -16,6 +21,7 @@ export type MainTabParamList = {
   Dashboard: undefined;
   Transactions: undefined;
   Budget: undefined;
+  Family: undefined;
   Settings: undefined;
 };
 

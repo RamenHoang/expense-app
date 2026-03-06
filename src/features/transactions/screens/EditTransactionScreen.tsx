@@ -7,6 +7,7 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  Switch,
 } from 'react-native';
 import {
   Text,
@@ -24,6 +25,7 @@ import { DatePickerInput } from '../components/DatePickerInput';
 import { AmountInput } from '../components/AmountInput';
 import { transactionService } from '../../../services/transactionService';
 import { useTransactionStore } from '../../../store/transactionStore';
+import { useFamilyStore } from '../../../store/familyStore';
 import { Category } from '../../../types/category';
 import { TransactionWithCategory } from '../../../types/transaction';
 
@@ -40,6 +42,7 @@ export const EditTransactionScreen = ({
   const theme = useTheme();
   const { transactionId } = route.params;
   const updateTransactionInStore = useTransactionStore((state) => state.updateTransaction);
+  const { family } = useFamilyStore();
 
   const [transaction, setTransaction] = useState<TransactionWithCategory | null>(null);
   const [type, setType] = useState<'income' | 'expense'>('expense');
@@ -47,6 +50,7 @@ export const EditTransactionScreen = ({
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [date, setDate] = useState(new Date());
   const [note, setNote] = useState('');
+  const [isShared, setIsShared] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -68,6 +72,7 @@ export const EditTransactionScreen = ({
       setAmount(data.amount.toString());
       setDate(new Date(data.transaction_date));
       setNote(data.note || '');
+      setIsShared(data.is_shared || false);
       
       if (data.category) {
         setSelectedCategory({
@@ -126,6 +131,8 @@ export const EditTransactionScreen = ({
           category_id: selectedCategory?.id,
           transaction_date: date.toISOString().split('T')[0],
           note: note.trim() || undefined,
+          family_id: isShared && family ? family.id : null,
+          is_shared: isShared && family ? true : false,
         }
       );
 
@@ -231,6 +238,23 @@ export const EditTransactionScreen = ({
             placeholder={t('transactions.enterDescription')}
           />
 
+          {/* Share with family toggle */}
+          {family && (
+            <View style={styles.switchContainer}>
+              <View style={styles.switchLabel}>
+                <Text variant="labelLarge">{t('transactions.shareWithFamily')}</Text>
+                <Text variant="bodySmall" style={styles.switchHint}>
+                  {t('transactions.shareWithFamilyDesc', { familyName: family.name })}
+                </Text>
+              </View>
+              <Switch
+                value={isShared}
+                onValueChange={setIsShared}
+                disabled={saving}
+              />
+            </View>
+          )}
+
           <View style={styles.actions}>
             <Button
               mode="outlined"
@@ -305,6 +329,21 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 16,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingVertical: 8,
+  },
+  switchLabel: {
+    flex: 1,
+    marginRight: 16,
+  },
+  switchHint: {
+    marginTop: 4,
+    opacity: 0.7,
   },
   actions: {
     flexDirection: 'row',

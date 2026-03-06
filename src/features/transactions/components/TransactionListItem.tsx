@@ -61,7 +61,16 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
   return (
     <>
       <List.Item
-        title={categoryInfo.name}
+        title={
+          <View style={styles.titleContainer}>
+            <Text>{categoryInfo.name}</Text>
+            {transaction.is_shared && (
+              <Text style={[styles.sharedBadge, { color: theme.colors.primary }]}>
+                • {t('transactions.sharedTransaction')}
+              </Text>
+            )}
+          </View>
+        }
         description={transaction.note || t('common.noNote')}
         onPress={() => onEdit(transaction)}
         left={(props) => (
@@ -164,6 +173,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     marginVertical: 2,
     borderRadius: 8,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sharedBadge: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   divider: {
     marginHorizontal: 16,
