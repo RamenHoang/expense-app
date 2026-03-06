@@ -453,6 +453,8 @@
     "invitationSent": "Invitation sent successfully",
     "invitationAccepted": "Invitation accepted",
     "invitationRejected": "Invitation rejected",
+    "alreadyMember": "This user is already a family member",
+    "invitationAlreadySent": "An invitation has already been sent to this email",
     "familyCreated": "Family created successfully",
     "familyUpdated": "Family updated successfully",
     "familyDeleted": "Family deleted successfully",

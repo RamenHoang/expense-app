@@ -447,6 +447,8 @@
     "invitationSent": "Đã gửi lời mời thành công",
     "invitationAccepted": "Đã chấp nhận lời mời",
     "invitationRejected": "Đã từ chối lời mời",
+    "alreadyMember": "Người dùng này đã là thành viên gia đình",
+    "invitationAlreadySent": "Lời mời đã được gửi tới email này rồi",
     "familyCreated": "Đã tạo gia đình thành công",
     "familyUpdated": "Đã cập nhật gia đình thành công",
     "familyDeleted": "Đã xóa gia đình thành công",
