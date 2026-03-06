@@ -7,6 +7,8 @@ export interface Transaction {
   note?: string;
   transaction_date: string;
   receipt_url?: string;
+  family_id?: string | null;
+  is_shared?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -28,6 +30,8 @@ export interface CreateTransactionInput {
   category_id?: string;
   note?: string;
   receipt_url?: string;
+  family_id?: string;
+  is_shared?: boolean;
 }
 
 export interface UpdateTransactionInput {
@@ -37,6 +41,8 @@ export interface UpdateTransactionInput {
   category_id?: string;
   note?: string;
   receipt_url?: string;
+  family_id?: string | null;
+  is_shared?: boolean;
 }
 
 export interface TransactionFilters {
@@ -47,4 +53,5 @@ export interface TransactionFilters {
   search?: string;
   limit?: number;
   offset?: number;
+  scope?: 'all' | 'mine' | 'family'; // Filter by ownership
 }

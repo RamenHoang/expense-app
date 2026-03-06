@@ -5,6 +5,8 @@ export interface Category {
   type: 'income' | 'expense';
   icon?: string;
   color?: string;
+  family_id?: string | null;
+  is_shared?: boolean;
   created_at: string;
 }
 
@@ -13,6 +15,8 @@ export interface CreateCategoryInput {
   type: 'income' | 'expense';
   icon?: string;
   color?: string;
+  family_id?: string;
+  is_shared?: boolean;
 }
 
 export interface UpdateCategoryInput {
@@ -20,4 +24,6 @@ export interface UpdateCategoryInput {
   type?: 'income' | 'expense';
   icon?: string;
   color?: string;
+  family_id?: string | null;
+  is_shared?: boolean;
 }

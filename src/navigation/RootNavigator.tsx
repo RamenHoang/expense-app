@@ -11,6 +11,9 @@ import { AddTransactionScreen } from '../features/transactions/screens/AddTransa
 import { EditTransactionScreen } from '../features/transactions/screens/EditTransactionScreen';
 import { SetBudgetScreen } from '../features/budget/screens/SetBudgetScreen';
 import { CurrencySelectionScreen } from '../features/settings/screens/CurrencySelectionScreen';
+import { CreateFamilyScreen } from '../features/family/screens/CreateFamilyScreen';
+import { InviteMemberScreen } from '../features/family/screens/InviteMemberScreen';
+import { EditFamilyScreen } from '../features/family/screens/EditFamilyScreen';
 import { useAuthStore } from '../store/authStore';
 import { t } from 'i18next';
 
@@ -91,6 +94,30 @@ export const RootNavigator = () => {
               component={CurrencySelectionScreen}
               options={{ 
                 title: t('settings.selectCurrency'),
+                headerBackTitle: t('common.back'),
+              }}
+            />
+            <Stack.Screen 
+              name="CreateFamily" 
+              component={CreateFamilyScreen}
+              options={{ 
+                title: t('family.createFamily'),
+                headerBackTitle: t('common.back'),
+              }}
+            />
+            <Stack.Screen 
+              name="InviteMember" 
+              component={InviteMemberScreen}
+              options={{ 
+                title: t('family.inviteMember'),
+                headerBackTitle: t('common.back'),
+              }}
+            />
+            <Stack.Screen 
+              name="EditFamily" 
+              component={EditFamilyScreen}
+              options={{ 
+                title: t('family.title'),
                 headerBackTitle: t('common.back'),
               }}
             />

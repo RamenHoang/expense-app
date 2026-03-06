@@ -49,7 +49,16 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
   return (
     <>
       <List.Item
-        title={category.name}
+        title={
+          <View style={styles.titleContainer}>
+            <Text>{category.name}</Text>
+            {category.is_shared && (
+              <Text style={[styles.sharedBadge, { color: theme.colors.primary }]}>
+                • {t('categories.sharedCategory')}
+              </Text>
+            )}
+          </View>
+        }
         description={category.type === 'income' ? t('categories.income') : t('categories.expense')}
         left={(props) => (
           <List.Icon
@@ -113,6 +122,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     marginVertical: 2,
     borderRadius: 8,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sharedBadge: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   actions: {
     flexDirection: 'row',
