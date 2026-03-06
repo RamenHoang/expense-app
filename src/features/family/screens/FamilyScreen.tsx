@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-nativ
 import { Text, Card, Button, FAB, useTheme, Avatar, IconButton, Chip } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useFamilyStore } from '../../../store/familyStore';
+import { useUserStore } from '../../../store/userStore';
 import { useNavigation } from '@react-navigation/native';
 import { LoadingScreen } from '../../../components/LoadingScreen';
 import { formatDistanceToNow } from 'date-fns';
@@ -13,6 +14,7 @@ export const FamilyScreen = () => {
   const { t, i18n } = useTranslation();
   const navigation = useNavigation();
   const theme = useTheme();
+  const { profile } = useUserStore();
   const {
     family,
     members,
@@ -149,8 +151,10 @@ export const FamilyScreen = () => {
     }
   };
 
-  const currentUserMember = members.find((m) => m.status === 'active');
+  const currentUserMember = members.find((m) => m.user_id === profile?.id && m.status === 'active');
   const isOwner = currentUserMember?.role === 'owner';
+  const isAdmin = currentUserMember?.role === 'admin';
+  const canManage = isOwner || isAdmin; // Owner or Admin can manage family
 
   if (isLoading && !family && !refreshing) {
     return <LoadingScreen />;
@@ -253,6 +257,10 @@ export const FamilyScreen = () => {
                       {t('family.deleteFamily')}
                     </Button>
                   </View>
+                ) : canManage ? (
+                  <Button onPress={handleInviteMember} icon="account-plus">
+                    {t('family.inviteMember')}
+                  </Button>
                 ) : (
                   <Button onPress={handleLeaveFamily} textColor={theme.colors.error}>
                     {t('family.leaveFamily')}
@@ -293,7 +301,7 @@ export const FamilyScreen = () => {
                           {t(`family.${member.role}`)}
                         </Chip>
                       </View>
-                      {isOwner && member.role !== 'owner' && (
+                      {canManage && member.role !== 'owner' && (
                         <IconButton
                           icon="close"
                           size={20}
@@ -306,7 +314,7 @@ export const FamilyScreen = () => {
             </Card>
 
             {/* Pending Invitations */}
-            {invitations.length > 0 && (
+            {invitations.length > 0 && canManage && (
               <Card style={styles.card}>
                 <Card.Title
                   title={t('family.pendingInvitations')}
@@ -343,7 +351,7 @@ export const FamilyScreen = () => {
         )}
       </ScrollView>
 
-      {family && isOwner && (
+      {family && canManage && (
         <FAB
           icon="account-plus"
           style={[styles.fab, { backgroundColor: theme.colors.primary }]}

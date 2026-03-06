@@ -124,16 +124,33 @@ class FamilyService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Check if user is already a member
-      const { data: existingMember } = await supabase
-        .from('family_members')
+      // Check if the email belongs to a user who is already a member
+      const { data: isMember, error: checkError } = await supabase
+        .rpc('is_email_family_member', {
+          p_family_id: input.family_id,
+          p_email: input.email.toLowerCase()
+        });
+
+      if (checkError) {
+        console.error('Error checking member status:', checkError);
+        // Continue anyway - database constraint will catch duplicates
+      }
+
+      if (isMember) {
+        throw new Error('This user is already a family member');
+      }
+
+      // Check if there's already a pending invitation for this email
+      const { data: pendingInvitation } = await supabase
+        .from('family_invitations')
         .select('id')
         .eq('family_id', input.family_id)
-        .eq('user_id', user.id)
+        .eq('email', input.email.toLowerCase())
+        .eq('status', 'pending')
         .single();
 
-      if (existingMember) {
-        throw new Error('User is already a family member');
+      if (pendingInvitation) {
+        throw new Error('An invitation has already been sent to this email');
       }
 
       // Generate unique token
@@ -153,7 +170,13 @@ class FamilyService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Check if it's a unique constraint violation
+        if (error.code === '23505') {
+          throw new Error('An invitation has already been sent to this email');
+        }
+        throw error;
+      }
 
       // TODO: Send email notification
       
