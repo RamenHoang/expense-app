@@ -31,6 +31,7 @@ import { RangeDatePicker } from '../../../components/RangeDatePicker';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
 import { Chip } from 'react-native-paper';
 import { formatDateToUTC7String, getCurrentDateUTC7 } from '../../../utils/date';
+import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
 
 export const TransactionListScreen = () => {
   const { t } = useTranslation();
@@ -53,6 +54,8 @@ export const TransactionListScreen = () => {
   const { family } = useFamilyStore();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(true);
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [scopeFilter, setScopeFilter] = useState<'all' | 'mine' | 'family'>('all');
   const [dateFilter, setDateFilter] = useState<'month' | 'year' | 'custom' | 'all'>('all');
@@ -276,14 +279,7 @@ export const TransactionListScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
-        <Searchbar
-          placeholder={t('common.search')}
-          onChangeText={handleSearch}
-          value={searchQuery}
-          style={styles.searchBar}
-        />
-
-        <SegmentedButtons
+        <FilterButtonGroup
           value={filterType}
           onValueChange={handleFilterChange}
           buttons={[
@@ -291,7 +287,7 @@ export const TransactionListScreen = () => {
             { value: 'income', label: t('transactions.income') },
             { value: 'expense', label: t('transactions.expense') },
           ]}
-          style={styles.segmentedButtons}
+          style={styles.filterButtons}
         />
 
         <DateFilterSegment
@@ -333,54 +329,96 @@ export const TransactionListScreen = () => {
         )}
       </View>
 
-      <FlatList
-        data={groupedTransactions}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.date}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        maxToRenderPerBatch={10}
-        updateCellsBatchingPeriod={50}
-        initialNumToRender={5}
-        windowSize={10}
-        removeClippedSubviews={true}
-        getItemLayout={(data, index) => ({
-          length: 150,
-          offset: 150 * index,
-          index,
-        })}
-        ListFooterComponent={
-          isLoadingMore ? (
-            <View style={styles.loadingMore}>
-              <ActivityIndicator size="small" color={theme.colors.primary} />
-              <Text variant="bodySmall" style={styles.loadingText}>
-                {t('transactions.loadingMore')}
-              </Text>
-            </View>
-          ) : null
-        }
-        ListEmptyComponent={
-          !isLoading ? (
-            <View style={styles.emptyState}>
-              <Text variant="bodyLarge" style={styles.emptyText}>
-                {searchQuery
-                  ? t('common.noResults')
-                  : t('transactions.noTransactions')}
-              </Text>
-            </View>
-          ) : null
-        }
-        contentContainerStyle={transactions.length === 0 ? styles.emptyContainer : styles.listContent}
-      />
+      {isLoading && !refreshing && transactions.length > 0 ? (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text variant="bodyMedium" style={{ marginTop: 12, color: theme.colors.onSurfaceVariant }}>
+            {t('common.loading')}
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={groupedTransactions}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.date}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          maxToRenderPerBatch={10}
+          updateCellsBatchingPeriod={50}
+          initialNumToRender={5}
+          windowSize={10}
+          removeClippedSubviews={true}
+          getItemLayout={(data, index) => ({
+            length: 150,
+            offset: 150 * index,
+            index,
+          })}
+          ListFooterComponent={
+            isLoadingMore ? (
+              <View style={styles.loadingMore}>
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+                <Text variant="bodySmall" style={styles.loadingText}>
+                  {t('transactions.loadingMore')}
+                </Text>
+              </View>
+            ) : null
+          }
+          ListEmptyComponent={
+            !isLoading ? (
+              <View style={styles.emptyState}>
+                <Text variant="bodyLarge" style={styles.emptyText}>
+                  {searchQuery
+                    ? t('common.noResults')
+                    : t('transactions.noTransactions')}
+                </Text>
+              </View>
+            ) : null
+          }
+          contentContainerStyle={transactions.length === 0 ? styles.emptyContainer : styles.listContent}
+        />
+      )}
+
+      {/* Expandable Search FAB */}
+      <View style={styles.searchFabContainer}>
+        {isSearchExpanded ? (
+          <View style={[styles.expandedSearchBar, { backgroundColor: theme.colors.surface }]}>
+            <Searchbar
+              placeholder={t('common.search')}
+              onChangeText={handleSearch}
+              value={searchQuery}
+              style={styles.searchInput}
+              // autoFocus
+              inputStyle={{ minWidth: 0 }}
+            />
+            {/* <FAB
+              icon="close"
+              size="small"
+              onPress={() => {
+                setIsSearchExpanded(false);
+                setSearchQuery('');
+                handleSearch('');
+              }}
+              style={styles.closeSearchButton}
+            /> */}
+          </View>
+        ) : (
+          <FAB
+            icon="magnify"
+            onPress={() => setIsSearchExpanded(true)}
+            style={styles.searchFab}
+            size="medium"
+            // label={t('common.search')}
+          />
+        )}
+      </View>
 
       <FAB
         icon="plus"
+        onPress={() => navigation.navigate('AddTransaction' as never)}
         style={styles.fab}
-        onPress={handleAddTransaction}
-        label={t('common.add')}
       />
 
       <Snackbar
@@ -442,6 +480,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     elevation: 0,
   },
+  filterButtons: {
+    marginBottom: 8,
+  },
   segmentedButtons: {
     marginBottom: 8,
   },
@@ -493,6 +534,42 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 8,
     opacity: 0.6,
+  },
+  loadingOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 80,
+    minHeight: 300,
+  },
+  searchFabContainer: {
+    position: 'absolute',
+    bottom: 16,
+    left: 16,
+    right: 88,
+    zIndex: 1,
+  },
+  searchFab: {
+    alignSelf: 'flex-end',
+  },
+  expandedSearchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 28,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    // paddingRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  closeSearchButton: {
+    marginLeft: 8,
   },
   fab: {
     position: 'absolute',
