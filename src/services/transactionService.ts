@@ -75,7 +75,10 @@ export const transactionService = {
    * Get a single transaction by ID
    */
   getTransactionById: async (id: string): Promise<TransactionWithCategory> => {
-    const { data, error } = await supabase
+    console.log('[TransactionService] Fetching transaction:', id);
+    
+    // Fetch transaction with category
+    const { data: transaction, error } = await supabase
       .from('transactions')
       .select(`
         *,
@@ -84,8 +87,47 @@ export const transactionService = {
       .eq('id', id)
       .single();
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      console.log('[TransactionService] Error fetching transaction:', error);
+      throw error;
+    }
+
+    console.log('[TransactionService] Transaction fetched:', JSON.stringify(transaction, null, 2));
+
+    // Fetch user profile and email separately
+    if (transaction?.user_id) {
+      console.log('[TransactionService] Fetching profile for user_id:', transaction.user_id);
+      
+      // Fetch profile from profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .eq('id', transaction.user_id)
+        .maybeSingle();
+
+      console.log('[TransactionService] Profile fetch result:', { profile, profileError });
+
+      // Fetch email using RPC function
+      const { data: userEmail, error: emailError } = await supabase
+        .rpc('get_user_email', { p_user_id: transaction.user_id });
+
+      console.log('[TransactionService] Email fetch result:', { userEmail, emailError });
+
+      const result = {
+        ...transaction,
+        user_profile: {
+          id: profile?.id || transaction.user_id,
+          full_name: profile?.full_name || userEmail || 'Unknown User',
+          email: userEmail || undefined,
+        },
+      };
+      
+      console.log('[TransactionService] Returning transaction with profile:', JSON.stringify(result, null, 2));
+      return result;
+    }
+
+    console.log('[TransactionService] No user_id, returning transaction without profile');
+    return transaction;
   },
 
   /**

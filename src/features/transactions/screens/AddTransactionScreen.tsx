@@ -38,14 +38,14 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
   const theme = useTheme();
   const addTransaction = useTransactionStore((state) => state.addTransaction);
   const { profile, fetchProfile } = useUserStore();
-  const { family } = useFamilyStore();
+  const { family, shareWithFamily, setShareWithFamily } = useFamilyStore();
   
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [date, setDate] = useState(new Date());
   const [note, setNote] = useState('');
-  const [isShared, setIsShared] = useState(false);
+  const [isShared, setIsShared] = useState(shareWithFamily);
   // const [receiptUri, setReceiptUri] = useState('');
   // const [receiptFileName, setReceiptFileName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -240,7 +240,10 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
               </View>
               <Switch
                 value={isShared}
-                onValueChange={setIsShared}
+                onValueChange={(value) => {
+                  setIsShared(value);
+                  setShareWithFamily(value);
+                }}
                 disabled={loading}
               />
             </View>

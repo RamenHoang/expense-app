@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Family, FamilyMember, FamilyInvitation } from '../types/family';
 import { familyService } from '../services/familyService';
 
@@ -9,6 +11,7 @@ interface FamilyState {
   myInvitations: FamilyInvitation[];
   isLoading: boolean;
   error: string | null;
+  shareWithFamily: boolean;
 
   // Family operations
   fetchFamily: () => Promise<void>;
@@ -32,15 +35,19 @@ interface FamilyState {
   // Utility
   clearError: () => void;
   reset: () => void;
+  setShareWithFamily: (value: boolean) => void;
 }
 
-export const useFamilyStore = create<FamilyState>((set, get) => ({
-  family: null,
-  members: [],
-  invitations: [],
-  myInvitations: [],
-  isLoading: false,
-  error: null,
+export const useFamilyStore = create<FamilyState>()(
+  persist(
+    (set, get) => ({
+      family: null,
+      members: [],
+      invitations: [],
+      myInvitations: [],
+      isLoading: false,
+      error: null,
+      shareWithFamily: false,
 
   fetchFamily: async () => {
     set({ isLoading: true, error: null });
@@ -204,6 +211,8 @@ export const useFamilyStore = create<FamilyState>((set, get) => ({
 
   clearError: () => set({ error: null }),
 
+  setShareWithFamily: (value: boolean) => set({ shareWithFamily: value }),
+
   reset: () => set({
     family: null,
     members: [],
@@ -211,5 +220,13 @@ export const useFamilyStore = create<FamilyState>((set, get) => ({
     myInvitations: [],
     isLoading: false,
     error: null,
+    shareWithFamily: false,
   }),
-}));
+    }),
+    {
+      name: 'family-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialPersist: true,
+    }
+  )
+);

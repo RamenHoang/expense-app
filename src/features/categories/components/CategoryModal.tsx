@@ -88,12 +88,12 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { addCategory, updateCategory } = useCategoryStore();
-  const { family } = useFamilyStore();
+  const { family, shareWithFamily, setShareWithFamily } = useFamilyStore();
   const [name, setName] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [selectedIcon, setSelectedIcon] = useState('cash-minus');
   const [selectedColor, setSelectedColor] = useState('#f44336');
-  const [isShared, setIsShared] = useState(false);
+  const [isShared, setIsShared] = useState(shareWithFamily);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const theme = useTheme();
@@ -198,14 +198,14 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     } else {
       resetForm();
     }
-  }, [category, visible]);
+  }, [category, visible, shareWithFamily]);
 
   const resetForm = () => {
     setName('');
     setType('expense');
     setSelectedIcon('cash-minus');
     setSelectedColor('#f44336');
-    setIsShared(false);
+    setIsShared(shareWithFamily);
     setError('');
   };
 
@@ -323,7 +323,10 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               </View>
               <Switch
                 value={isShared}
-                onValueChange={setIsShared}
+                onValueChange={(value) => {
+                  setIsShared(value);
+                  setShareWithFamily(value);
+                }}
                 disabled={loading}
               />
             </View>
