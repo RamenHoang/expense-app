@@ -301,7 +301,7 @@ export const BudgetScreen = () => {
         icon="plus"
         style={styles.fab}
         onPress={() => navigation.navigate('SetBudget' as never)}
-        label={t('budgets.addBudget')}
+        // label={t('budgets.addBudget')}
       />
     </>
   );
