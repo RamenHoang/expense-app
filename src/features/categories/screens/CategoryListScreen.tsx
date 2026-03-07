@@ -107,6 +107,7 @@ export const CategoryListScreen = () => {
                 key={category.id}
                 category={category}
                 onEdit={handleEditCategory}
+                searchQuery={debouncedSearchQuery}
               />
             ))}
           </View>
@@ -122,6 +123,7 @@ export const CategoryListScreen = () => {
                 key={category.id}
                 category={category}
                 onEdit={handleEditCategory}
+                searchQuery={debouncedSearchQuery}
               />
             ))}
           </View>

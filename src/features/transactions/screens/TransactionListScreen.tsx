@@ -264,11 +264,12 @@ export const TransactionListScreen = () => {
             key={transaction.id}
             transaction={transaction}
             onEdit={handleEditTransaction}
+            searchQuery={debouncedSearchQuery}
           />
         ))}
       </View>
     );
-  }, [renderSectionHeader]);
+  }, [renderSectionHeader, debouncedSearchQuery]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>

@@ -10,17 +10,38 @@ import { PriceText } from '../../../components/PriceText';
 interface TransactionListItemProps {
   transaction: TransactionWithCategory;
   onEdit: (transaction: TransactionWithCategory) => void;
+  searchQuery?: string;
 }
 
 const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
   transaction,
   onEdit,
+  searchQuery = '',
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const removeTransaction = useTransactionStore((state) => state.removeTransaction);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const highlightText = (text: string, query: string) => {
+    if (!query || !text) return <Text>{text}</Text>;
+
+    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    return (
+      <Text>
+        {parts.map((part, index) =>
+          part.toLowerCase() === query.toLowerCase() ? (
+            <Text key={index} style={{ backgroundColor: theme.colors.primaryContainer, fontWeight: 'bold' }}>
+              {part}
+            </Text>
+          ) : (
+            part
+          )
+        )}
+      </Text>
+    );
+  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -63,7 +84,7 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
       <List.Item
         title={
           <View style={styles.titleContainer}>
-            <Text>{categoryInfo.name}</Text>
+            {highlightText(categoryInfo.name, searchQuery)}
             {transaction.is_shared && (
               <Text style={[styles.sharedBadge, { color: theme.colors.primary }]}>
                 • {t('transactions.sharedTransaction')}
@@ -71,7 +92,7 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
             )}
           </View>
         }
-        description={transaction.note || t('common.noNote')}
+        description={transaction.note ? highlightText(transaction.note, searchQuery) : t('common.noNote')}
         onPress={() => onEdit(transaction)}
         left={(props) => (
           <List.Icon
