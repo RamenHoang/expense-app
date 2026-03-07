@@ -9,15 +9,35 @@ import { useCategoryStore } from '../../../store/categoryStore';
 interface CategoryListItemProps {
   category: Category;
   onEdit: (category: Category) => void;
+  searchQuery?: string;
 }
 
-export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, onEdit }) => {
+export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, onEdit, searchQuery = '' }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const removeCategory = useCategoryStore((state) => state.removeCategory);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [usageCount, setUsageCount] = useState<number | null>(null);
+
+  const highlightText = (text: string, query: string) => {
+    if (!query || !text) return <Text>{text}</Text>;
+
+    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    return (
+      <Text>
+        {parts.map((part, index) =>
+          part.toLowerCase() === query.toLowerCase() ? (
+            <Text key={index} style={{ backgroundColor: theme.colors.primaryContainer, fontWeight: 'bold' }}>
+              {part}
+            </Text>
+          ) : (
+            part
+          )
+        )}
+      </Text>
+    );
+  };
 
   const handleDeletePress = async () => {
     try {
@@ -51,7 +71,7 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
       <List.Item
         title={
           <View style={styles.titleContainer}>
-            <Text>{category.name}</Text>
+            {highlightText(category.name, searchQuery)}
             {category.is_shared && (
               <Text style={[styles.sharedBadge, { color: theme.colors.primary }]}>
                 • {t('categories.sharedCategory')}
