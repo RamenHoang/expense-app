@@ -307,21 +307,39 @@ export const TransactionListScreen = () => {
             <Chip
               selected={scopeFilter === 'all'}
               onPress={() => setScopeFilter('all')}
-              style={styles.chip}
+              style={[
+                styles.chip,
+                scopeFilter === 'all' && styles.chipSelected,
+              ]}
+              textStyle={scopeFilter === 'all' ? styles.chipTextSelected : styles.chipText}
+              icon={scopeFilter === 'all' ? 'check' : undefined}
+              showSelectedOverlay={false}
             >
               {t('transactions.allTransactions')}
             </Chip>
             <Chip
               selected={scopeFilter === 'mine'}
               onPress={() => setScopeFilter('mine')}
-              style={styles.chip}
+              style={[
+                styles.chip,
+                scopeFilter === 'mine' && styles.chipSelected,
+              ]}
+              textStyle={scopeFilter === 'mine' ? styles.chipTextSelected : styles.chipText}
+              icon={scopeFilter === 'mine' ? 'check' : undefined}
+              showSelectedOverlay={false}
             >
               {t('transactions.myTransactions')}
             </Chip>
             <Chip
               selected={scopeFilter === 'family'}
               onPress={() => setScopeFilter('family')}
-              style={styles.chip}
+              style={[
+                styles.chip,
+                scopeFilter === 'family' && styles.chipSelected,
+              ]}
+              textStyle={scopeFilter === 'family' ? styles.chipTextSelected : styles.chipText}
+              icon={scopeFilter === 'family' ? 'check' : undefined}
+              showSelectedOverlay={false}
             >
               {t('transactions.familyTransactions')}
             </Chip>
@@ -496,6 +514,19 @@ const styles = StyleSheet.create({
   },
   chip: {
     marginRight: 0,
+    backgroundColor: 'transparent',
+    borderRadius: 20,
+    height: 40,
+  },
+  chipSelected: {
+    backgroundColor: 'transparent',
+  },
+  chipText: {
+    fontSize: 14,
+  },
+  chipTextSelected: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   sectionHeader: {
     flexDirection: 'row',

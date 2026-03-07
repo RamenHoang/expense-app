@@ -29,6 +29,7 @@ import { useFamilyStore } from '../../../store/familyStore';
 import { Category } from '../../../types/category';
 import { formatCurrency } from '../../../utils/currency';
 import { formatDateToUTC7String } from '../../../utils/date';
+import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
 
 type AddTransactionScreenProps = {
   navigation: NativeStackNavigationProp<any>;
@@ -175,27 +176,24 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
           showsVerticalScrollIndicator={false}
         >
         <View style={styles.form}>
-          <Text variant="labelLarge" style={styles.label}>
+          {/* <Text variant="labelLarge" style={styles.label}>
             {t('transactions.type')}
-          </Text>
-          <SegmentedButtons
+          </Text> */}
+          <FilterButtonGroup
             value={type}
             onValueChange={(value) => setType(value as 'income' | 'expense')}
             buttons={[
               {
                 value: 'income',
                 label: t('transactions.income'),
-                icon: 'cash-plus',
               },
               {
                 value: 'expense',
                 label: t('transactions.expense'),
-                icon: 'cash-minus',
               },
             ]}
-            disabled={loading}
             style={styles.segmentedButtons}
-          />
+          ></FilterButtonGroup>
 
           <AmountInput
             value={amount}

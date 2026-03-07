@@ -10,6 +10,7 @@ import { useBudgetStore } from '../../../store/budgetStore';
 import { useUserStore } from '../../../store/userStore';
 import { Category } from '../../../types/category';
 import { formatCurrency } from '../../../utils/currency';
+import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
 
 type SetBudgetScreenProps = {
   navigation: NativeStackNavigationProp<any>;
@@ -255,7 +256,7 @@ export const SetBudgetScreen = ({ navigation, route }: SetBudgetScreenProps) => 
         <Text variant="labelLarge" style={styles.label}>
           {t('budgets.budgetPeriod')}
         </Text>
-        <SegmentedButtons
+        <FilterButtonGroup
           value={period}
           onValueChange={(value) => setPeriod(value as any)}
           buttons={[
@@ -263,7 +264,6 @@ export const SetBudgetScreen = ({ navigation, route }: SetBudgetScreenProps) => 
             { value: 'yearly', label: t('budgets.yearly') },
           ]}
           style={styles.segmentedButtons}
-          disabled={isEditing}
         />
 
         <CategorySelector
