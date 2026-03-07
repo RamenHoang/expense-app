@@ -10,7 +10,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { RangeDatePicker } from '../../../components/RangeDatePicker';
 import { LoadingScreen } from '../../../components/LoadingScreen';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
-import { formatDateToUTC7String, getCurrentDateUTC7 } from '../../../utils/date';
+import { formatDateForDisplay, formatDateToUTC7String, getCurrentDateUTC7 } from '../../../utils/date';
 
 export const DashboardScreen = () => {
   const { t } = useTranslation();
@@ -122,8 +122,8 @@ export const DashboardScreen = () => {
         if (appliedCustomRange) {
           const start = appliedCustomRange.start;
           const end = appliedCustomRange.end;
-          const startStr = start.toLocaleDateString('vi-VN', { month: 'short', day: 'numeric', year: 'numeric' });
-          const endStr = end.toLocaleDateString('vi-VN', { month: 'short', day: 'numeric', year: 'numeric' });
+          const startStr = formatDateForDisplay(start, 'vi-VN');
+          const endStr = formatDateForDisplay(end, 'vi-VN');
           return `${startStr} - ${endStr}`;
         }
         return t('dashboard.customRange');

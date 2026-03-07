@@ -30,7 +30,7 @@ import { PriceText } from '../../../components/PriceText';
 import { RangeDatePicker } from '../../../components/RangeDatePicker';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
 import { Chip } from 'react-native-paper';
-import { formatDateToUTC7String, getCurrentDateUTC7 } from '../../../utils/date';
+import { formatDateForDisplay, formatDateToUTC7String, getCurrentDateUTC7 } from '../../../utils/date';
 import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
 
 export const TransactionListScreen = () => {
@@ -231,11 +231,7 @@ export const TransactionListScreen = () => {
       date.toDateString() ===
       new Date(Date.now() - 86400000).toDateString();
 
-    let dateLabel = date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-    });
+    let dateLabel = formatDateForDisplay(date, 'vi-VN');
 
     if (isToday) dateLabel = t('transactions.today');
     if (isYesterday) dateLabel = t('transactions.yesterday');
