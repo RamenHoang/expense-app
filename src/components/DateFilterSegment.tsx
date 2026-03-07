@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { SegmentedButtons } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { FilterButtonGroup } from './FilterButtonGroup';
 
 interface DateFilterSegmentProps {
   value: 'month' | 'year' | 'custom' | 'all';
@@ -17,9 +17,9 @@ export const DateFilterSegment: React.FC<DateFilterSegmentProps> = ({
   const { t } = useTranslation();
 
   return (
-    <SegmentedButtons
+    <FilterButtonGroup
       value={value}
-      onValueChange={onValueChange}
+      onValueChange={(val) => onValueChange(val as 'month' | 'year' | 'custom' | 'all')}
       buttons={[
         { value: 'month', label: t('dateFilter.month') },
         { value: 'year', label: t('dateFilter.year') },

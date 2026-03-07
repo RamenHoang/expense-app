@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text, Card, Button, IconButton, SegmentedButtons, useTheme, Portal, Dialog, Divider, FAB } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
@@ -18,7 +18,7 @@ export const DashboardScreen = () => {
   const theme = useTheme();
   const { profile, fetchProfile } = useUserStore();
   const lastModifiedTimestamp = useTransactionStore((state) => state.lastModifiedTimestamp);
-  
+
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [categoryBreakdown, setCategoryBreakdown] = useState<CategorySummary[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
@@ -169,7 +169,7 @@ export const DashboardScreen = () => {
     }
   };
 
-  if (loading && !refreshing) {
+  if (loading && !refreshing && !summary) {
     return <LoadingScreen message={t('dashboard.loadingDashboard')} />;
   }
 
@@ -182,121 +182,130 @@ export const DashboardScreen = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-      <View style={styles.filterContainer}>
-        <DateFilterSegment
-          value={dateFilter}
-          onValueChange={handleFilterChange}
-        />
-      </View>
+        <View style={styles.filterContainer}>
+          <DateFilterSegment
+            value={dateFilter}
+            onValueChange={handleFilterChange}
+          />
+        </View>
 
-      <Card style={styles.summaryCard}>
-        <Card.Content>
-          <Text variant="titleMedium" style={styles.cardTitle}>
-            {getDateFilterLabel()} {t('dashboard.summary')}
-          </Text>
-
-          <View style={styles.balanceContainer}>
-            <PriceText
-              amount={summary?.balance || 0}
-              type={(summary?.balance || 0) >= 0 ? 'income' : 'expense'}
-              variant="headlineLarge"
-              style={styles.balanceAmount}
-            />
-            <Text variant="bodySmall" style={styles.balanceLabel}>
-              {t('dashboard.netBalance')}
+        {loading && summary ? (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+            <Text variant="bodyMedium" style={{ marginTop: 12, color: theme.colors.onSurfaceVariant }}>
+              {t('common.loading')}
             </Text>
           </View>
+        ) : (
+          <>
+            <Card style={styles.summaryCard}>
+              <Card.Content>
+                <Text variant="titleMedium" style={styles.cardTitle}>
+                  {getDateFilterLabel()} {t('dashboard.summary')}
+                </Text>
 
-          <View style={styles.summaryGrid}>
-            <View style={[styles.summaryItem, { backgroundColor: theme.colors.surfaceVariant }]}>
-              <View style={[styles.summaryIcon, { backgroundColor: theme.dark ? '#1b3a1c' : '#e8f5e9' }]}>
-                <IconButton icon="arrow-down" iconColor={theme.colors.income} size={20} />
-              </View>
-              <Text variant="labelSmall" style={styles.summaryItemLabel}>
-                {t('dashboard.income')}
-              </Text>
-              <PriceText
-                amount={summary?.totalIncome || 0}
-                type="income"
-                variant="titleMedium"
-              />
-              <Text variant="bodySmall" style={styles.summaryItemCount}>
-                {summary?.incomeCount || 0} {t('dashboard.transactions')}
-              </Text>
-            </View>
-
-            <View style={[styles.summaryItem, { backgroundColor: theme.colors.surfaceVariant }]}>
-              <View style={[styles.summaryIcon, { backgroundColor: theme.dark ? '#3a1b1b' : '#ffebee' }]}>
-                <IconButton icon="arrow-up" iconColor={theme.colors.expense} size={20} />
-              </View>
-              <Text variant="labelSmall" style={styles.summaryItemLabel}>
-                {t('dashboard.expense')}
-              </Text>
-              <PriceText
-                amount={summary?.totalExpense || 0}
-                type="expense"
-                variant="titleMedium"
-              />
-              <Text variant="bodySmall" style={styles.summaryItemCount}>
-                {summary?.expenseCount || 0} {t('dashboard.transactions')}
-              </Text>
-            </View>
-          </View>
-        </Card.Content>
-      </Card>
-
-      {categoryBreakdown.length > 0 && (
-        <Card style={styles.card}>
-          <Card.Content>
-            <View style={styles.cardHeader}>
-              <Text variant="titleMedium" style={styles.cardTitle}>
-                {t('dashboard.topSpendingCategories')}
-              </Text>
-            </View>
-
-            {categoryBreakdown.slice(0, 5).map((category) => (
-              <View key={category.category_id} style={styles.categoryItem}>
-                <View style={styles.categoryInfo}>
-                  <IconButton
-                    icon={category.category_icon || 'tag'}
-                    iconColor={category.category_color || '#666'}
-                    size={20}
-                  />
-                  <View style={styles.categoryDetails}>
-                    <Text variant="bodyMedium" style={styles.categoryName}>
-                      {category.category_name}
-                    </Text>
-                    <View style={styles.progressBar}>
-                      <View
-                        style={[
-                          styles.progressFill,
-                          {
-                            width: `${category.percentage}%`,
-                            backgroundColor: category.category_color || '#6200ee',
-                          },
-                        ]}
-                      />
-                    </View>
-                  </View>
-                </View>
-                <View style={styles.categoryAmount}>
+                <View style={styles.balanceContainer}>
                   <PriceText
-                    amount={category.total}
-                    variant="titleSmall"
-                    style={styles.categoryTotal}
+                    amount={summary?.balance || 0}
+                    type={(summary?.balance || 0) >= 0 ? 'income' : 'expense'}
+                    variant="headlineLarge"
+                    style={styles.balanceAmount}
                   />
-                  <Text variant="bodySmall" style={styles.categoryPercentage}>
-                    {category.percentage.toFixed(1)}%
+                  <Text variant="bodySmall" style={styles.balanceLabel}>
+                    {t('dashboard.netBalance')}
                   </Text>
                 </View>
-              </View>
-            ))}
-          </Card.Content>
-        </Card>
-      )}
 
-      {/* Category Breakdown - Pie Chart */}
-      {/* {categoryBreakdown.length > 0 && (
+                <View style={styles.summaryGrid}>
+                  <View style={[styles.summaryItem, { backgroundColor: theme.colors.surfaceVariant }]}>
+                    <View style={[styles.summaryIcon, { backgroundColor: theme.dark ? '#1b3a1c' : '#e8f5e9' }]}>
+                      <IconButton icon="arrow-down" iconColor={theme.colors.income} size={20} />
+                    </View>
+                    <Text variant="labelSmall" style={styles.summaryItemLabel}>
+                      {t('dashboard.income')}
+                    </Text>
+                    <PriceText
+                      amount={summary?.totalIncome || 0}
+                      type="income"
+                      variant="titleMedium"
+                    />
+                    <Text variant="bodySmall" style={styles.summaryItemCount}>
+                      {summary?.incomeCount || 0} {t('dashboard.transactions')}
+                    </Text>
+                  </View>
+
+                  <View style={[styles.summaryItem, { backgroundColor: theme.colors.surfaceVariant }]}>
+                    <View style={[styles.summaryIcon, { backgroundColor: theme.dark ? '#3a1b1b' : '#ffebee' }]}>
+                      <IconButton icon="arrow-up" iconColor={theme.colors.expense} size={20} />
+                    </View>
+                    <Text variant="labelSmall" style={styles.summaryItemLabel}>
+                      {t('dashboard.expense')}
+                    </Text>
+                    <PriceText
+                      amount={summary?.totalExpense || 0}
+                      type="expense"
+                      variant="titleMedium"
+                    />
+                    <Text variant="bodySmall" style={styles.summaryItemCount}>
+                      {summary?.expenseCount || 0} {t('dashboard.transactions')}
+                    </Text>
+                  </View>
+                </View>
+              </Card.Content>
+            </Card>
+
+            {categoryBreakdown.length > 0 && (
+              <Card style={styles.card}>
+                <Card.Content>
+                  <View style={styles.cardHeader}>
+                    <Text variant="titleMedium" style={styles.cardTitle}>
+                      {t('dashboard.topSpendingCategories')}
+                    </Text>
+                  </View>
+
+                  {categoryBreakdown.slice(0, 5).map((category) => (
+                    <View key={category.category_id} style={styles.categoryItem}>
+                      <View style={styles.categoryInfo}>
+                        <IconButton
+                          icon={category.category_icon || 'tag'}
+                          iconColor={category.category_color || '#666'}
+                          size={20}
+                        />
+                        <View style={styles.categoryDetails}>
+                          <Text variant="bodyMedium" style={styles.categoryName}>
+                            {category.category_name}
+                          </Text>
+                          <View style={styles.progressBar}>
+                            <View
+                              style={[
+                                styles.progressFill,
+                                {
+                                  width: `${category.percentage}%`,
+                                  backgroundColor: category.category_color || '#6200ee',
+                                },
+                              ]}
+                            />
+                          </View>
+                        </View>
+                      </View>
+                      <View style={styles.categoryAmount}>
+                        <PriceText
+                          amount={category.total}
+                          variant="titleSmall"
+                          style={styles.categoryTotal}
+                        />
+                        <Text variant="bodySmall" style={styles.categoryPercentage}>
+                          {category.percentage.toFixed(1)}%
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </Card.Content>
+              </Card>
+            )}
+
+            {/* Category Breakdown - Pie Chart */}
+            {/* {categoryBreakdown.length > 0 && (
         <Card style={styles.card}>
           <Card.Content>
             <Text variant="titleMedium" style={styles.cardTitle}>
@@ -307,8 +316,8 @@ export const DashboardScreen = () => {
         </Card>
       )} */}
 
-      {/* Monthly Trends - Bar Chart */}
-      {/* {monthlyTrends.length > 0 && (
+            {/* Monthly Trends - Bar Chart */}
+            {/* {monthlyTrends.length > 0 && (
         <Card style={styles.card}>
           <Card.Content>
             <Text variant="titleMedium" style={styles.cardTitle}>
@@ -319,96 +328,100 @@ export const DashboardScreen = () => {
         </Card>
       )} */}
 
-      {recentTransactions.length > 0 && (
-        <Card style={styles.card}>
-          <Card.Content>
-            <View style={styles.cardHeader}>
-              <Text variant="titleMedium" style={styles.cardTitle}>
-                {t('dashboard.recentTransactions')}
-              </Text>
-              <Button
-                mode="text"
-                onPress={() => navigation.navigate('Transactions' as never)}
-              >
-                {t('common.viewAll')}
-              </Button>
-            </View>
+            {recentTransactions.length > 0 && (
+              <Card style={styles.card}>
+                <Card.Content>
+                  <View style={styles.cardHeader}>
+                    <Text variant="titleMedium" style={styles.cardTitle}>
+                      {t('dashboard.recentTransactions')}
+                    </Text>
+                    <Button
+                      mode="text"
+                      onPress={() => navigation.navigate('Transactions' as never)}
+                    >
+                      {t('common.viewAll')}
+                    </Button>
+                  </View>
 
-            {recentTransactions.map((transaction) => (
-              <TouchableOpacity 
-                key={transaction.id} 
-                style={styles.transactionItem}
-                onPress={() => navigation.navigate('EditTransaction' as never, { transactionId: transaction.id } as never)}
-              >
-                <View style={styles.transactionIcon}>
-                  <IconButton
-                    icon={transaction.category?.icon || 'tag'}
-                    iconColor={transaction.category?.color || '#666'}
-                    size={20}
-                  />
-                </View>
-                <View style={styles.transactionDetails}>
-                  <Text variant="bodyMedium" style={styles.transactionCategory}>
-                    {transaction.category?.name || t('common.uncategorized')}
-                  </Text>
-                  <Text variant="bodySmall" style={styles.transactionDate}>
-                    {new Date(transaction.transaction_date).toLocaleDateString()}
-                  </Text>
-                </View>
-                <PriceText
-                  amount={transaction.amount}
-                  type={transaction.type}
-                  variant="titleSmall"
-                  showSign
+                  {recentTransactions.map((transaction) => (
+                    <TouchableOpacity
+                      key={transaction.id}
+                      style={styles.transactionItem}
+                      onPress={() => navigation.navigate('EditTransaction' as never, { transactionId: transaction.id } as never)}
+                    >
+                      <View style={styles.transactionIcon}>
+                        <IconButton
+                          icon={transaction.category?.icon || 'tag'}
+                          iconColor={transaction.category?.color || '#666'}
+                          size={20}
+                        />
+                      </View>
+                      <View style={styles.transactionDetails}>
+                        <Text variant="bodyMedium" style={styles.transactionCategory}>
+                          {transaction.category?.name || t('common.uncategorized')}
+                        </Text>
+                        <Text variant="bodySmall" style={styles.transactionDate}>
+                          {new Date(transaction.transaction_date).toLocaleDateString()}
+                        </Text>
+                      </View>
+                      <PriceText
+                        amount={transaction.amount}
+                        type={transaction.type}
+                        variant="titleSmall"
+                        showSign
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </Card.Content>
+              </Card>
+            )}
+          </>
+        )}
+
+        {!loading && (
+          <View style={styles.quickActions}>
+            <FAB
+              icon="plus"
+              onPress={() => navigation.navigate('AddTransaction' as never)}
+              style={styles.actionButton}
+              label={t('dashboard.addTransaction')}
+            />
+          </View>
+        )}
+      </ScrollView>
+
+      <Portal>
+        <Dialog
+          visible={showCustomDialog}
+          onDismiss={handleCancelCustomRange}
+          style={styles.dialog}
+        >
+          <Dialog.Title>{t('dateFilter.selectRange')}</Dialog.Title>
+          <Dialog.ScrollArea style={styles.scrollArea}>
+            <ScrollView contentContainerStyle={styles.dialogScrollContent}>
+              <View style={styles.dialogContent}>
+                <RangeDatePicker
+                  startDate={customStartDate}
+                  endDate={customEndDate}
+                  onSelectRange={handleSelectRange}
+                  maxDate={new Date()}
                 />
-              </TouchableOpacity>
-            ))}
-          </Card.Content>
-        </Card>
-      )}
-
-      <View style={styles.quickActions}>
-        <FAB
-          icon="plus"
-          onPress={() => navigation.navigate('AddTransaction' as never)}
-          style={styles.actionButton}
-          label={t('dashboard.addTransaction')}
-        />
-      </View>
-    </ScrollView>
-
-    <Portal>
-      <Dialog 
-        visible={showCustomDialog} 
-        onDismiss={handleCancelCustomRange}
-        style={styles.dialog}
-      >
-        <Dialog.Title>{t('dateFilter.selectRange')}</Dialog.Title>
-        <Dialog.ScrollArea style={styles.scrollArea}>
-          <ScrollView contentContainerStyle={styles.dialogScrollContent}>
-            <View style={styles.dialogContent}>
-              <RangeDatePicker
-                startDate={customStartDate}
-                endDate={customEndDate}
-                onSelectRange={handleSelectRange}
-                maxDate={new Date()}
-              />
-            </View>
-          </ScrollView>
-        </Dialog.ScrollArea>
-        <Dialog.Actions>
-          <Button onPress={handleCancelCustomRange}>{t('common.cancel')}</Button>
-          <Button 
-            mode="contained" 
-            onPress={handleApplyCustomRange}
-            disabled={!customStartDate || !customEndDate}
-          >
-            {t('common.apply')}
-          </Button>
-        </Dialog.Actions>
-      </Dialog>
-    </Portal>
-  </View>
+              </View>
+            </ScrollView>
+          </Dialog.ScrollArea>
+          <Dialog.Actions>
+            <Button onPress={handleCancelCustomRange}>{t('common.cancel')}</Button>
+            <Button
+              mode="contained"
+              onPress={handleApplyCustomRange}
+              disabled={!customStartDate || !customEndDate}
+            >
+              {t('common.apply')}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    </View>
   );
 };
 
@@ -568,5 +581,12 @@ const styles = StyleSheet.create({
   },
   dialogContent: {
     paddingHorizontal: 24,
+  },
+  loadingOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 80,
+    minHeight: 300,
   },
 });
