@@ -97,7 +97,7 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
           </View>
         }
         description={transaction.note ? highlightText(transaction.note, searchQuery) : t('common.noNote')}
-        onPress={isOwnTransaction ? () => onEdit(transaction) : undefined}
+        onPress={() => onEdit(transaction)}
         left={(props) => (
           <List.Icon
             {...props}

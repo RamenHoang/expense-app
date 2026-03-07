@@ -31,6 +31,7 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
       ],
+      "softwareKeyboardLayoutMode": "resize",
       "statusBar": {
         "backgroundColor": "#ffffff",
         "barStyle": "dark-content",
