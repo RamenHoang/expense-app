@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { Text, FAB, SegmentedButtons, Snackbar, Portal, Searchbar, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
@@ -14,10 +14,30 @@ export const CategoryListScreen = () => {
   const { categories, isLoading, error, fetchCategories, clearError } = useCategoryStore();
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce search query
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 1000);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery]);
 
   useEffect(() => {
     loadCategories();
@@ -50,7 +70,7 @@ export const CategoryListScreen = () => {
   };
 
   const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(searchQuery.toLowerCase())
+    category.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
   );
 
   const incomeCategories = filteredCategories.filter((cat) => cat.type === 'income');
@@ -110,7 +130,7 @@ export const CategoryListScreen = () => {
         {filteredCategories.length === 0 && !isLoading && (
           <View style={styles.emptyState}>
             <Text variant="bodyLarge" style={styles.emptyText}>
-              {searchQuery
+              {debouncedSearchQuery
                 ? t('categories.noCategoriesFound')
                 : t('categories.noCategoriesYet')}
             </Text>

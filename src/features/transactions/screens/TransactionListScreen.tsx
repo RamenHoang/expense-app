@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -54,7 +54,7 @@ export const TransactionListScreen = () => {
   const { family } = useFamilyStore();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(true);
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [scopeFilter, setScopeFilter] = useState<'all' | 'mine' | 'family'>('all');
@@ -64,10 +64,29 @@ export const TransactionListScreen = () => {
   const [customStartDate, setCustomStartDate] = useState(new Date());
   const [customEndDate, setCustomEndDate] = useState(new Date());
   const [appliedCustomRange, setAppliedCustomRange] = useState<{ start: Date; end: Date } | null>(null);
+  
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce search query
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 1000);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery]);
 
   useEffect(() => {
     loadTransactions();
-  }, [dateFilter, appliedCustomRange, scopeFilter]);
+  }, [dateFilter, appliedCustomRange, scopeFilter, debouncedSearchQuery]);
 
   const getDateRange = () => {
     // Get current date in UTC+7
@@ -111,7 +130,7 @@ export const TransactionListScreen = () => {
       start_date: dateRange.start_date,
       end_date: dateRange.end_date,
       type: filterType === 'all' ? undefined : filterType,
-      search: searchQuery || undefined,
+      search: debouncedSearchQuery || undefined,
       scope: scopeFilter === 'all' ? undefined : scopeFilter,
     }, true);
   };
@@ -128,33 +147,8 @@ export const TransactionListScreen = () => {
     }
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    const dateRange = getDateRange();
-    resetPagination();
-    fetchTransactions({ 
-      ...filters, 
-      ...dateRange,
-      start_date: dateRange.start_date,
-      end_date: dateRange.end_date,
-      search: query || undefined,
-      type: filterType === 'all' ? undefined : filterType,
-    }, true);
-  };
-
   const handleFilterChange = (value: string) => {
     setFilterType(value as 'all' | 'income' | 'expense');
-    const newType = value === 'all' ? undefined : (value as 'income' | 'expense');
-    const dateRange = getDateRange();
-    resetPagination();
-    fetchTransactions({ 
-      ...filters, 
-      ...dateRange,
-      start_date: dateRange.start_date,
-      end_date: dateRange.end_date,
-      type: newType,
-      search: searchQuery || undefined,
-    }, true);
   };
 
   const handleDateFilterChange = (value: string) => {
@@ -405,7 +399,7 @@ export const TransactionListScreen = () => {
           <View style={[styles.expandedSearchBar, { backgroundColor: theme.colors.surface }]}>
             <Searchbar
               placeholder={t('common.search')}
-              onChangeText={handleSearch}
+              onChangeText={setSearchQuery}
               value={searchQuery}
               style={styles.searchInput}
               // autoFocus
@@ -417,7 +411,7 @@ export const TransactionListScreen = () => {
               onPress={() => {
                 setIsSearchExpanded(false);
                 setSearchQuery('');
-                handleSearch('');
+                setDebouncedSearchQuery('');
               }}
               style={styles.closeSearchButton}
             /> */}
