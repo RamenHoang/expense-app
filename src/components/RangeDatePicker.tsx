@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, IconButton, useTheme, Button, Menu } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { formatDateForDisplay } from '../utils/date';
 
 interface RangeDatePickerProps {
   startDate: Date | null;
@@ -445,11 +446,7 @@ export const RangeDatePicker: React.FC<RangeDatePickerProps> = ({
               {t('dashboard.fromDate')}
             </Text>
             <Text variant="bodyMedium" style={styles.dateValue}>
-              {tempStartDate.toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric', 
-                year: 'numeric' 
-              })}
+              {formatDateForDisplay(tempStartDate, 'vi-VN')}
             </Text>
           </View>
           {tempEndDate && (
@@ -460,11 +457,7 @@ export const RangeDatePicker: React.FC<RangeDatePickerProps> = ({
                   {t('dashboard.toDate')}
                 </Text>
                 <Text variant="bodyMedium" style={styles.dateValue}>
-                  {tempEndDate.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric', 
-                    year: 'numeric' 
-                  })}
+                  {formatDateForDisplay(tempEndDate, 'vi-VN')}
                 </Text>
               </View>
             </>
