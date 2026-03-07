@@ -10,6 +10,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { RangeDatePicker } from '../../../components/RangeDatePicker';
 import { LoadingScreen } from '../../../components/LoadingScreen';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
+import { formatDateToUTC7String, getCurrentDateUTC7 } from '../../../utils/date';
 
 export const DashboardScreen = () => {
   const { t } = useTranslation();
@@ -51,21 +52,24 @@ export const DashboardScreen = () => {
   );
 
   const getDateRange = () => {
-    const endDate = new Date();
-    const startDate = new Date();
+    // Get current date in UTC+7
+    const endDate = getCurrentDateUTC7();
+    const startDate = getCurrentDateUTC7();
 
     switch (dateFilter) {
       case 'month':
-        startDate.setDate(1);
+        // First day of current month
+        startDate.setUTCDate(1);
         break;
       case 'year':
-        startDate.setMonth(0, 1);
+        // First day of current year
+        startDate.setUTCMonth(0, 1);
         break;
       case 'custom':
         if (appliedCustomRange) {
           return {
-            startDate: appliedCustomRange.start.toISOString().split('T')[0],
-            endDate: appliedCustomRange.end.toISOString().split('T')[0],
+            startDate: formatDateToUTC7String(appliedCustomRange.start),
+            endDate: formatDateToUTC7String(appliedCustomRange.end),
           };
         }
         return { startDate: undefined, endDate: undefined };
@@ -74,8 +78,8 @@ export const DashboardScreen = () => {
     }
 
     return {
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0],
+      startDate: formatDateToUTC7String(startDate),
+      endDate: formatDateToUTC7String(endDate),
     };
   };
 
