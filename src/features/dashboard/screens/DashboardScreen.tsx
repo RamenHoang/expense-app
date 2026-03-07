@@ -263,7 +263,7 @@ export const DashboardScreen = () => {
                     </Text>
                   </View>
 
-                  {categoryBreakdown.slice(0, 5).map((category) => (
+                  {categoryBreakdown.map((category) => (
                     <View key={category.category_id} style={styles.categoryItem}>
                       <View style={styles.categoryInfo}>
                         <IconButton
