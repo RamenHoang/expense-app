@@ -9,6 +9,7 @@ import { formatCurrency } from '../../../utils/currency';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { budgetService } from '../../../services/budgetService';
 import { LoadingScreen } from '../../../components/LoadingScreen';
+import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
 
 export const BudgetScreen = () => {
   const { t } = useTranslation();
@@ -114,7 +115,7 @@ export const BudgetScreen = () => {
         }
       >
         <View style={styles.filterContainer}>
-          <SegmentedButtons
+          <FilterButtonGroup
             value={period}
             onValueChange={(value) => setPeriod(value as any)}
             buttons={[

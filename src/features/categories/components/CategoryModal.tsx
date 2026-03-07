@@ -16,6 +16,7 @@ import { Category, CreateCategoryInput, UpdateCategoryInput } from '../../../typ
 import { categoryService } from '../../../services/categoryService';
 import { useCategoryStore } from '../../../store/categoryStore';
 import { useFamilyStore } from '../../../store/familyStore';
+import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
 
 interface CategoryModalProps {
   visible: boolean;
@@ -298,14 +299,13 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
           <Text variant="labelLarge" style={styles.label}>
             {t('categories.type')}
           </Text>
-          <SegmentedButtons
+          <FilterButtonGroup
             value={type}
             onValueChange={(value) => setType(value as 'income' | 'expense')}
             buttons={[
               { value: 'income', label: t('categories.income') },
               { value: 'expense', label: t('categories.expense') },
             ]}
-            disabled={loading}
             style={styles.segmentedButtons}
           />
 
