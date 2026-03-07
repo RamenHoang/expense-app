@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { TransactionWithCategory } from '../../../types/transaction';
 import { transactionService } from '../../../services/transactionService';
 import { useTransactionStore } from '../../../store/transactionStore';
+import { useAuthStore } from '../../../store/authStore';
 import { PriceText } from '../../../components/PriceText';
 
 interface TransactionListItemProps {
@@ -20,9 +21,12 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const user = useAuthStore((state) => state.user);
   const removeTransaction = useTransactionStore((state) => state.removeTransaction);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const isOwnTransaction = user?.id === transaction.user_id;
 
   const highlightText = (text: string, query: string) => {
     if (!query || !text) return <Text>{text}</Text>;
@@ -93,7 +97,7 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
           </View>
         }
         description={transaction.note ? highlightText(transaction.note, searchQuery) : t('common.noNote')}
-        onPress={() => onEdit(transaction)}
+        onPress={isOwnTransaction ? () => onEdit(transaction) : undefined}
         left={(props) => (
           <List.Icon
             {...props}
@@ -109,14 +113,16 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
               variant="titleMedium"
               showSign
             />
-            <View style={styles.actions}>
-              <IconButton
-                icon="delete"
-                size={20}
-                iconColor={theme.colors.error}
-                onPress={() => setDeleteDialogVisible(true)}
-              />
-            </View>
+            {isOwnTransaction && (
+              <View style={styles.actions}>
+                <IconButton
+                  icon="delete"
+                  size={20}
+                  iconColor={theme.colors.error}
+                  onPress={() => setDeleteDialogVisible(true)}
+                />
+              </View>
+            )}
           </View>
         )}
         style={[styles.item, { backgroundColor: theme.colors.surface }]}

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Category } from '../../../types/category';
 import { categoryService } from '../../../services/categoryService';
 import { useCategoryStore } from '../../../store/categoryStore';
+import { useAuthStore } from '../../../store/authStore';
 
 interface CategoryListItemProps {
   category: Category;
@@ -15,10 +16,13 @@ interface CategoryListItemProps {
 export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, onEdit, searchQuery = '' }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const user = useAuthStore((state) => state.user);
   const removeCategory = useCategoryStore((state) => state.removeCategory);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [usageCount, setUsageCount] = useState<number | null>(null);
+
+  const isOwnCategory = user?.id === category.user_id;
 
   const highlightText = (text: string, query: string) => {
     if (!query || !text) return <Text>{text}</Text>;
@@ -89,17 +93,21 @@ export const CategoryListItem: React.FC<CategoryListItemProps> = ({ category, on
         )}
         right={() => (
           <View style={styles.actions}>
-            <IconButton
-              icon="pencil"
-              size={20}
-              onPress={() => onEdit(category)}
-            />
-            <IconButton
-              icon="delete"
-              size={20}
-              iconColor={theme.colors.error}
-              onPress={handleDeletePress}
-            />
+            {isOwnCategory && (
+              <>
+                <IconButton
+                  icon="pencil"
+                  size={20}
+                  onPress={() => onEdit(category)}
+                />
+                <IconButton
+                  icon="delete"
+                  size={20}
+                  iconColor={theme.colors.error}
+                  onPress={handleDeletePress}
+                />
+              </>
+            )}
           </View>
         )}
         style={[styles.item, { backgroundColor: theme.colors.surface }]}
