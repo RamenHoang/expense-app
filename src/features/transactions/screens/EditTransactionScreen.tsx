@@ -29,6 +29,7 @@ import { useFamilyStore } from '../../../store/familyStore';
 import { useAuthStore } from '../../../store/authStore';
 import { Category } from '../../../types/category';
 import { TransactionWithCategory } from '../../../types/transaction';
+import { parseDateStringToUTC7, formatDateToUTC7String } from '../../../utils/date';
 
 type EditTransactionScreenProps = {
   navigation: NativeStackNavigationProp<any>;
@@ -70,15 +71,16 @@ export const EditTransactionScreen = ({
   const loadTransaction = async () => {
     try {
       const data = await transactionService.getTransactionById(transactionId);
-      // console.log('Loaded transaction:', JSON.stringify(data, null, 2));
-      // console.log('Current user ID:', currentUser?.id);
-      // console.log('Transaction user_id:', data.user_id);
-      // console.log('User profile:', data.user_profile);
+      console.log('Loaded transaction:', JSON.stringify(data, null, 2));
+      console.log('Current user ID:', currentUser?.id);
+      console.log('Transaction user_id:', data.user_id);
+      console.log('User profile:', data.user_profile);
 
       setTransaction(data);
       setType(data.type);
       setAmount(data.amount.toString());
-      setDate(new Date(data.transaction_date));
+      // Parse date string to UTC+7 Date object
+      setDate(parseDateStringToUTC7(data.transaction_date));
       setNote(data.note || '');
       setIsShared(data.is_shared || false);
 
@@ -139,7 +141,8 @@ export const EditTransactionScreen = ({
           type,
           amount: parseFloat(amount),
           category_id: selectedCategory?.id,
-          transaction_date: date.toISOString().split('T')[0],
+          // Convert Date object to YYYY-MM-DD string in UTC+7
+          transaction_date: formatDateToUTC7String(date),
           note: note.trim() || undefined,
           family_id: isShared && family ? family.id : null,
           is_shared: isShared && family ? true : false,

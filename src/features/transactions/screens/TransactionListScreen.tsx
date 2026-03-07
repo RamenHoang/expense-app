@@ -30,6 +30,7 @@ import { PriceText } from '../../../components/PriceText';
 import { RangeDatePicker } from '../../../components/RangeDatePicker';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
 import { Chip } from 'react-native-paper';
+import { formatDateToUTC7String, getCurrentDateUTC7 } from '../../../utils/date';
 
 export const TransactionListScreen = () => {
   const { t } = useTranslation();
@@ -66,21 +67,24 @@ export const TransactionListScreen = () => {
   }, [dateFilter, appliedCustomRange, scopeFilter]);
 
   const getDateRange = () => {
-    const endDate = new Date();
-    const startDate = new Date();
+    // Get current date in UTC+7
+    const endDate = getCurrentDateUTC7();
+    const startDate = getCurrentDateUTC7();
 
     switch (dateFilter) {
       case 'month':
-        startDate.setDate(1);
+        // First day of current month
+        startDate.setUTCDate(1);
         break;
       case 'year':
-        startDate.setMonth(0, 1);
+        // First day of current year
+        startDate.setUTCMonth(0, 1);
         break;
       case 'custom':
         if (appliedCustomRange) {
           return {
-            start_date: appliedCustomRange.start.toISOString().split('T')[0],
-            end_date: appliedCustomRange.end.toISOString().split('T')[0],
+            start_date: formatDateToUTC7String(appliedCustomRange.start),
+            end_date: formatDateToUTC7String(appliedCustomRange.end),
           };
         }
         return {};
@@ -89,8 +93,8 @@ export const TransactionListScreen = () => {
     }
 
     return {
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
+      start_date: formatDateToUTC7String(startDate),
+      end_date: formatDateToUTC7String(endDate),
     };
   };
 

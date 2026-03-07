@@ -28,6 +28,7 @@ import { useUserStore } from '../../../store/userStore';
 import { useFamilyStore } from '../../../store/familyStore';
 import { Category } from '../../../types/category';
 import { formatCurrency } from '../../../utils/currency';
+import { formatDateToUTC7String } from '../../../utils/date';
 
 type AddTransactionScreenProps = {
   navigation: NativeStackNavigationProp<any>;
@@ -98,7 +99,8 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
         type,
         amount: parseFloat(amount),
         category_id: selectedCategory?.id,
-        transaction_date: date.toISOString().split('T')[0],
+        // Convert Date object to YYYY-MM-DD string in UTC+7
+        transaction_date: formatDateToUTC7String(date),
         note: note.trim() || undefined,
         family_id: isShared && family ? family.id : undefined,
         is_shared: isShared && family ? true : false,
