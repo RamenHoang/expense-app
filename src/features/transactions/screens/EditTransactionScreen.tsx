@@ -26,6 +26,7 @@ import { AmountInput } from '../components/AmountInput';
 import { transactionService } from '../../../services/transactionService';
 import { useTransactionStore } from '../../../store/transactionStore';
 import { useFamilyStore } from '../../../store/familyStore';
+import { useAuthStore } from '../../../store/authStore';
 import { Category } from '../../../types/category';
 import { TransactionWithCategory } from '../../../types/transaction';
 
@@ -42,7 +43,8 @@ export const EditTransactionScreen = ({
   const theme = useTheme();
   const { transactionId } = route.params;
   const updateTransactionInStore = useTransactionStore((state) => state.updateTransaction);
-  const { family } = useFamilyStore();
+  const { family, shareWithFamily, setShareWithFamily } = useFamilyStore();
+  const currentUser = useAuthStore((state) => state.user);
 
   const [transaction, setTransaction] = useState<TransactionWithCategory | null>(null);
   const [type, setType] = useState<'income' | 'expense'>('expense');
@@ -55,6 +57,7 @@ export const EditTransactionScreen = ({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isYourTransaction, setIsYourTransaction] = useState(false);
 
   // Validation errors
   const [amountError, setAmountError] = useState(false);
@@ -67,13 +70,18 @@ export const EditTransactionScreen = ({
   const loadTransaction = async () => {
     try {
       const data = await transactionService.getTransactionById(transactionId);
+      // console.log('Loaded transaction:', JSON.stringify(data, null, 2));
+      // console.log('Current user ID:', currentUser?.id);
+      // console.log('Transaction user_id:', data.user_id);
+      // console.log('User profile:', data.user_profile);
+
       setTransaction(data);
       setType(data.type);
       setAmount(data.amount.toString());
       setDate(new Date(data.transaction_date));
       setNote(data.note || '');
       setIsShared(data.is_shared || false);
-      
+
       if (data.category) {
         setSelectedCategory({
           id: data.category.id,
@@ -85,6 +93,8 @@ export const EditTransactionScreen = ({
           created_at: '',
         });
       }
+
+      setIsYourTransaction(data.user_id === currentUser?.id);
     } catch (err: any) {
       Alert.alert(t('common.error'), err.message || t('transactions.failedToLoadTransaction'));
       navigation.goBack();
@@ -182,6 +192,30 @@ export const EditTransactionScreen = ({
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.form}>
+          {/* Display creator info if not the current user */}
+          {/* {console.log('Rendering creator check:', {
+            hasTransaction: !!transaction,
+            transactionUserId: transaction?.user_id,
+            currentUserId: currentUser?.id,
+            isDifferentUser: transaction?.user_id !== currentUser?.id,
+            hasUserProfile: !!transaction?.user_profile,
+            userProfile: transaction?.user_profile
+          })} */}
+          {transaction && transaction.user_id !== currentUser?.id && transaction.user_profile && (
+            <View style={[styles.creatorInfo, { backgroundColor: theme.colors.surfaceVariant }]}>
+              <Text variant="labelMedium" style={styles.creatorLabel}>
+                {t('transactions.createdBy')}
+              </Text>
+              <Text variant="bodyLarge" style={styles.creatorName}>
+                {transaction.user_profile.email && (
+                  <Text variant="labelMedium" style={styles.creatorEmail}>
+                    {transaction.user_profile.full_name}
+                  </Text>
+                )}
+              </Text>
+            </View>
+          )}
+
           <Text variant="labelLarge" style={styles.label}>
             {t('transactions.type')}
           </Text>
@@ -249,8 +283,11 @@ export const EditTransactionScreen = ({
               </View>
               <Switch
                 value={isShared}
-                onValueChange={setIsShared}
-                disabled={saving}
+                onValueChange={(value) => {
+                  setIsShared(value);
+                  setShareWithFamily(value);
+                }}
+                disabled={saving || !isYourTransaction}
               />
             </View>
           )}
@@ -259,7 +296,7 @@ export const EditTransactionScreen = ({
             <Button
               mode="outlined"
               onPress={() => navigation.goBack()}
-              disabled={saving}
+              disabled={saving || !isYourTransaction}
               style={styles.cancelButton}
             >
               {t('common.cancel')}
@@ -268,7 +305,7 @@ export const EditTransactionScreen = ({
               mode="contained"
               onPress={handleSubmit}
               loading={saving}
-              disabled={saving}
+              disabled={saving || !isYourTransaction}
               style={styles.submitButton}
             >
               {t('common.save')}
@@ -344,6 +381,22 @@ const styles = StyleSheet.create({
   switchHint: {
     marginTop: 4,
     opacity: 0.7,
+  },
+  creatorInfo: {
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  creatorLabel: {
+    opacity: 0.7,
+    marginBottom: 4,
+  },
+  creatorName: {
+    fontWeight: '600',
+  },
+  creatorEmail: {
+    fontWeight: '400',
+    opacity: 0.8,
   },
   actions: {
     flexDirection: 'row',

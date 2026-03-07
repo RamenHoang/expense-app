@@ -152,6 +152,7 @@
     "failedToTakePhoto": "Failed to take photo",
     "shareWithFamily": "Share with Family",
     "shareWithFamilyDesc": "This transaction will be visible to {{familyName}} members",
+    "createdBy": "Created by",
     "sharedTransaction": "Shared",
     "myTransactions": "My Transactions",
     "familyTransactions": "Family Transactions",

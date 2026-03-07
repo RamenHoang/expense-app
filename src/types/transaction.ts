@@ -21,6 +21,11 @@ export interface TransactionWithCategory extends Transaction {
     color?: string;
     type: 'income' | 'expense';
   };
+  user_profile?: {
+    id: string;
+    full_name: string;
+    email?: string;
+  };
 }
 
 export interface CreateTransactionInput {

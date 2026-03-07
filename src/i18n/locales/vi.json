@@ -143,6 +143,7 @@
     "failedToTakePhoto": "Không thể chụp ảnh",
     "shareWithFamily": "Chia sẻ với gia đình",
     "shareWithFamilyDesc": "Giao dịch này sẽ hiển thị cho các thành viên {{familyName}}",
+    "createdBy": "Được tạo bởi",
     "sharedTransaction": "Đã chia sẻ",
     "myTransactions": "Giao dịch của tôi",
     "familyTransactions": "Giao dịch gia đình",
