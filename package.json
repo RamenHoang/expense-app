@@ -1,10 +1,13 @@
 {
   "name": "vi-dau-kho",
-  "version": "1.0.0",
+  "version": "1.6.0",
   "main": "index.ts",
   "scripts": {
     "start": "expo start --go",
-    "build:android": "eas build -p android --profile preview --local --output ./builds/android"
+    "build:android": "eas build -p android --profile preview --local --output ./builds/android",
+    "prebuild": "npx expo prebuild --clean",
+    "build:clean": "cd android && ./gradlew clean && cd ..",
+    "build:eas": "./build-eas.sh"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
