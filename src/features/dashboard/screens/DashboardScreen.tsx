@@ -10,7 +10,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { RangeDatePicker } from '../../../components/RangeDatePicker';
 import { LoadingScreen } from '../../../components/LoadingScreen';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
-import { formatDateForDisplay, formatDateToUTC7String, getCurrentDateUTC7 } from '../../../utils/date';
+import { formatDateForDisplay, formatDateToUTC7String } from '../../../utils/date';
 
 export const DashboardScreen = () => {
   const { t } = useTranslation();
@@ -52,19 +52,23 @@ export const DashboardScreen = () => {
   );
 
   const getDateRange = () => {
-    // Get current date in UTC+7
-    const endDate = getCurrentDateUTC7();
-    const startDate = getCurrentDateUTC7();
-
     switch (dateFilter) {
-      case 'month':
-        // First day of current month
-        startDate.setUTCDate(1);
-        break;
-      case 'year':
-        // First day of current year
-        startDate.setUTCMonth(0, 1);
-        break;
+      case 'month': {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        return {
+          startDate: formatDateToUTC7String(start),
+          endDate: formatDateToUTC7String(now),
+        };
+      }
+      case 'year': {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 1);
+        return {
+          startDate: formatDateToUTC7String(start),
+          endDate: formatDateToUTC7String(now),
+        };
+      }
       case 'custom':
         if (appliedCustomRange) {
           return {
@@ -76,11 +80,6 @@ export const DashboardScreen = () => {
       case 'all':
         return { startDate: undefined, endDate: undefined };
     }
-
-    return {
-      startDate: formatDateToUTC7String(startDate),
-      endDate: formatDateToUTC7String(endDate),
-    };
   };
 
   const loadDashboardData = async () => {
