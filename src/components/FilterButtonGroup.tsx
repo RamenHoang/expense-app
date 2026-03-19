@@ -20,8 +20,6 @@ export const FilterButtonGroup: React.FC<FilterButtonGroupProps> = ({
   const [buttonLayouts, setButtonLayouts] = useState<{ [key: string]: { x: number; width: number } }>({});
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const selectedIndex = buttons.findIndex((b) => b.value === value);
-
   useEffect(() => {
     if (buttonLayouts[value] && Object.keys(buttonLayouts).length === buttons.length) {
       const targetX = buttonLayouts[value].x;
@@ -57,13 +55,13 @@ export const FilterButtonGroup: React.FC<FilterButtonGroupProps> = ({
       backgroundColor: theme.colors.surfaceVariant,
       borderRadius: 25,
       padding: 4,
-      height: 50,
+      height: 40,
       position: 'relative',
       overflow: 'hidden',
     },
     slidingBackground: {
       position: 'absolute',
-      height: 42,
+      height: 32,
       backgroundColor: theme.colors.primary,
       borderRadius: 21,
       top: 4,
@@ -98,11 +96,11 @@ export const FilterButtonGroup: React.FC<FilterButtonGroupProps> = ({
         <Animated.View
           style={{
             position: 'absolute',
-            height: 42,
+            height: styles.slidingBackground.height,
             width: selectedButtonWidth,
-            backgroundColor: theme.colors.primary,
-            borderRadius: 21,
-            top: 4,
+            backgroundColor: styles.slidingBackground.backgroundColor,
+            borderRadius: styles.slidingBackground.borderRadius,
+            top: styles.slidingBackground.top,
             transform: [{ translateX: slideAnimation }],
           }}
         />
