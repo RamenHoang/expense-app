@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -146,6 +146,21 @@ export const TransactionListScreen = () => {
       loadMoreTransactions();
     }
   };
+
+  const renderFooter = useCallback(() => {
+    if (transactions.length === 0) return null;
+    if (isLoadingMore) {
+      return (
+        <View style={styles.loadingMore}>
+          <ActivityIndicator size="small" color={theme.colors.primary} />
+          <Text variant="bodySmall" style={styles.loadingText}>
+            {t('transactions.loadingMore')}
+          </Text>
+        </View>
+      );
+    }
+    return <View style={styles.listFooter} />;
+  }, [transactions.length, isLoadingMore, theme.colors.primary, t]);
 
   const handleFilterChange = (value: string) => {
     setFilterType(value as 'all' | 'income' | 'expense');
@@ -354,27 +369,13 @@ export const TransactionListScreen = () => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
+          onEndReachedThreshold={0.2}
           maxToRenderPerBatch={10}
           updateCellsBatchingPeriod={50}
           initialNumToRender={5}
           windowSize={10}
           removeClippedSubviews={true}
-          getItemLayout={(data, index) => ({
-            length: 150,
-            offset: 150 * index,
-            index,
-          })}
-          ListFooterComponent={
-            isLoadingMore ? (
-              <View style={styles.loadingMore}>
-                <ActivityIndicator size="small" color={theme.colors.primary} />
-                <Text variant="bodySmall" style={styles.loadingText}>
-                  {t('transactions.loadingMore')}
-                </Text>
-              </View>
-            ) : null
-          }
+          ListFooterComponent={renderFooter}
           ListEmptyComponent={
             !isLoading ? (
               <View style={styles.emptyState}>
@@ -537,7 +538,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   listContent: {
-    paddingBottom: 80, // Add padding to prevent FAB from covering items
   },
   emptyState: {
     flex: 1,
@@ -550,8 +550,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   loadingMore: {
-    paddingVertical: 16,
+    height: 80,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  listFooter: {
+    height: 80,
   },
   loadingText: {
     marginTop: 8,
