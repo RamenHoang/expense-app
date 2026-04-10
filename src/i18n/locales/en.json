@@ -471,5 +471,26 @@
     "alreadyMember": "User is already a family member",
     "cannotRemoveOwner": "Cannot remove the family owner",
     "youAreOwner": "You are the owner"
+  },
+  "voice": {
+    "addWithVoice": "Add with voice",
+    "startRecording": "Tap mic to start",
+    "listening": "Listening...",
+    "tapToStop": "Tap to stop",
+    "retryRecording": "Record again",
+    "confirm": "Confirm",
+    "parsedResult": "Recognized result",
+    "detectedType": "Type",
+    "detectedAmount": "Amount",
+    "detectedCategory": "Category",
+    "detectedNote": "Note",
+    "noAmountDetected": "Amount not recognized",
+    "notDetected": "Not recognized",
+    "noTranscript": "Speech not recognized, please try again",
+    "permissionDenied": "Microphone permission required",
+    "notAvailable": "Speech recognition not available on this device",
+    "transcript": "Recognized text",
+    "modalTitle": "Add with voice",
+    "addManually": "Add manually"
   }
 }

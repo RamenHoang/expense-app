@@ -12,12 +12,24 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "plugins": [
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Ứng dụng cần truy cập microphone để nhận dạng giọng nói.",
+          "speechRecognitionPermission": "Ứng dụng cần quyền nhận dạng giọng nói để tạo giao dịch.",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.expenseapp.personalfinance",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs camera access to take photos of receipts.",
-        "NSPhotoLibraryUsageDescription": "This app needs photo library access to select receipt images."
+        "NSPhotoLibraryUsageDescription": "This app needs photo library access to select receipt images.",
+        "NSSpeechRecognitionUsageDescription": "Ứng dụng cần quyền nhận dạng giọng nói để tạo giao dịch.",
+        "NSMicrophoneUsageDescription": "Ứng dụng cần truy cập microphone để nhận dạng giọng nói."
       }
     },
     "android": {
@@ -29,7 +41,8 @@
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO"
       ],
       "softwareKeyboardLayoutMode": "resize",
       "statusBar": {

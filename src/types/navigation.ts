@@ -1,8 +1,15 @@
+export type VoiceTransactionParams = {
+  initialType?: 'income' | 'expense';
+  initialAmount?: string;
+  initialCategoryId?: string;
+  initialNote?: string;
+};
+
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
   Categories: undefined;
-  AddTransaction: undefined;
+  AddTransaction: VoiceTransactionParams | undefined;
   EditTransaction: { transactionId: string };
   SetBudget: { categoryId?: string };
   CurrencySelection: undefined;
@@ -27,7 +34,7 @@ export type MainTabParamList = {
 
 export type TransactionStackParamList = {
   TransactionList: undefined;
-  AddTransaction: undefined;
+  AddTransaction: VoiceTransactionParams | undefined;
   EditTransaction: { transactionId: string };
 };
 

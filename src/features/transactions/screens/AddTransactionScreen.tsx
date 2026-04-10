@@ -14,10 +14,12 @@ import {
   Button,
   SegmentedButtons,
   Snackbar,
+  IconButton,
   useTheme,
 } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import { CategorySelector } from '../../categories/components/CategorySelector';
 import { DatePickerInput } from '../components/DatePickerInput';
 import { AmountInput } from '../components/AmountInput';
@@ -26,10 +28,13 @@ import { transactionService } from '../../../services/transactionService';
 import { useTransactionStore } from '../../../store/transactionStore';
 import { useUserStore } from '../../../store/userStore';
 import { useFamilyStore } from '../../../store/familyStore';
+import { useCategoryStore } from '../../../store/categoryStore';
 import { Category } from '../../../types/category';
 import { formatCurrency } from '../../../utils/currency';
 import { formatDateToUTC7String } from '../../../utils/date';
 import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
+import { VoiceInputModal } from '../components/VoiceInputModal';
+import { RootStackParamList } from '../../../types/navigation';
 
 type AddTransactionScreenProps = {
   navigation: NativeStackNavigationProp<any>;
@@ -38,15 +43,20 @@ type AddTransactionScreenProps = {
 export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const route = useRoute<RouteProp<RootStackParamList, 'AddTransaction'>>();
+  const params = route.params;
+
   const addTransaction = useTransactionStore((state) => state.addTransaction);
   const { profile, fetchProfile } = useUserStore();
   const { family, shareWithFamily, setShareWithFamily } = useFamilyStore();
-  
-  const [type, setType] = useState<'income' | 'expense'>('expense');
-  const [amount, setAmount] = useState('');
+  const { categories } = useCategoryStore();
+
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
+  const [type, setType] = useState<'income' | 'expense'>(params?.initialType ?? 'expense');
+  const [amount, setAmount] = useState(params?.initialAmount ?? '');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [date, setDate] = useState(new Date());
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState(params?.initialNote ?? '');
   const [isShared, setIsShared] = useState(shareWithFamily);
   // const [receiptUri, setReceiptUri] = useState('');
   // const [receiptFileName, setReceiptFileName] = useState('');
@@ -63,6 +73,30 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
       fetchProfile();
     }
   }, []);
+
+  // Set up mic button in screen header
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <IconButton
+          icon="microphone"
+          size={24}
+          onPress={() => setShowVoiceModal(true)}
+        />
+      ),
+    });
+  }, [navigation]);
+
+  // Auto-select initial category from voice params
+  useEffect(() => {
+    if (params?.initialCategoryId && categories.length > 0) {
+      const cat = categories.find(c => c.id === params.initialCategoryId);
+      if (cat) {
+        setSelectedCategory(cat);
+        setType(cat.type as 'income' | 'expense');
+      }
+    }
+  }, [params?.initialCategoryId, categories]);
 
   const currency = profile?.currency || 'USD';
 
@@ -336,6 +370,25 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
         {success}
       </Snackbar>
       </KeyboardAvoidingView>
+
+      <VoiceInputModal
+        visible={showVoiceModal}
+        onDismiss={() => setShowVoiceModal(false)}
+        onConfirm={(parsed) => {
+          if (parsed.type) setType(parsed.type);
+          if (parsed.amount) setAmount(String(parsed.amount));
+          if (parsed.note) setNote(parsed.note);
+          if (parsed.categoryId && categories.length > 0) {
+            const cat = categories.find(c => c.id === parsed.categoryId);
+            if (cat) {
+              setSelectedCategory(cat);
+              setType(cat.type as 'income' | 'expense');
+            }
+          }
+          setCategoryError(false);
+          setAmountError(false);
+        }}
+      />
     </View>
   );
 };

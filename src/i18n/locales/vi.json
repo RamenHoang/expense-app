@@ -465,5 +465,26 @@
     "alreadyMember": "Người dùng đã là thành viên gia đình",
     "cannotRemoveOwner": "Không thể xóa chủ gia đình",
     "youAreOwner": "Bạn là chủ gia đình"
+  },
+  "voice": {
+    "addWithVoice": "Thêm bằng giọng nói",
+    "startRecording": "Nhấn micro để bắt đầu",
+    "listening": "Đang nghe...",
+    "tapToStop": "Nhấn để dừng",
+    "retryRecording": "Ghi lại",
+    "confirm": "Xác nhận",
+    "parsedResult": "Kết quả nhận dạng",
+    "detectedType": "Loại giao dịch",
+    "detectedAmount": "Số tiền",
+    "detectedCategory": "Danh mục",
+    "detectedNote": "Ghi chú",
+    "noAmountDetected": "Không nhận ra số tiền",
+    "notDetected": "Không nhận dạng được",
+    "noTranscript": "Không nhận ra giọng nói, hãy thử lại",
+    "permissionDenied": "Cần cấp quyền truy cập micro",
+    "notAvailable": "Thiết bị không hỗ trợ nhận dạng giọng nói",
+    "transcript": "Nội dung nhận dạng",
+    "modalTitle": "Thêm bằng giọng nói",
+    "addManually": "Thêm thủ công"
   }
 }

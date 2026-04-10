@@ -11,6 +11,7 @@ import { RangeDatePicker } from '../../../components/RangeDatePicker';
 import { LoadingScreen } from '../../../components/LoadingScreen';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
 import { formatDateForDisplay, formatDateToUTC7String } from '../../../utils/date';
+import { VoiceInputModal } from '../../transactions/components/VoiceInputModal';
 
 export const DashboardScreen = () => {
   const { t } = useTranslation();
@@ -30,6 +31,8 @@ export const DashboardScreen = () => {
   const [customEndDate, setCustomEndDate] = useState(new Date());
   const [appliedCustomRange, setAppliedCustomRange] = useState<{ start: Date; end: Date } | null>(null);
   const [lastLoadedTimestamp, setLastLoadedTimestamp] = useState(0);
+  const [fabOpen, setFabOpen] = useState(false);
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
 
   useEffect(() => {
     if (!profile) {
@@ -377,17 +380,45 @@ export const DashboardScreen = () => {
           </>
         )}
 
-        {!loading && (
-          <View style={styles.quickActions}>
-            <FAB
-              icon="plus"
-              onPress={() => navigation.navigate('AddTransaction' as never)}
-              style={styles.actionButton}
-              label={t('dashboard.addTransaction')}
-            />
-          </View>
-        )}
       </ScrollView>
+
+      <FAB.Group
+        open={fabOpen}
+        visible={!loading}
+        icon={fabOpen ? 'close' : 'plus'}
+        onStateChange={({ open }) => setFabOpen(open)}
+        actions={[
+          {
+            icon: 'pencil-outline',
+            label: t('dashboard.addTransaction'),
+            onPress: () => {
+              setFabOpen(false);
+              navigation.navigate('AddTransaction' as never);
+            },
+          },
+          {
+            icon: 'microphone',
+            label: t('voice.addWithVoice'),
+            onPress: () => {
+              setFabOpen(false);
+              setShowVoiceModal(true);
+            },
+          },
+        ]}
+      />
+
+      <VoiceInputModal
+        visible={showVoiceModal}
+        onDismiss={() => setShowVoiceModal(false)}
+        onConfirm={(parsed) => {
+          (navigation as any).navigate('AddTransaction', {
+            initialType: parsed.type,
+            initialAmount: parsed.amount ? String(parsed.amount) : undefined,
+            initialCategoryId: parsed.categoryId,
+            initialNote: parsed.note || undefined,
+          });
+        }}
+      />
 
       <Portal>
         <Dialog
@@ -550,12 +581,6 @@ const styles = StyleSheet.create({
   },
   transactionAmount: {
     fontWeight: 'bold',
-  },
-  quickActions: {
-    marginTop: 8,
-  },
-  actionButton: {
-    paddingVertical: 8,
   },
   dialogLabel: {
     marginBottom: 8,
