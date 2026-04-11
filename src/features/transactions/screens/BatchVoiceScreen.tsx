@@ -7,6 +7,7 @@ import {
   Easing,
   KeyboardAvoidingView,
   Platform,
+  Switch,
 } from 'react-native';
 import {
   Text,
@@ -28,6 +29,7 @@ import {
 import { useCategoryStore } from '../../../store/categoryStore';
 import { useTransactionStore } from '../../../store/transactionStore';
 import { useUserStore } from '../../../store/userStore';
+import { useFamilyStore } from '../../../store/familyStore';
 import { parseVoiceTransaction, ParsedTransaction } from '../../../utils/parseVoiceTransaction';
 import { formatCurrency } from '../../../utils/currency';
 import { transactionService } from '../../../services/transactionService';
@@ -43,6 +45,7 @@ export const BatchVoiceScreen = () => {
   const { categories, fetchCategories } = useCategoryStore();
   const { fetchTransactions } = useTransactionStore();
   const { profile } = useUserStore();
+  const { family, shareWithFamily, setShareWithFamily } = useFamilyStore();
   const currency = profile?.currency || 'VND';
 
   const [queue, setQueue] = useState<QueueItem[]>([]);
@@ -52,6 +55,7 @@ export const BatchVoiceScreen = () => {
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [isShared, setIsShared] = useState(shareWithFamily);
 
   // Inline edit state
   const [editType, setEditType] = useState<'income' | 'expense'>('expense');
@@ -221,6 +225,8 @@ export const BatchVoiceScreen = () => {
         transaction_date: today,
         category_id: item.categoryId,
         note: item.note || undefined,
+        family_id: isShared && family ? family.id : undefined,
+        is_shared: isShared && family ? true : false,
       }));
       await transactionService.createTransactionsBatch(inputs);
       await fetchTransactions();
@@ -524,12 +530,34 @@ export const BatchVoiceScreen = () => {
         <View style={{ height: 80 }} />
       </ScrollView>
 
-      {/* Sticky create button */}
+      {/* Sticky bottom bar: family share toggle + create button */}
       {queue.length > 0 && (
         <Surface
           style={[styles.bottomBar, { backgroundColor: theme.colors.surface }]}
           elevation={4}
         >
+          {/* Family sharing toggle */}
+          {family && (
+            <View style={styles.switchContainer}>
+              <View style={styles.switchLabel}>
+                <Text variant="labelMedium" style={{ color: theme.colors.onSurface }}>
+                  {t('transactions.shareWithFamily')}
+                </Text>
+                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                  {t('transactions.shareWithFamilyDesc', { familyName: family.name })}
+                </Text>
+              </View>
+              <Switch
+                value={isShared}
+                onValueChange={(value) => {
+                  setIsShared(value);
+                  setShareWithFamily(value);
+                }}
+                disabled={isSubmitting}
+              />
+            </View>
+          )}
+
           {hasInvalidItems && (
             <Text
               variant="labelSmall"
@@ -664,5 +692,15 @@ const styles = StyleSheet.create({
   },
   createButton: {
     borderRadius: 8,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+    gap: 8,
+  },
+  switchLabel: {
+    flex: 1,
   },
 });

@@ -210,6 +210,38 @@ describe('CATEGORY MATCHING', () => {
   });
 });
 
+describe('USER-REPORTED BUGS (round 2)', () => {
+  test('[Bug 4] "100.000 mua vé xem phim" → Giải trí (not Di chuyển)', () => {
+    // "vé xe" (transport) was substring-matching inside "vé xem" → false transport match
+    const r = parseVoiceTransaction('100.000 mua vé xem phim', CATS);
+    expect(r.amount).toBe(100_000);
+    expect(r.categoryId).toBe('entertainment');
+  });
+
+  test('[Bug 5] "Một triệu tiền đầu tư cổ phiếu" → type syncs from investment category', () => {
+    // investment category type='expense' in test CATS, so type should match
+    const r = parseVoiceTransaction('Một triệu tiền đầu tư cổ phiếu', CATS);
+    expect(r.amount).toBe(1_000_000);
+    expect(r.categoryId).toBe('investment');
+    // type must equal the investment category's type (expense in test CATS)
+    expect(r.type).toBe('expense');
+  });
+
+  test('[Bug 5b] type syncs to income when matched category is income type', () => {
+    // salary category has type='income' — even without explicit income keyword,
+    // the type should be 'income' because the category is income
+    const r = parseVoiceTransaction('500k tiền lương tháng này', CATS);
+    expect(r.categoryId).toBe('salary');
+    expect(r.type).toBe('income');
+  });
+
+  test('[Bug 6] "Một triệu tiền đầu tư cổ phiếu" → note is "Tiền đầu tư cổ phiếu"', () => {
+    // WORD_AMOUNT_RE must not consume "tư" from "đầu tư"
+    const r = parseVoiceTransaction('Một triệu tiền đầu tư cổ phiếu', CATS);
+    expect(r.note).toBe('Tiền đầu tư cổ phiếu');
+  });
+});
+
 describe('NOTE EXTRACTION', () => {
   test('"100.000 đi chợ mua gà" → "Đi chợ mua gà"', () => {
     expect(parseVoiceTransaction('100.000 đi chợ mua gà', CATS).note).toBe('Đi chợ mua gà');

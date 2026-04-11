@@ -320,13 +320,15 @@ function keywordScore(kw: string): number {
 
 /**
  * Returns true if `kw` appears in `text` as a whole word (not as a substring
- * inside another word). Short keywords (≤ 3 chars) use space-based boundaries
- * to avoid false matches like "áo" inside "táo", or "xe" inside "xét nghiệm".
- * Longer keywords use plain substring matching (they are specific enough).
+ * inside another word). All keywords use space-based word boundaries to prevent
+ * false matches like:
+ *   - "áo" inside "táo"         (short keyword substring)
+ *   - "vé xe" inside "vé xem"   (multi-word keyword prefix match via includes())
+ *   - "xe" inside "xét nghiệm"
  */
 function matchesKeyword(text: string, kw: string): boolean {
-  if (kw.length <= 3) return hasKeyword(text, kw);
-  return text.includes(kw);
+  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(?:^|\\s)${escaped}(?=\\s|$)`).test(text);
 }
 
 function matchCategory(
@@ -390,10 +392,14 @@ function matchCategory(
 
 // Regex to detect and remove word-based amounts in note extraction
 // Matches patterns like "Một triệu", "Năm mươi nghìn", "Hai trăm nghìn"
+//
+// (?:^|\s) left-boundary: prevents matching number words that are part of
+// another word (e.g. "tư" in "đầu tư" could otherwise start a match).
+// (?=\s|$) right-boundary: same protection on the trailing multiplier word.
 const VN_NUMBER_WORD = '(?:một|hai|ba|bốn|tư|năm|lăm|sáu|bảy|tám|chín|mười|mươi)';
 const VN_MULTIPLIER_WORD = '(?:tỷ|triệu|trăm\\s+nghìn|trăm\\s+ngàn|nghìn|ngàn|trăm)';
 const WORD_AMOUNT_RE = new RegExp(
-  `${VN_NUMBER_WORD}(?:\\s+${VN_NUMBER_WORD}){0,3}\\s+${VN_MULTIPLIER_WORD}`,
+  `(?:^|\\s)${VN_NUMBER_WORD}(?:\\s+${VN_NUMBER_WORD}){0,3}\\s+${VN_MULTIPLIER_WORD}(?=\\s|$)`,
   'gi',
 );
 
@@ -422,10 +428,30 @@ export function parseVoiceTransaction(
 ): ParsedTransaction {
   const lower = transcript.toLowerCase().trim();
 
-  const type       = detectType(lower);
-  const amount     = extractAmount(lower);
-  const categoryId = matchCategory(lower, categories, type);
-  const note       = extractNote(transcript);
+  const detectedType = detectType(lower);
+  const amount       = extractAmount(lower);
+  const categoryId   = matchCategory(lower, categories, detectedType);
+  const note         = extractNote(transcript);
+
+  // Sync transaction type to the matched category's declared type, BUT only
+  // when there are no explicit income/expense signal words in the transcript.
+  //
+  // Rule:
+  //   - Explicit keyword present (e.g. "nhận", "thu", "chi", "mua") → trust
+  //     the detected type; the user was clear about income or expense.
+  //   - No explicit keyword (default 'expense' was used) → defer to the
+  //     category's own type, which may be 'income' (e.g. "Đầu tư", "Lương"
+  //     categories the user defines as income).
+  //
+  // This prevents the fallback "Khác" (expense) category from silently
+  // overriding a transcript that clearly signals income (e.g. "thu 500 nghìn").
+  const hasExplicitType =
+    INCOME_KEYWORDS.some(kw => hasKeyword(lower, kw)) ||
+    EXPENSE_KEYWORDS.some(kw => hasKeyword(lower, kw));
+  const matchedCat = categoryId ? categories.find(c => c.id === categoryId) : undefined;
+  const type = (!hasExplicitType && matchedCat)
+    ? (matchedCat.type as 'income' | 'expense')
+    : detectedType;
 
   return { type, amount, categoryId, note };
 }
