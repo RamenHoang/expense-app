@@ -21,6 +21,7 @@ npx tsc --noEmit
 ## Environment Setup
 
 Requires a `.env` file with Supabase credentials (see `.env.example`):
+
 ```
 EXPO_PUBLIC_SUPABASE_URL=...
 EXPO_PUBLIC_SUPABASE_ANON_KEY=...
@@ -57,6 +58,7 @@ Auth state is held in `authStore`; `RootNavigator` switches between stacks based
 ### State Management
 
 Seven Zustand stores in `src/store/`:
+
 - `authStore` — session, user, sign-in/out
 - `transactionStore` — paginated transactions (30/page), filters, infinite scroll
 - `categoryStore` — category CRUD
@@ -74,12 +76,14 @@ Key features: transactions (with receipt photo upload via Expo Image Picker + Su
 ### Voice Transaction Feature
 
 Users can create transactions by speaking in Vietnamese. Entry points:
+
 - Dashboard & TransactionList: FAB.Group with mic action → opens `VoiceInputModal`
 - AddTransaction screen: mic `IconButton` in the header → opens `VoiceInputModal`
 
 **Flow**: voice input → transcript → parse → pre-fill AddTransactionScreen → user reviews & submits.
 
 **Key files:**
+
 - `src/features/transactions/components/VoiceInputModal.tsx` — recording UI, uses `expo-speech-recognition` with `lang: 'vi-VN'`. Calls `fetchCategories()` every time it opens so category list is always fresh.
 - `src/utils/parseVoiceTransaction.ts` — pure parsing logic (no React). See file-level JSDoc for full algorithm description.
 - `src/types/navigation.ts` — `AddTransaction` route accepts optional `VoiceTransactionParams` (`initialType`, `initialAmount`, `initialCategoryId`, `initialNote`).
@@ -109,15 +113,18 @@ Quick examples:
 Amount parsing handles Vietnamese number formats: `50.000` (period = thousands sep) → 50,000; multipliers `k/nghìn/triệu/tỷ` supported. `m` is excluded (ambiguous: matches "mì", "mua"…).
 
 **Build note**: `expo-speech-recognition` is a native module — requires a dev client build, not Expo Go.
+
 ```bash
 npm run prebuild       # regenerate native code after adding the plugin
 npm run build:android  # local EAS build
 ```
+
 Both commands set `JAVA_HOME` (Java 21) and `ANDROID_HOME` automatically.
 
 ### Types & Utilities
 
 TypeScript types are in `src/types/`. Utility helpers:
+
 - `src/utils/date.ts` — date formatting (`formatDateForDisplay`, etc.)
 - `src/utils/currency.ts` — currency formatting
 - `src/i18n/` — i18next setup with locale files in `src/i18n/locales/`

@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Text, FAB, SegmentedButtons, Snackbar, Portal, Searchbar, useTheme } from 'react-native-paper';
+import { Text, FAB, SegmentedButtons, Snackbar, Portal, Searchbar, useTheme, IconButton } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
 import { useCategoryStore } from '../../../store/categoryStore';
 import { CategoryListItem } from '../components/CategoryListItem';
 import { CategoryModal } from '../components/CategoryModal';
@@ -11,16 +12,34 @@ import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
 export const CategoryListScreen = () => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const navigation = useNavigation();
   const { categories, isLoading, error, fetchCategories, clearError } = useCategoryStore();
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const [isSearchExpanded, setIsSearchExpanded] = useState(true);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <IconButton
+          icon={isSearchVisible ? 'close' : 'magnify'}
+          onPress={() => {
+            if (isSearchVisible) {
+              setSearchQuery('');
+              setDebouncedSearchQuery('');
+            }
+            setIsSearchVisible(v => !v);
+          }}
+        />
+      ),
+    });
+  }, [navigation, isSearchVisible]);
 
   // Debounce search query
   useEffect(() => {
@@ -89,6 +108,16 @@ export const CategoryListScreen = () => {
           ]}
           style={styles.segmentedButtons}
         />
+        {isSearchVisible && (
+          <Searchbar
+            placeholder={t('categories.searchCategories')}
+            onChangeText={setSearchQuery}
+            value={searchQuery}
+            autoFocus
+            style={styles.searchBar}
+            inputStyle={{ minWidth: 0 }}
+          />
+        )}
       </View>
 
       <ScrollView
@@ -140,39 +169,6 @@ export const CategoryListScreen = () => {
         )}
       </ScrollView>
 
-      {/* Expandable Search FAB */}
-      <View style={styles.searchFabContainer}>
-        {isSearchExpanded ? (
-          <View style={[styles.expandedSearchBar, { backgroundColor: theme.colors.surface }]}>
-            <Searchbar
-              placeholder={t('categories.searchCategories')}
-              onChangeText={setSearchQuery}
-              value={searchQuery}
-              style={styles.searchInput}
-              // autoFocus
-              inputStyle={{ minWidth: 0 }}
-            />
-            {/* <FAB
-              icon="close"
-              size="small"
-              onPress={() => {
-                setIsSearchExpanded(false);
-                setSearchQuery('');
-              }}
-              style={styles.closeSearchButton}
-            /> */}
-          </View>
-        ) : (
-          <FAB
-            icon="magnify"
-            onPress={() => setIsSearchExpanded(true)}
-            style={styles.searchFab}
-            size="medium"
-            label={t('common.search')}
-          />
-        )}
-      </View>
-
       <FAB
         icon="plus"
         style={styles.fab}
@@ -216,7 +212,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   searchBar: {
-    marginBottom: 12,
+    marginTop: 8,
     elevation: 0,
   },
   segmentedButtons: {
@@ -242,35 +238,6 @@ const styles = StyleSheet.create({
   emptyText: {
     opacity: 0.6,
     textAlign: 'center',
-  },
-  searchFabContainer: {
-    position: 'absolute',
-    bottom: 16,
-    left: 16,
-    right: 88,
-    zIndex: 1,
-  },
-  searchFab: {
-    alignSelf: 'flex-end',
-  },
-  expandedSearchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 28,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    // paddingRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    elevation: 0,
-    shadowOpacity: 0,
-  },
-  closeSearchButton: {
-    marginLeft: 8,
   },
   fab: {
     position: 'absolute',

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -18,6 +18,7 @@ import {
   Dialog,
   Button,
   Divider,
+  IconButton,
 } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
@@ -55,7 +56,7 @@ export const TransactionListScreen = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const [isSearchExpanded, setIsSearchExpanded] = useState(true);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [scopeFilter, setScopeFilter] = useState<'all' | 'mine' | 'family'>('all');
   const [dateFilter, setDateFilter] = useState<'month' | 'year' | 'custom' | 'all'>('all');
@@ -66,7 +67,24 @@ export const TransactionListScreen = () => {
   const [appliedCustomRange, setAppliedCustomRange] = useState<{ start: Date; end: Date } | null>(null);
   const [fabOpen, setFabOpen] = useState(false);
   
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <IconButton
+          icon={isSearchVisible ? 'close' : 'magnify'}
+          onPress={() => {
+            if (isSearchVisible) {
+              setSearchQuery('');
+              setDebouncedSearchQuery('');
+            }
+            setIsSearchVisible(v => !v);
+          }}
+        />
+      ),
+    });
+  }, [navigation, isSearchVisible]);
 
   // Debounce search query
   useEffect(() => {
@@ -303,6 +321,18 @@ export const TransactionListScreen = () => {
           style={styles.segmentedButtons}
         />
 
+        {/* Search bar — shown when header icon is tapped */}
+        {isSearchVisible && (
+          <Searchbar
+            placeholder={t('common.search')}
+            onChangeText={setSearchQuery}
+            value={searchQuery}
+            autoFocus
+            style={styles.searchBar}
+            inputStyle={{ minWidth: 0 }}
+          />
+        )}
+
         {/* Scope filter chips - only show if user has family */}
         {family && (
           <ScrollView
@@ -392,40 +422,6 @@ export const TransactionListScreen = () => {
         />
       )}
 
-      {/* Expandable Search FAB */}
-      <View style={styles.searchFabContainer}>
-        {isSearchExpanded ? (
-          <View style={[styles.expandedSearchBar, { backgroundColor: theme.colors.surface }]}>
-            <Searchbar
-              placeholder={t('common.search')}
-              onChangeText={setSearchQuery}
-              value={searchQuery}
-              style={styles.searchInput}
-              // autoFocus
-              inputStyle={{ minWidth: 0 }}
-            />
-            {/* <FAB
-              icon="close"
-              size="small"
-              onPress={() => {
-                setIsSearchExpanded(false);
-                setSearchQuery('');
-                setDebouncedSearchQuery('');
-              }}
-              style={styles.closeSearchButton}
-            /> */}
-          </View>
-        ) : (
-          <FAB
-            icon="magnify"
-            onPress={() => setIsSearchExpanded(true)}
-            style={styles.searchFab}
-            size="medium"
-            // label={t('common.search')}
-          />
-        )}
-      </View>
-
       <FAB.Group
         open={fabOpen}
         visible
@@ -508,7 +504,8 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   searchBar: {
-    marginBottom: 12,
+    marginHorizontal: 16,
+    marginBottom: 8,
     elevation: 0,
   },
   filterButtons: {
@@ -588,35 +585,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 80,
     minHeight: 300,
-  },
-  searchFabContainer: {
-    position: 'absolute',
-    bottom: 16,
-    left: 16,
-    right: 88,
-    zIndex: 1,
-  },
-  searchFab: {
-    alignSelf: 'flex-end',
-  },
-  expandedSearchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 28,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    // paddingRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    elevation: 0,
-    shadowOpacity: 0,
-  },
-  closeSearchButton: {
-    marginLeft: 8,
   },
   fab: {
     position: 'absolute',
