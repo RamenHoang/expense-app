@@ -29,8 +29,9 @@ const CATEGORY_SYNONYMS: Record<string, string[]> = {
 const EXPENSE_KEYWORDS = ['chi', 'tiêu', 'mua', 'trả', 'thanh toán', 'nộp', 'đóng', 'tốn', 'mất', 'bỏ ra', 'đổ', 'gửi', 'trả tiền'];
 const INCOME_KEYWORDS  = ['thu', 'nhận', 'lương', 'bán', 'kiếm', 'được', 'hoàn tiền', 'thu nhập', 'nhập', 'nhận được'];
 
-// Number + optional Vietnamese multiplier unit
-const AMOUNT_REGEX = /(\d+(?:[.,]\d+)?)\s*(k|nghìn|ngàn|triệu|củ|lít|m|tỷ|đồng|đ|vnd)?/gi;
+// Number + optional Vietnamese multiplier unit.
+// Note: "m" is intentionally excluded — too ambiguous (matches "mì", "mua", etc.)
+const AMOUNT_REGEX = /(\d+(?:[.,]\d{1,3})*)\s*(k|nghìn|ngàn|triệu|củ|lít|tỷ|đồng|đ|vnd)?/gi;
 
 const MULTIPLIERS: Record<string, number> = {
   k:      1_000,
@@ -39,12 +40,20 @@ const MULTIPLIERS: Record<string, number> = {
   triệu:  1_000_000,
   củ:     1_000_000,
   lít:    1_000_000,
-  m:      1_000_000,
   tỷ:     1_000_000_000,
   đồng:   1,
   đ:      1,
   vnd:    1,
 };
+
+// In Vietnamese, period is the thousands separator ("50.000" = 50,000)
+// and comma may be used as decimal separator ("50,5" = 50.5).
+function parseVietnameseNumber(str: string): number {
+  // Strip all periods (thousands separator) then treat comma as decimal point
+  const noThousands = str.replace(/\./g, '');
+  const normalized = noThousands.replace(',', '.');
+  return parseFloat(normalized);
+}
 
 function detectType(lower: string): 'income' | 'expense' {
   for (const kw of INCOME_KEYWORDS) {
@@ -61,7 +70,7 @@ function extractAmount(lower: string): number | null {
   const match = AMOUNT_REGEX.exec(lower);
   if (!match) return null;
 
-  const raw = parseFloat(match[1].replace(',', '.'));
+  const raw = parseVietnameseNumber(match[1]);
   const unit = match[2]?.toLowerCase() ?? '';
   const multiplier = MULTIPLIERS[unit] ?? 1;
   return Math.round(raw * multiplier);

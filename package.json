@@ -1,13 +1,15 @@
 {
   "name": "vi-dau-kho",
-  "version": "1.7.0",
+  "version": "1.9.0",
   "main": "index.ts",
   "scripts": {
     "start": "expo start --go",
-    "build:android": "eas build -p android --profile preview --local --output ./builds/android",
-    "prebuild": "npx expo prebuild --clean",
-    "build:clean": "cd android && ./gradlew clean && cd ..",
-    "build:eas": "./build-eas.sh"
+    "build:android": "JAVA_HOME=$(/usr/libexec/java_home -v 21) ANDROID_HOME=$HOME/Library/Android/sdk eas build -p android --profile preview --local --output ./builds/android",
+    "prebuild": "JAVA_HOME=$(/usr/libexec/java_home -v 21) ANDROID_HOME=$HOME/Library/Android/sdk npx expo prebuild --clean",
+    "build:clean": "JAVA_HOME=$(/usr/libexec/java_home -v 21) ANDROID_HOME=$HOME/Library/Android/sdk sh -c 'cd android && ./gradlew clean'",
+    "build:eas": "./build-eas.sh",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -18,6 +20,7 @@
     "@supabase/supabase-js": "^2.97.0",
     "@tanstack/react-query": "^5.90.21",
     "date-fns": "^4.1.0",
+    "eas-cli": "^18.5.0",
     "expo": "~54.0.33",
     "expo-dev-client": "~6.0.20",
     "expo-file-system": "^19.0.21",
