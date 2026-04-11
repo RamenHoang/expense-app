@@ -1,12 +1,13 @@
 {
   "name": "vi-dau-kho",
-  "version": "1.9.0",
+  "version": "1.11.0",
   "main": "index.ts",
   "scripts": {
     "start": "expo start --go",
     "build:android": "JAVA_HOME=$(/usr/libexec/java_home -v 21) ANDROID_HOME=$HOME/Library/Android/sdk eas build -p android --profile preview --local --output ./builds/android",
     "prebuild": "JAVA_HOME=$(/usr/libexec/java_home -v 21) ANDROID_HOME=$HOME/Library/Android/sdk npx expo prebuild --clean",
     "build:clean": "JAVA_HOME=$(/usr/libexec/java_home -v 21) ANDROID_HOME=$HOME/Library/Android/sdk sh -c 'cd android && ./gradlew clean'",
+    "test": "npx tsx src/utils/__tests__/parseVoiceTransaction.test.ts",
     "build:eas": "./build-eas.sh",
     "android": "expo run:android",
     "ios": "expo run:ios"

@@ -27,6 +27,17 @@
  * 2. Category name appears directly in transcript (handles custom names like "Táo", "Freelance")
  * 3. Category named "Khác" / "Other"
  * 4. undefined (caller shows unmatched state to user)
+ *
+ * ## Known design decisions
+ * - `đ` (đồng symbol) is excluded from AMOUNT_REGEX units — it causes false matches
+ *   on words like "đi", "đó", "đây". Use "đồng" or "vnd" explicitly instead.
+ * - `được` is excluded from INCOME_KEYWORDS — it's too ambiguous in Vietnamese
+ *   (can mean "able to" as a modal verb, not just "received").
+ * - Type detection uses space-based word boundaries instead of `\b` because JavaScript
+ *   regex `\b` does not handle Vietnamese Unicode correctly (e.g. `\bthu\b` matches
+ *   "thu" inside "thuốc").
+ * - Note extraction does NOT remove type keywords — only the amount is stripped.
+ *   "mua thuốc 50k" → note "Mua thuốc" (keeps "mua" as part of the description).
  */
 
 export interface ParsedTransaction {
@@ -52,7 +63,7 @@ const DOMAIN_KEYWORDS: Record<string, string[]> = {
     'ăn sáng', 'ăn trưa', 'ăn tối', 'nhà hàng', 'trà sữa', 'cà phê',
     'bánh mì', 'đồ ăn', 'trái cây', 'canteen', 'pizza', 'burger', 'sushi',
     'cafe', 'coffee', 'phở', 'bún', 'cơm', 'lẩu', 'nhậu', 'quán', 'snack',
-    'bánh', 'nước', 'bia', 'trà', 'gà', 'cá', 'thịt', 'rau', 'mì',
+    'bánh', 'bia', 'trà', 'gà', 'cá', 'thịt', 'rau', 'mì', 'nước',
   ],
   transport: [
     'đổ xăng', 'xe buýt', 'vé tàu', 'vé máy bay', 'giao thông',
@@ -65,7 +76,8 @@ const DOMAIN_KEYWORDS: Record<string, string[]> = {
     'tiki', 'quần', 'giày', 'dép', 'son', 'túi', 'ví', 'áo',
   ],
   health: [
-    'bệnh viện', 'khám bệnh', 'vắc xin', 'vaccine', 'nha khoa', 'phòng khám',
+    'bệnh viện', 'khám bệnh', 'vắc xin', 'vac xin', 'vác xin', // vác xin = STT variant
+    'vaccine', 'tiêm phòng', 'nha khoa', 'phòng khám',
     'xét nghiệm', 'viện phí', 'bác sĩ', 'thuốc', 'tiêm', 'gym', 'spa',
     'massage', 'răng', 'mắt', 'y tế',
   ],
@@ -80,7 +92,7 @@ const DOMAIN_KEYWORDS: Record<string, string[]> = {
   ],
   education: [
     'học phí', 'khóa học', 'học online', 'lớp học', 'văn phòng phẩm',
-    'chứng chỉ', 'gia sư', 'trường', 'sách', 'thi',
+    'chứng chỉ', 'gia sư', 'trường', 'sách', 'thi', 'học',
   ],
   gifts: [
     'quà cáp', 'đám cưới', 'đám hỏi', 'mừng thọ', 'quà tặng',
@@ -120,11 +132,14 @@ const DOMAIN_CATEGORY_ALIASES: Record<string, string[]> = {
 };
 
 // ---------------------------------------------------------------------------
-// Amount parsing
+// Amount parsing — digit-based
+//
+// NOTE: bare `đ` (đồng symbol) is intentionally excluded from the unit group.
+// It causes false matches on common words beginning with "đ" such as "đi",
+// "đó", "đây". People rarely say "đ" in speech; they say "đồng" or just use
+// a multiplier (k, nghìn, triệu…).
 // ---------------------------------------------------------------------------
-
-// "m" excluded — too ambiguous (matches "mì", "mua", "mất"…)
-const AMOUNT_REGEX = /(\d+(?:[.,]\d{1,3})*)\s*(k|nghìn|ngàn|triệu|củ|lít|tỷ|đồng|đ|vnd)?/gi;
+const AMOUNT_REGEX = /(\d+(?:[.,]\d{1,3})*)\s*(k|nghìn|ngàn|triệu|củ|lít|tỷ|đồng|vnd)?/gi;
 
 const MULTIPLIERS: Record<string, number> = {
   k:      1_000,
@@ -135,13 +150,12 @@ const MULTIPLIERS: Record<string, number> = {
   lít:    1_000_000,
   tỷ:     1_000_000_000,
   đồng:   1,
-  đ:      1,
   vnd:    1,
 };
 
 /**
  * Parses a Vietnamese-formatted number string.
- * "50.000" → 50000  (period = thousands separator)
+ * "50.000" → 50000  (period = thousands separator in VN)
  * "50,5"   → 50.5   (comma = decimal separator)
  */
 function parseVietnameseNumber(str: string): number {
@@ -150,33 +164,147 @@ function parseVietnameseNumber(str: string): number {
 }
 
 // ---------------------------------------------------------------------------
-// Type detection
+// Amount parsing — word-based (e.g. "Một triệu", "Năm mươi nghìn")
 // ---------------------------------------------------------------------------
-const EXPENSE_KEYWORDS = ['chi', 'tiêu', 'mua', 'trả', 'thanh toán', 'nộp', 'đóng', 'tốn', 'mất', 'bỏ ra', 'đổ', 'trả tiền'];
-const INCOME_KEYWORDS  = ['thu', 'nhận', 'lương', 'bán', 'kiếm', 'được', 'hoàn tiền', 'thu nhập', 'nhận được'];
+
+/** Maps Vietnamese number words to their digit values. */
+const VN_ONES: Record<string, number> = {
+  'một': 1, 'hai': 2, 'ba': 3, 'bốn': 4, 'tư': 4,
+  'năm': 5, 'lăm': 5, 'sáu': 6, 'bảy': 7, 'tám': 8, 'chín': 9,
+};
+
+/**
+ * Parses a sequence of Vietnamese number words (1–999 range).
+ * Handles: "một", "hai mươi", "ba mươi lăm", "một trăm", "hai trăm năm mươi".
+ * Returns null if the words cannot be parsed as a number.
+ */
+function parseVnInteger(words: string[]): number | null {
+  let i = 0;
+  let total = 0;
+
+  // Hundreds: X trăm
+  if (i < words.length - 1 && VN_ONES[words[i]] !== undefined && words[i + 1] === 'trăm') {
+    total += VN_ONES[words[i]] * 100;
+    i += 2;
+    // Optional "linh"/"lẻ" connector (e.g. "một trăm linh năm" = 105)
+    if (i < words.length && (words[i] === 'linh' || words[i] === 'lẻ')) i++;
+  }
+
+  // Tens: "mười [X]" or "X mươi [Y]"
+  if (i < words.length) {
+    if (words[i] === 'mười') {
+      total += 10; i++;
+      if (i < words.length && VN_ONES[words[i]] !== undefined) { total += VN_ONES[words[i]]; i++; }
+    } else if (VN_ONES[words[i]] !== undefined && words[i + 1] === 'mươi') {
+      total += VN_ONES[words[i]] * 10; i += 2;
+      if (i < words.length && VN_ONES[words[i]] !== undefined) { total += VN_ONES[words[i]]; i++; }
+    } else if (VN_ONES[words[i]] !== undefined) {
+      total += VN_ONES[words[i]]; i++;
+    }
+  }
+
+  return i === 0 ? null : total;
+}
+
+/**
+ * Extracts a word-based Vietnamese amount from the transcript.
+ * e.g. "Một triệu tiền thuốc" → 1_000_000
+ *      "Năm mươi nghìn mua gà" → 50_000
+ * Returns null if no word number is found.
+ */
+function extractWordAmount(lower: string): number | null {
+  // Ordered largest → smallest so "trăm nghìn" is tried before "nghìn"
+  const WORD_MULTIPLIERS: Array<[string, number]> = [
+    ['tỷ',          1_000_000_000],
+    ['triệu',       1_000_000],
+    ['trăm nghìn',  100_000],
+    ['trăm ngàn',   100_000],
+    ['nghìn',       1_000],
+    ['ngàn',        1_000],
+    ['trăm',        100],
+  ];
+
+  // Tokens considered part of a Vietnamese number phrase
+  const NUMBER_MARKERS = new Set([
+    ...Object.keys(VN_ONES), 'mười', 'mươi', 'trăm', 'linh', 'lẻ',
+  ]);
+
+  for (const [multWord, multVal] of WORD_MULTIPLIERS) {
+    const idx = lower.indexOf(multWord);
+    if (idx === -1) continue;
+
+    const before = lower.slice(0, idx).trim();
+    const words = before.split(/\s+/);
+
+    // Find the trailing cluster of number words immediately before the multiplier
+    let numEnd = words.length;
+    let numStart = numEnd;
+    while (numStart > 0 && NUMBER_MARKERS.has(words[numStart - 1])) numStart--;
+
+    if (numStart === numEnd) continue; // no number words found
+
+    const n = parseVnInteger(words.slice(numStart, numEnd));
+    if (n !== null && n > 0) return n * multVal;
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Type detection
+//
+// Uses space-based word boundaries instead of regex \b because JavaScript's
+// \b does not handle Vietnamese Unicode: `\bthu\b` incorrectly matches "thu"
+// inside "thuốc" (since "ố" is non-ASCII and treated as a non-word char).
+//
+// NOTE: "được" is intentionally excluded — it is too ambiguous:
+//   income sense: "nhận được 2 triệu" (received 2M)
+//   modal sense:  "đi được" (can go), "làm được" (can do)
+// The combined keywords "nhận được" / "thu được" already cover the income case.
+// ---------------------------------------------------------------------------
+const EXPENSE_KEYWORDS = [
+  'thanh toán', 'bỏ ra', 'trả tiền',          // multi-word first
+  'chi', 'tiêu', 'mua', 'trả', 'nộp', 'đóng', 'tốn', 'mất', 'đổ',
+];
+const INCOME_KEYWORDS = [
+  'hoàn tiền', 'thu nhập', 'nhận được',         // multi-word first
+  'thu', 'nhận', 'lương', 'bán', 'kiếm',
+];
+
+/** Returns true if `keyword` appears as a standalone word/phrase in `text`. */
+function hasKeyword(text: string, keyword: string): boolean {
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (keyword.includes(' ')) {
+    // Multi-word phrases: substring match is specific enough
+    return text.includes(keyword);
+  }
+  // Single word: must be surrounded by whitespace or start/end of string
+  return new RegExp(`(?:^|\\s)${escaped}(?=\\s|$)`).test(text);
+}
 
 function detectType(lower: string): 'income' | 'expense' {
-  for (const kw of INCOME_KEYWORDS) {
-    if (lower.includes(kw)) return 'income';
-  }
-  for (const kw of EXPENSE_KEYWORDS) {
-    if (lower.includes(kw)) return 'expense';
-  }
+  for (const kw of INCOME_KEYWORDS)  { if (hasKeyword(lower, kw)) return 'income'; }
+  for (const kw of EXPENSE_KEYWORDS) { if (hasKeyword(lower, kw)) return 'expense'; }
   return 'expense'; // default — expense is far more frequent
 }
 
 // ---------------------------------------------------------------------------
-// Amount extraction
+// Amount extraction (digit-based first, then word-based fallback)
 // ---------------------------------------------------------------------------
 function extractAmount(lower: string): number | null {
+  // 1. Try digit-based (e.g. "50.000", "100k", "2 triệu")
   AMOUNT_REGEX.lastIndex = 0;
   const match = AMOUNT_REGEX.exec(lower);
-  if (!match) return null;
+  if (match) {
+    const raw = parseVietnameseNumber(match[1]);
+    if (raw > 0) {
+      const unit = match[2]?.toLowerCase() ?? '';
+      return Math.round(raw * (MULTIPLIERS[unit] ?? 1));
+    }
+  }
 
-  const raw = parseVietnameseNumber(match[1]);
-  const unit = match[2]?.toLowerCase() ?? '';
-  const multiplier = MULTIPLIERS[unit] ?? 1;
-  return Math.round(raw * multiplier);
+  // 2. Fallback: word-based (e.g. "Một triệu", "Năm mươi nghìn")
+  return extractWordAmount(lower);
 }
 
 // ---------------------------------------------------------------------------
@@ -190,6 +318,17 @@ function keywordScore(kw: string): number {
   return 1;
 }
 
+/**
+ * Returns true if `kw` appears in `text` as a whole word (not as a substring
+ * inside another word). Short keywords (≤ 3 chars) use space-based boundaries
+ * to avoid false matches like "áo" inside "táo", or "xe" inside "xét nghiệm".
+ * Longer keywords use plain substring matching (they are specific enough).
+ */
+function matchesKeyword(text: string, kw: string): boolean {
+  if (kw.length <= 3) return hasKeyword(text, kw);
+  return text.includes(kw);
+}
+
 function matchCategory(
   lower: string,
   categories: CategoryLike[],
@@ -198,10 +337,9 @@ function matchCategory(
   // Step 1: score each domain by how many of its keywords appear in the transcript
   const domainScores: Record<string, number> = {};
   for (const [domain, keywords] of Object.entries(DOMAIN_KEYWORDS)) {
-    // Check longest keywords first so "đổ xăng" is found before "xăng"
     const sorted = [...keywords].sort((a, b) => b.length - a.length);
     for (const kw of sorted) {
-      if (lower.includes(kw)) {
+      if (matchesKeyword(lower, kw)) {
         domainScores[domain] = (domainScores[domain] ?? 0) + keywordScore(kw);
       }
     }
@@ -217,7 +355,6 @@ function matchCategory(
   const byType = (cat: CategoryLike) => cat.type === detectedType;
   for (const domain of rankedDomains) {
     const aliases = DOMAIN_CATEGORY_ALIASES[domain] ?? [];
-    // Try type-matched categories first, then all
     for (const pool of [categories.filter(byType), categories]) {
       for (const cat of pool) {
         const catLower = cat.name.toLowerCase();
@@ -232,34 +369,48 @@ function matchCategory(
   // handles custom categories ("Táo", "Freelance", brand names…)
   for (const cat of categories) {
     const catLower = cat.name.toLowerCase();
-    if (catLower.length > 1 && lower.includes(catLower)) {
-      return cat.id;
-    }
+    if (catLower.length > 1 && lower.includes(catLower)) return cat.id;
   }
 
   // Step 5: last resort — "Khác" / "Other"
   return categories.find(c =>
-    ['khác', 'other', 'linh tinh'].includes(c.name.toLowerCase())
+    ['khác', 'other', 'linh tinh'].includes(c.name.toLowerCase()),
   )?.id;
 }
 
 // ---------------------------------------------------------------------------
-// Note extraction — remove amount + type verbs from transcript
+// Note extraction
+//
+// Strips only the amount from the transcript (digit-based and word-based).
+// Type-indicating verbs ("mua", "chi", "thu"…) are intentionally KEPT because
+// they often form part of a meaningful description:
+//   "50.000 mua thuốc" → note "Mua thuốc"  (not just "thuốc")
+//   "100.000 đi chợ mua gà" → note "Đi chợ mua gà"
 // ---------------------------------------------------------------------------
+
+// Regex to detect and remove word-based amounts in note extraction
+// Matches patterns like "Một triệu", "Năm mươi nghìn", "Hai trăm nghìn"
+const VN_NUMBER_WORD = '(?:một|hai|ba|bốn|tư|năm|lăm|sáu|bảy|tám|chín|mười|mươi)';
+const VN_MULTIPLIER_WORD = '(?:tỷ|triệu|trăm\\s+nghìn|trăm\\s+ngàn|nghìn|ngàn|trăm)';
+const WORD_AMOUNT_RE = new RegExp(
+  `${VN_NUMBER_WORD}(?:\\s+${VN_NUMBER_WORD}){0,3}\\s+${VN_MULTIPLIER_WORD}`,
+  'gi',
+);
+
 function extractNote(original: string): string {
-  let text = original.toLowerCase();
+  let text = original;
 
-  // Remove type keywords (verbs only, not nouns that carry meaning)
-  const verbsOnly = [...EXPENSE_KEYWORDS, ...INCOME_KEYWORDS];
-  for (const kw of verbsOnly) {
-    text = text.replace(new RegExp(`\\b${kw}\\b`, 'g'), '');
-  }
-
-  // Remove amount pattern
+  // Remove digit-based amounts (e.g. "50.000", "100k", "2 triệu")
   AMOUNT_REGEX.lastIndex = 0;
   text = text.replace(AMOUNT_REGEX, '');
 
-  return text.replace(/[,.\-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  // Remove word-based amounts (e.g. "Một triệu", "Năm mươi nghìn")
+  WORD_AMOUNT_RE.lastIndex = 0;
+  text = text.replace(WORD_AMOUNT_RE, '');
+
+  // Clean up punctuation and extra whitespace, then capitalize first letter
+  text = text.replace(/[,.\-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return text.length > 0 ? text.charAt(0).toUpperCase() + text.slice(1) : '';
 }
 
 // ---------------------------------------------------------------------------
