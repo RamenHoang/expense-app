@@ -384,6 +384,7 @@ export const DashboardScreen = () => {
         open={fabOpen}
         visible={!loading}
         icon={fabOpen ? 'close' : 'plus'}
+        style={styles.fab}
         onStateChange={({ open }) => setFabOpen(open)}
         actions={[
           {
@@ -443,6 +444,12 @@ export const DashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
   },
   scrollContent: {
     padding: 16,

@@ -378,6 +378,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
           if (parsed.type) setType(parsed.type);
           if (parsed.amount) setAmount(String(parsed.amount));
           if (parsed.note) setNote(parsed.note);
+          if (parsed.date) setDate(parsed.date);
           if (parsed.categoryId && categories.length > 0) {
             const cat = categories.find(c => c.id === parsed.categoryId);
             if (cat) {

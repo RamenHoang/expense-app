@@ -485,7 +485,8 @@
     "notAvailable": "Thiết bị không hỗ trợ nhận dạng giọng nói",
     "transcript": "Nội dung nhận dạng",
     "modalTitle": "Thêm bằng giọng nói",
-    "addManually": "Thêm thủ công"
+    "addManually": "Thêm thủ công",
+    "detectedDate": "Ngày giao dịch"
   },
   "batchVoice": {
     "title": "Ghi nhiều giao dịch",

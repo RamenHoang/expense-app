@@ -491,7 +491,8 @@
     "notAvailable": "Speech recognition not available on this device",
     "transcript": "Recognized text",
     "modalTitle": "Add with voice",
-    "addManually": "Add manually"
+    "addManually": "Add manually",
+    "detectedDate": "Transaction date"
   },
   "batchVoice": {
     "title": "Record multiple transactions",

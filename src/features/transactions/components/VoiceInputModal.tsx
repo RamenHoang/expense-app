@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, StyleSheet, Animated, Easing } from 'react-native';
+import { View, StyleSheet, Animated, Easing, ScrollView } from 'react-native';
 import {
   Modal,
   Portal,
@@ -253,6 +253,17 @@ export const VoiceInputModal = ({ visible, onDismiss, onConfirm }: VoiceInputMod
             </Text>
           </View>
         ) : null}
+
+        {parsed.date ? (
+          <View style={styles.resultRow}>
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+              {t('voice.detectedDate')}:
+            </Text>
+            <Text variant="bodyMedium" style={{ fontWeight: 'bold', color: theme.colors.onSurface }}>
+              {parsed.date.toLocaleDateString('vi-VN')}
+            </Text>
+          </View>
+        ) : null}
       </Surface>
     );
   };
@@ -264,42 +275,48 @@ export const VoiceInputModal = ({ visible, onDismiss, onConfirm }: VoiceInputMod
         onDismiss={onDismiss}
         contentContainerStyle={[styles.modal, { backgroundColor: theme.colors.surface }]}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
-            {t('voice.modalTitle')}
-          </Text>
-          <IconButton icon="close" size={20} onPress={onDismiss} />
-        </View>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
+              {t('voice.modalTitle')}
+            </Text>
+            <IconButton icon="close" size={20} onPress={onDismiss} />
+          </View>
 
-        {/* Mic area */}
-        {renderMicArea()}
+          {/* Mic area */}
+          {renderMicArea()}
 
-        {/* Parsed result */}
-        {renderParsedResult()}
+          {/* Parsed result */}
+          {renderParsedResult()}
 
-        {/* Action buttons */}
-        {recordingState === 'done' && (
-          <View style={styles.actions}>
-            <Button mode="outlined" onPress={handleRetry} style={styles.actionButton}>
+          {/* Action buttons */}
+          {recordingState === 'done' && (
+            <View style={styles.actions}>
+              <Button mode="outlined" onPress={handleRetry} style={styles.actionButton}>
+                {t('voice.retryRecording')}
+              </Button>
+              <Button
+                mode="contained"
+                onPress={handleConfirm}
+                style={styles.actionButton}
+                disabled={!parsed?.amount}
+              >
+                {t('voice.confirm')}
+              </Button>
+            </View>
+          )}
+
+          {recordingState === 'error' && (
+            <Button mode="contained" onPress={handleRetry} style={styles.retryButton}>
               {t('voice.retryRecording')}
             </Button>
-            <Button
-              mode="contained"
-              onPress={handleConfirm}
-              style={styles.actionButton}
-              disabled={!parsed?.amount}
-            >
-              {t('voice.confirm')}
-            </Button>
-          </View>
-        )}
-
-        {recordingState === 'error' && (
-          <Button mode="contained" onPress={handleRetry} style={styles.retryButton}>
-            {t('voice.retryRecording')}
-          </Button>
-        )}
+          )}
+        </ScrollView>
       </Modal>
     </Portal>
   );
@@ -309,7 +326,11 @@ const styles = StyleSheet.create({
   modal: {
     margin: 24,
     borderRadius: 16,
+    maxHeight: '90%',
+  },
+  scrollContent: {
     padding: 20,
+    flexGrow: 1,
   },
   header: {
     flexDirection: 'row',

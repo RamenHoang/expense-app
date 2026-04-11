@@ -45,6 +45,7 @@ export interface ParsedTransaction {
   amount: number | null;
   categoryId: string | undefined;
   note: string;
+  date?: Date;
 }
 
 interface CategoryLike {
@@ -381,9 +382,129 @@ function matchCategory(
 }
 
 // ---------------------------------------------------------------------------
+// Date parsing
+//
+// Extracts a Vietnamese date expression from the transcript.
+// Supported patterns (in priority order):
+//   Relative:    "hôm kia" (-2d), "hôm qua" (-1d), "hôm nay" (today)
+//   Day-of-week: "thứ hai"–"thứ bảy", "chủ nhật" → most recent past occurrence
+//   Full date:   "ngày 15 tháng 3"  or  "15/3"
+//   Word day:    "ngày mười lăm"  (Vietnamese number words 1–31)
+//   Day-only:    "ngày 5" → day 5 of current/previous month
+// ---------------------------------------------------------------------------
+
+/** Maps Vietnamese number words to day values 1–31, sorted longest-first to
+ *  prevent partial matches (e.g. "ba mươi mốt" must be checked before "ba"). */
+const VIET_DAY_NUMS: Array<[string, number]> = [
+  ['ba mươi mốt', 31], ['ba mươi', 30],
+  ['hai mươi chín', 29], ['hai mươi tám', 28], ['hai mươi bảy', 27],
+  ['hai mươi sáu', 26], ['hai mươi lăm', 25], ['hai mươi bốn', 24],
+  ['hai mươi ba', 23], ['hai mươi hai', 22], ['hai mươi mốt', 21], ['hai mươi', 20],
+  ['mười chín', 19], ['mười tám', 18], ['mười bảy', 17], ['mười sáu', 16],
+  ['mười lăm', 15], ['mười bốn', 14], ['mười ba', 13], ['mười hai', 12],
+  ['mười một', 11], ['mười', 10],
+  ['chín', 9], ['tám', 8], ['bảy', 7], ['sáu', 6],
+  ['năm', 5], ['bốn', 4], ['ba', 3], ['hai', 2], ['một', 1],
+];
+
+function extractDate(lower: string): Date | null {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const daysAgo = (n: number): Date => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - n);
+    return d;
+  };
+
+  // Relative keywords — check 'hôm kia' before 'hôm qua' to avoid prefix collision
+  if (lower.includes('hôm kia'))  return daysAgo(2);
+  if (lower.includes('hôm qua'))  return daysAgo(1);
+  if (lower.includes('hôm nay'))  return daysAgo(0);
+
+  // Day of week — most recent past occurrence (never same-day)
+  const DOW_MAP: Array<[string, number]> = [
+    ['thứ hai', 1], ['thứ ba', 2], ['thứ tư', 3],
+    ['thứ năm', 4], ['thứ sáu', 5], ['thứ bảy', 6], ['chủ nhật', 0],
+  ];
+  for (const [name, dow] of DOW_MAP) {
+    if (lower.includes(name)) {
+      const d = new Date(today);
+      let diff = today.getDay() - dow;
+      if (diff <= 0) diff += 7; // always go back at least 1 day
+      d.setDate(d.getDate() - diff);
+      return d;
+    }
+  }
+
+  // Full numeric date: "ngày 15 tháng 3"
+  const fullNumMatch = lower.match(/ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})/);
+  if (fullNumMatch) {
+    const day   = parseInt(fullNumMatch[1], 10);
+    const month = parseInt(fullNumMatch[2], 10) - 1;
+    const d = new Date(today.getFullYear(), month, day);
+    if (d > today) d.setFullYear(d.getFullYear() - 1);
+    return d;
+  }
+
+  // Slash date: "15/3"
+  const slashMatch = lower.match(/\b(\d{1,2})\/(\d{1,2})\b/);
+  if (slashMatch) {
+    const day   = parseInt(slashMatch[1], 10);
+    const month = parseInt(slashMatch[2], 10) - 1;
+    if (day >= 1 && day <= 31 && month >= 0 && month <= 11) {
+      const d = new Date(today.getFullYear(), month, day);
+      if (d > today) d.setFullYear(d.getFullYear() - 1);
+      return d;
+    }
+  }
+
+  // Vietnamese word day: "ngày mười lăm" (longest-first to avoid partial match)
+  for (const [word, num] of VIET_DAY_NUMS) {
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`ngày\\s+${escaped}(?:\\s|$)`);
+    if (re.test(lower)) {
+      const d = new Date(today.getFullYear(), today.getMonth(), num);
+      if (d > today) d.setMonth(d.getMonth() - 1);
+      return d;
+    }
+  }
+
+  // Day-only numeric: "ngày 5"
+  const dayOnlyMatch = lower.match(/ngày\s+(\d{1,2})(?!\s*tháng)/);
+  if (dayOnlyMatch) {
+    const day = parseInt(dayOnlyMatch[1], 10);
+    if (day >= 1 && day <= 31) {
+      const d = new Date(today.getFullYear(), today.getMonth(), day);
+      if (d > today) d.setMonth(d.getMonth() - 1);
+      return d;
+    }
+  }
+
+  return null;
+}
+
+// Regex patterns used to strip date expressions from the note.
+// Applied in priority order (longest/most-specific first).
+const DATE_STRIP_PATTERNS: RegExp[] = [
+  /hôm kia/gi,
+  /hôm qua/gi,
+  /hôm nay/gi,
+  /thứ\s+(?:hai|ba|tư|năm|sáu|bảy)/gi,
+  /chủ\s*nhật/gi,
+  /ngày\s+\d{1,2}\s+tháng\s+\d{1,2}/gi,             // full date (must come before day-only)
+  /\b\d{1,2}\/\d{1,2}\b/gi,                          // slash date
+  new RegExp(                                          // Vietnamese word days (longest-first)
+    `ngày\\s+(?:${VIET_DAY_NUMS.map(([w]) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?:\\s|$)`,
+    'gi',
+  ),
+  /ngày\s+\d{1,2}/gi,                                // day-only numeric (must come last)
+];
+
+// ---------------------------------------------------------------------------
 // Note extraction
 //
-// Strips only the amount from the transcript (digit-based and word-based).
+// Strips amounts AND date expressions from the transcript.
 // Type-indicating verbs ("mua", "chi", "thu"…) are intentionally KEPT because
 // they often form part of a meaningful description:
 //   "50.000 mua thuốc" → note "Mua thuốc"  (not just "thuốc")
@@ -405,6 +526,12 @@ const WORD_AMOUNT_RE = new RegExp(
 
 function extractNote(original: string): string {
   let text = original;
+
+  // Remove date expressions first (before amounts, since dates can contain digits
+  // e.g. "15/3" must be removed before AMOUNT_REGEX strips the "15")
+  for (const pat of DATE_STRIP_PATTERNS) {
+    text = text.replace(pat, ' ');
+  }
 
   // Remove digit-based amounts (e.g. "50.000", "100k", "2 triệu")
   AMOUNT_REGEX.lastIndex = 0;
@@ -453,5 +580,7 @@ export function parseVoiceTransaction(
     ? (matchedCat.type as 'income' | 'expense')
     : detectedType;
 
-  return { type, amount, categoryId, note };
+  const date = extractDate(lower) ?? undefined;
+
+  return { type, amount, categoryId, note, date };
 }

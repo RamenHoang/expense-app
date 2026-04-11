@@ -222,7 +222,7 @@ export const BatchVoiceScreen = () => {
       const inputs = valid.map(item => ({
         type: item.type,
         amount: item.amount!,
-        transaction_date: today,
+        transaction_date: item.date ? formatDateToUTC7String(item.date) : today,
         category_id: item.categoryId,
         note: item.note || undefined,
         family_id: isShared && family ? family.id : undefined,
@@ -356,7 +356,7 @@ export const BatchVoiceScreen = () => {
           <View style={styles.cardRow}>
             <View style={styles.cardLeft}>
               <Text
-                variant="labelSmall"
+                variant="bodyLarge"
                 style={{
                   color: isIncome ? theme.colors.primary : theme.colors.error,
                   fontWeight: 'bold',
@@ -368,7 +368,7 @@ export const BatchVoiceScreen = () => {
                   ? t('batchVoice.invalidAmount')
                   : formatCurrency(item.amount!, currency)}
               </Text>
-              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
                 {getCategoryName(item.categoryId)}
               </Text>
               {!!item.note && (
@@ -378,6 +378,11 @@ export const BatchVoiceScreen = () => {
                   numberOfLines={1}
                 >
                   {item.note}
+                </Text>
+              )}
+              {!!item.date && (
+                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 2 }}>
+                  {item.date.toLocaleDateString('vi-VN')}
                 </Text>
               )}
             </View>
