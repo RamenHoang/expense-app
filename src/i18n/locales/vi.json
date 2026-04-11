@@ -486,5 +486,32 @@
     "transcript": "Nội dung nhận dạng",
     "modalTitle": "Thêm bằng giọng nói",
     "addManually": "Thêm thủ công"
+  },
+  "batchVoice": {
+    "title": "Ghi nhiều giao dịch",
+    "tapToRecord": "Nhấn để ghi âm",
+    "tapToStop": "Nhấn để dừng",
+    "listening": "Đang nghe...",
+    "justParsed": "Vừa nhận diện",
+    "queueTitle": "Danh sách ({{count}})",
+    "createAll": "Tạo {{count}} giao dịch",
+    "noTransactions": "Chưa có giao dịch nào.\nNhấn micro để bắt đầu.",
+    "editDone": "Xong",
+    "invalidAmount": "Chưa có số tiền",
+    "submitting": "Đang tạo...",
+    "addToList": "Thêm vào danh sách",
+    "retry": "Ghi lại",
+    "deleteItem": "Xóa",
+    "editItem": "Chỉnh sửa",
+    "amount": "Số tiền",
+    "note": "Ghi chú",
+    "category": "Danh mục",
+    "type": "Loại",
+    "income": "Thu",
+    "expense": "Chi",
+    "noCategory": "Chưa phân loại",
+    "errorNoSpeech": "Không nghe thấy gì, hãy thử lại",
+    "errorGeneral": "Lỗi nhận dạng, hãy thử lại",
+    "successCreated": "Đã tạo {{count}} giao dịch"
   }
 }

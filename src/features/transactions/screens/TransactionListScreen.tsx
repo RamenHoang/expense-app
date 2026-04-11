@@ -28,7 +28,6 @@ import { TransactionWithCategory } from '../../../types/transaction';
 import { useUserStore } from '../../../store/userStore';
 import { PriceText } from '../../../components/PriceText';
 import { RangeDatePicker } from '../../../components/RangeDatePicker';
-import { VoiceInputModal } from '../components/VoiceInputModal';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
 import { Chip } from 'react-native-paper';
 import { formatDateForDisplay, formatDateToUTC7String, getCurrentDateUTC7 } from '../../../utils/date';
@@ -66,7 +65,6 @@ export const TransactionListScreen = () => {
   const [customEndDate, setCustomEndDate] = useState(new Date());
   const [appliedCustomRange, setAppliedCustomRange] = useState<{ start: Date; end: Date } | null>(null);
   const [fabOpen, setFabOpen] = useState(false);
-  const [showVoiceModal, setShowVoiceModal] = useState(false);
   
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -448,23 +446,10 @@ export const TransactionListScreen = () => {
             label: t('voice.addWithVoice'),
             onPress: () => {
               setFabOpen(false);
-              setShowVoiceModal(true);
+              navigation.navigate('BatchVoice' as never);
             },
           },
         ]}
-      />
-
-      <VoiceInputModal
-        visible={showVoiceModal}
-        onDismiss={() => setShowVoiceModal(false)}
-        onConfirm={(parsed) => {
-          (navigation as any).navigate('AddTransaction', {
-            initialType: parsed.type,
-            initialAmount: parsed.amount ? String(parsed.amount) : undefined,
-            initialCategoryId: parsed.categoryId,
-            initialNote: parsed.note || undefined,
-          });
-        }}
       />
 
       <Snackbar

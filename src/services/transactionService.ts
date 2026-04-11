@@ -155,6 +155,24 @@ export const transactionService = {
   },
 
   /**
+   * Create multiple transactions in a single Supabase insert
+   */
+  createTransactionsBatch: async (
+    inputs: CreateTransactionInput[]
+  ): Promise<Transaction[]> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert(inputs.map(input => ({ user_id: user.id, ...input })))
+      .select();
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  /**
    * Update an existing transaction
    */
   updateTransaction: async (

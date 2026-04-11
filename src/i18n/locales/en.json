@@ -492,5 +492,32 @@
     "transcript": "Recognized text",
     "modalTitle": "Add with voice",
     "addManually": "Add manually"
+  },
+  "batchVoice": {
+    "title": "Record multiple transactions",
+    "tapToRecord": "Tap to record",
+    "tapToStop": "Tap to stop",
+    "listening": "Listening...",
+    "justParsed": "Just recognized",
+    "queueTitle": "List ({{count}})",
+    "createAll": "Create {{count}} transaction(s)",
+    "noTransactions": "No transactions yet.\nTap the mic to start.",
+    "editDone": "Done",
+    "invalidAmount": "Missing amount",
+    "submitting": "Creating...",
+    "addToList": "Add to list",
+    "retry": "Record again",
+    "deleteItem": "Delete",
+    "editItem": "Edit",
+    "amount": "Amount",
+    "note": "Note",
+    "category": "Category",
+    "type": "Type",
+    "income": "Income",
+    "expense": "Expense",
+    "noCategory": "Uncategorized",
+    "errorNoSpeech": "No speech detected, please try again",
+    "errorGeneral": "Recognition error, please try again",
+    "successCreated": "Created {{count}} transaction(s)"
   }
 }

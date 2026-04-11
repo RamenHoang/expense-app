@@ -11,7 +11,6 @@ import { RangeDatePicker } from '../../../components/RangeDatePicker';
 import { LoadingScreen } from '../../../components/LoadingScreen';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
 import { formatDateForDisplay, formatDateToUTC7String } from '../../../utils/date';
-import { VoiceInputModal } from '../../transactions/components/VoiceInputModal';
 
 export const DashboardScreen = () => {
   const { t } = useTranslation();
@@ -32,7 +31,6 @@ export const DashboardScreen = () => {
   const [appliedCustomRange, setAppliedCustomRange] = useState<{ start: Date; end: Date } | null>(null);
   const [lastLoadedTimestamp, setLastLoadedTimestamp] = useState(0);
   const [fabOpen, setFabOpen] = useState(false);
-  const [showVoiceModal, setShowVoiceModal] = useState(false);
 
   useEffect(() => {
     if (!profile) {
@@ -401,23 +399,10 @@ export const DashboardScreen = () => {
             label: t('voice.addWithVoice'),
             onPress: () => {
               setFabOpen(false);
-              setShowVoiceModal(true);
+              navigation.navigate('BatchVoice' as never);
             },
           },
         ]}
-      />
-
-      <VoiceInputModal
-        visible={showVoiceModal}
-        onDismiss={() => setShowVoiceModal(false)}
-        onConfirm={(parsed) => {
-          (navigation as any).navigate('AddTransaction', {
-            initialType: parsed.type,
-            initialAmount: parsed.amount ? String(parsed.amount) : undefined,
-            initialCategoryId: parsed.categoryId,
-            initialNote: parsed.note || undefined,
-          });
-        }}
       />
 
       <Portal>

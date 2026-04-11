@@ -14,6 +14,7 @@ import { CurrencySelectionScreen } from '../features/settings/screens/CurrencySe
 import { CreateFamilyScreen } from '../features/family/screens/CreateFamilyScreen';
 import { InviteMemberScreen } from '../features/family/screens/InviteMemberScreen';
 import { EditFamilyScreen } from '../features/family/screens/EditFamilyScreen';
+import { BatchVoiceScreen } from '../features/transactions/screens/BatchVoiceScreen';
 import { useAuthStore } from '../store/authStore';
 import { t } from 'i18next';
 
@@ -113,11 +114,19 @@ export const RootNavigator = () => {
                 headerBackTitle: t('common.back'),
               }}
             />
-            <Stack.Screen 
-              name="EditFamily" 
+            <Stack.Screen
+              name="EditFamily"
               component={EditFamilyScreen}
-              options={{ 
+              options={{
                 title: t('family.title'),
+                headerBackTitle: t('common.back'),
+              }}
+            />
+            <Stack.Screen
+              name="BatchVoice"
+              component={BatchVoiceScreen}
+              options={{
+                title: t('batchVoice.title'),
                 headerBackTitle: t('common.back'),
               }}
             />

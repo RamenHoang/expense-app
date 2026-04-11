@@ -16,6 +16,7 @@ export type RootStackParamList = {
   CreateFamily: undefined;
   InviteMember: { familyId: string };
   EditFamily: { familyId: string };
+  BatchVoice: undefined;
 };
 
 export type AuthStackParamList = {
