@@ -69,6 +69,8 @@ export const BatchVoiceScreen = () => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const pulseLoop = useRef<Animated.CompositeAnimation | null>(null);
   const autoAddTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const listScrollRef = useRef<ScrollView>(null);
+  const itemLayouts = useRef<Record<string, number>>({});
 
   useEffect(() => {
     fetchCategories();
@@ -199,6 +201,13 @@ export const BatchVoiceScreen = () => {
     setEditNote(item.note);
     setEditCategoryId(item.categoryId);
     setEditDate(item.date ?? new Date());
+    // Scroll the item into view after the edit form expands
+    setTimeout(() => {
+      const y = itemLayouts.current[item.key];
+      if (y !== undefined) {
+        listScrollRef.current?.scrollTo({ y, animated: true });
+      }
+    }, 100);
   };
 
   // Save inline edit
@@ -346,6 +355,7 @@ export const BatchVoiceScreen = () => {
     return (
       <Surface
         key={item.key}
+        onLayout={(e) => { itemLayouts.current[item.key] = e.nativeEvent.layout.y; }}
         style={[
           styles.queueCard,
           {
@@ -512,6 +522,7 @@ export const BatchVoiceScreen = () => {
 
       {/* Scrollable queue list only */}
       <ScrollView
+        ref={listScrollRef}
         style={styles.listScroll}
         contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"
