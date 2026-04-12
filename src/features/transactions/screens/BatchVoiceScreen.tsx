@@ -45,6 +45,7 @@ export const BatchVoiceScreen = () => {
   const navigation = useNavigation();
   const { categories, fetchCategories } = useCategoryStore();
   const { fetchTransactions } = useTransactionStore();
+  const markModified = () => useTransactionStore.setState({ lastModifiedTimestamp: Date.now() });
   const { profile } = useUserStore();
   const { family, shareWithFamily, setShareWithFamily } = useFamilyStore();
   const currency = profile?.currency || 'VND';
@@ -233,6 +234,7 @@ export const BatchVoiceScreen = () => {
       }));
       await transactionService.createTransactionsBatch(inputs);
       await fetchTransactions();
+      markModified();
       navigation.goBack();
     } catch (err: any) {
       setSubmitError(err.message || t('common.error'));
@@ -502,14 +504,18 @@ export const BatchVoiceScreen = () => {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        {/* Mic area */}
+      {/* Fixed top: mic area + just-parsed preview */}
+      <View style={styles.topSection}>
         {renderMicSection()}
-
-        {/* Just-parsed preview */}
         {renderLastParsed()}
+      </View>
 
-        {/* Queue list */}
+      {/* Scrollable queue list only */}
+      <ScrollView
+        style={styles.listScroll}
+        contentContainerStyle={styles.listContent}
+        keyboardShouldPersistTaps="handled"
+      >
         {queue.length > 0 ? (
           <View style={styles.queueSection}>
             <Text
@@ -540,12 +546,9 @@ export const BatchVoiceScreen = () => {
             {submitError}
           </Text>
         )}
-
-        {/* Bottom spacing for the sticky button */}
-        <View style={{ height: 80 }} />
       </ScrollView>
 
-      {/* Sticky bottom bar: family share toggle + create button */}
+      {/* Bottom bar — not absolute, participates in layout so it pushes the list up */}
       {queue.length > 0 && (
         <Surface
           style={[styles.bottomBar, { backgroundColor: theme.colors.surface }]}
@@ -606,6 +609,17 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
+    paddingBottom: 16,
+  },
+  topSection: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  listScroll: {
+    flex: 1,
+  },
+  listContent: {
+    paddingHorizontal: 16,
     paddingBottom: 16,
   },
   micSection: {
@@ -697,10 +711,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     paddingHorizontal: 16,
     paddingVertical: 12,
     paddingBottom: Platform.OS === 'ios' ? 28 : 12,
