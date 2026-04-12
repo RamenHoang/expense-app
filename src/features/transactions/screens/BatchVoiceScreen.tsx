@@ -19,6 +19,8 @@ import {
   ActivityIndicator,
   TextInput,
   SegmentedButtons,
+  Modal,
+  Portal,
 } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -69,8 +71,6 @@ export const BatchVoiceScreen = () => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const pulseLoop = useRef<Animated.CompositeAnimation | null>(null);
   const autoAddTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const listScrollRef = useRef<ScrollView>(null);
-  const itemLayouts = useRef<Record<string, number>>({});
 
   useEffect(() => {
     fetchCategories();
@@ -201,13 +201,6 @@ export const BatchVoiceScreen = () => {
     setEditNote(item.note);
     setEditCategoryId(item.categoryId);
     setEditDate(item.date ?? new Date());
-    // Scroll the item into view after the edit form expands
-    setTimeout(() => {
-      const y = itemLayouts.current[item.key];
-      if (y !== undefined) {
-        listScrollRef.current?.scrollTo({ y, animated: true });
-      }
-    }, 100);
   };
 
   // Save inline edit
@@ -348,14 +341,12 @@ export const BatchVoiceScreen = () => {
   };
 
   const renderQueueItem = (item: QueueItem, index: number) => {
-    const isEditing = editingKey === item.key;
     const isIncome = item.type === 'income';
     const isInvalid = !item.amount || item.amount <= 0;
 
     return (
       <Surface
         key={item.key}
-        onLayout={(e) => { itemLayouts.current[item.key] = e.nativeEvent.layout.y; }}
         style={[
           styles.queueCard,
           {
@@ -366,67 +357,72 @@ export const BatchVoiceScreen = () => {
         ]}
         elevation={1}
       >
-        {/* Collapsed view */}
-        {!isEditing && (
-          <View style={styles.cardRow}>
-            <View style={styles.cardLeft}>
+        <View style={styles.cardRow}>
+          <View style={styles.cardLeft}>
+            <Text
+              variant="bodyLarge"
+              style={{
+                color: isIncome ? theme.colors.primary : theme.colors.error,
+                fontWeight: 'bold',
+                marginBottom: 2,
+              }}
+            >
+              {isIncome ? '↑ ' : '↓ '}
+              {isInvalid
+                ? t('batchVoice.invalidAmount')
+                : formatCurrency(item.amount!, currency)}
+            </Text>
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+              {getCategoryName(item.categoryId)}
+            </Text>
+            {!!item.note && (
               <Text
-                variant="bodyLarge"
-                style={{
-                  color: isIncome ? theme.colors.primary : theme.colors.error,
-                  fontWeight: 'bold',
-                  marginBottom: 2,
-                }}
+                variant="bodySmall"
+                style={{ color: theme.colors.onSurface, marginTop: 2 }}
+                numberOfLines={1}
               >
-                {isIncome ? '↑ ' : '↓ '}
-                {isInvalid
-                  ? t('batchVoice.invalidAmount')
-                  : formatCurrency(item.amount!, currency)}
+                {item.note}
               </Text>
-              <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                {getCategoryName(item.categoryId)}
+            )}
+            {!!item.date && (
+              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 2 }}>
+                {item.date.toLocaleDateString('vi-VN')}
               </Text>
-              {!!item.note && (
-                <Text
-                  variant="bodySmall"
-                  style={{ color: theme.colors.onSurface, marginTop: 2 }}
-                  numberOfLines={1}
-                >
-                  {item.note}
-                </Text>
-              )}
-              {!!item.date && (
-                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 2 }}>
-                  {item.date.toLocaleDateString('vi-VN')}
-                </Text>
-              )}
-            </View>
-            <View style={styles.cardActions}>
-              <IconButton
-                icon="pencil-outline"
-                size={18}
-                onPress={() => handleToggleEdit(item)}
-                iconColor={theme.colors.onSurfaceVariant}
-              />
-              <IconButton
-                icon="trash-can-outline"
-                size={18}
-                onPress={() => handleDelete(item.key)}
-                iconColor={theme.colors.error}
-              />
-            </View>
+            )}
           </View>
-        )}
+          <View style={styles.cardActions}>
+            <IconButton
+              icon="pencil-outline"
+              size={18}
+              onPress={() => handleToggleEdit(item)}
+              iconColor={theme.colors.onSurfaceVariant}
+            />
+            <IconButton
+              icon="trash-can-outline"
+              size={18}
+              onPress={() => handleDelete(item.key)}
+              iconColor={theme.colors.error}
+            />
+          </View>
+        </View>
+      </Surface>
+    );
+  };
 
-        {/* Expanded edit view */}
-        {isEditing && (
-          <View style={styles.editForm}>
+  const renderEditModal = () => (
+    <Portal>
+      <Modal
+        visible={editingKey !== null}
+        onDismiss={() => setEditingKey(null)}
+        contentContainerStyle={[styles.editModal, { backgroundColor: theme.colors.surface }]}
+      >
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             {/* Type toggle */}
             <SegmentedButtons
               value={editType}
               onValueChange={val => {
                 setEditType(val as 'income' | 'expense');
-                // Reset category if type changes
                 const cat = categories.find(c => c.id === editCategoryId);
                 if (cat && cat.type !== val) setEditCategoryId(undefined);
               }}
@@ -492,20 +488,24 @@ export const BatchVoiceScreen = () => {
               </View>
             </ScrollView>
 
-            {/* Save */}
-            <Button
-              mode="contained"
-              onPress={() => handleSaveEdit(item.key)}
-              style={styles.saveButton}
-              compact
-            >
-              {t('batchVoice.editDone')}
-            </Button>
-          </View>
-        )}
-      </Surface>
-    );
-  };
+            {/* Actions */}
+            <View style={styles.editModalActions}>
+              <Button mode="outlined" onPress={() => setEditingKey(null)} style={{ flex: 1 }}>
+                {t('common.cancel')}
+              </Button>
+              <Button
+                mode="contained"
+                onPress={() => editingKey && handleSaveEdit(editingKey)}
+                style={{ flex: 1 }}
+              >
+                {t('batchVoice.editDone')}
+              </Button>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </Modal>
+    </Portal>
+  );
 
   // ─── Main render ──────────────────────────────────────────────────────────
 
@@ -514,6 +514,9 @@ export const BatchVoiceScreen = () => {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      {/* Edit modal */}
+      {renderEditModal()}
+
       {/* Fixed top: mic area + just-parsed preview */}
       <View style={styles.topSection}>
         {renderMicSection()}
@@ -522,7 +525,6 @@ export const BatchVoiceScreen = () => {
 
       {/* Scrollable queue list only */}
       <ScrollView
-        ref={listScrollRef}
         style={styles.listScroll}
         contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"
@@ -738,5 +740,17 @@ const styles = StyleSheet.create({
   },
   switchLabel: {
     flex: 1,
+  },
+  editModal: {
+    margin: 24,
+    marginTop: 40,
+    borderRadius: 16,
+    padding: 20,
+    maxHeight: '60%',
+  },
+  editModalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
   },
 });
