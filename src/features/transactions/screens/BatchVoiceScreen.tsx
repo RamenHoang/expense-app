@@ -34,6 +34,7 @@ import { parseVoiceTransaction, ParsedTransaction } from '../../../utils/parseVo
 import { formatCurrency } from '../../../utils/currency';
 import { transactionService } from '../../../services/transactionService';
 import { formatDateToUTC7String } from '../../../utils/date';
+import { DatePickerInput } from '../components/DatePickerInput';
 
 type QueueItem = ParsedTransaction & { key: string };
 type RecordingState = 'idle' | 'recording' | 'error';
@@ -62,6 +63,7 @@ export const BatchVoiceScreen = () => {
   const [editAmount, setEditAmount] = useState('');
   const [editNote, setEditNote] = useState('');
   const [editCategoryId, setEditCategoryId] = useState<string | undefined>(undefined);
+  const [editDate, setEditDate] = useState<Date>(new Date());
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const pulseLoop = useRef<Animated.CompositeAnimation | null>(null);
@@ -195,6 +197,7 @@ export const BatchVoiceScreen = () => {
     setEditAmount(item.amount ? String(item.amount) : '');
     setEditNote(item.note);
     setEditCategoryId(item.categoryId);
+    setEditDate(item.date ?? new Date());
   };
 
   // Save inline edit
@@ -205,7 +208,7 @@ export const BatchVoiceScreen = () => {
       prev.map(item =>
         item.key !== key
           ? item
-          : { ...item, type: editType, amount, note: editNote, categoryId: editCategoryId }
+          : { ...item, type: editType, amount, note: editNote, categoryId: editCategoryId, date: editDate }
       )
     );
     setEditingKey(null);
@@ -441,6 +444,13 @@ export const BatchVoiceScreen = () => {
               onChangeText={setEditNote}
               dense
               style={styles.editInput}
+            />
+
+            {/* Date picker */}
+            <DatePickerInput
+              value={editDate}
+              onChange={setEditDate}
+              label={t('transactions.date')}
             />
 
             {/* Category chips */}
