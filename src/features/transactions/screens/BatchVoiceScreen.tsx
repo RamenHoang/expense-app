@@ -37,6 +37,7 @@ import { formatCurrency } from '../../../utils/currency';
 import { transactionService } from '../../../services/transactionService';
 import { formatDateToUTC7String } from '../../../utils/date';
 import { DatePickerInput } from '../components/DatePickerInput';
+import { AmountInput } from '../components/AmountInput';
 
 type QueueItem = ParsedTransaction & { key: string };
 type RecordingState = 'idle' | 'recording' | 'error';
@@ -205,8 +206,7 @@ export const BatchVoiceScreen = () => {
 
   // Save inline edit
   const handleSaveEdit = (key: string) => {
-    const raw = editAmount.replace(/[,\.]/g, '');
-    const amount = raw ? parseFloat(raw) : null;
+    const amount = editAmount ? parseFloat(editAmount.replace(/,/g, '')) : null;
     setQueue(prev =>
       prev.map(item =>
         item.key !== key
@@ -434,23 +434,21 @@ export const BatchVoiceScreen = () => {
             />
 
             {/* Amount */}
-            <TextInput
-              mode="outlined"
-              label={t('batchVoice.amount')}
+            <AmountInput
               value={editAmount}
               onChangeText={setEditAmount}
-              keyboardType="numeric"
-              dense
-              style={styles.editInput}
+              type={editType}
             />
 
             {/* Note */}
             <TextInput
+              key={`note-${editingKey}`}
               mode="outlined"
               label={t('batchVoice.note')}
-              value={editNote}
+              defaultValue={editNote}
               onChangeText={setEditNote}
-              dense
+              multiline
+              numberOfLines={3}
               style={styles.editInput}
             />
 
@@ -742,11 +740,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   editModal: {
-    margin: 24,
+    margin: 16,
     marginTop: 40,
+    marginBottom: 'auto',
     borderRadius: 16,
     padding: 20,
-    maxHeight: '60%',
+    maxHeight: '80%',
   },
   editModalActions: {
     flexDirection: 'row',
