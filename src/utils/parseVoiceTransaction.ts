@@ -541,6 +541,12 @@ function extractNote(original: string): string {
   WORD_AMOUNT_RE.lastIndex = 0;
   text = text.replace(WORD_AMOUNT_RE, '');
 
+  // Remove lone đ/Đ (đồng symbol) that AMOUNT_REGEX leaves behind when the
+  // speech recogniser attaches it directly to a number ("100.000đ mua gà" →
+  // after amount removal → "đ mua gà"). Match it at any position so it is
+  // caught whether it ends up at the start, middle, or end of the note.
+  text = text.replace(/(?:^|\s)[đĐ](?=\s|$)/g, ' ');
+
   // Clean up punctuation and extra whitespace, then capitalize first letter
   text = text.replace(/[,.\-_]+/g, ' ').replace(/\s+/g, ' ').trim();
   return text.length > 0 ? text.charAt(0).toUpperCase() + text.slice(1) : '';

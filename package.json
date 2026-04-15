@@ -1,6 +1,6 @@
 {
   "name": "vi-dau-kho",
-  "version": "1.17.2",
+  "version": "1.18.0",
   "main": "index.ts",
   "scripts": {
     "start": "expo start --go",

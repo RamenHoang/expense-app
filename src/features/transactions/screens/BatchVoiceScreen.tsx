@@ -699,6 +699,7 @@ const styles = StyleSheet.create({
   },
   editInput: {
     fontSize: 14,
+    marginBottom: 12,
   },
   chipRow: {
     flexDirection: 'row',
