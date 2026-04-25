@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, ActivityIndicator, RefreshControl } from 'react-native';
 import Constants from 'expo-constants';
 import { Text, List, Avatar, Divider, Dialog, Button, Portal, Switch, useTheme, RadioButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -21,6 +21,7 @@ export const SettingsScreen = () => {
   const [exportDialogVisible, setExportDialogVisible] = useState(false);
   const [languageDialogVisible, setLanguageDialogVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
 
@@ -29,6 +30,15 @@ export const SettingsScreen = () => {
       fetchProfile();
     }
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetchProfile();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleSignOut = async () => {
     setLoading(true);
@@ -132,7 +142,10 @@ export const SettingsScreen = () => {
   const fullName = user?.user_metadata?.full_name || 'User';
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
       {/* User Profile Section */}
       <View style={[styles.profileSection, { backgroundColor: theme.colors.surface }]}>
         {profile?.avatar_url ? (

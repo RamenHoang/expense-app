@@ -36,43 +36,51 @@ export const EditProfileScreen = () => {
       [
         {
           text: t('settings.photoLibrary'),
-          onPress: async () => {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-              Alert.alert(t('common.error'), t('settings.permissionDenied'));
-              return;
-            }
-            const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ImagePicker.MediaType.Images,
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 0.6,
-              base64: true,
-            });
-            if (!result.canceled && result.assets[0]) {
-              setAvatarUri(result.assets[0].uri);
-              setAvatarBase64(result.assets[0].base64 ?? null);
-            }
+          onPress: () => {
+            setTimeout(async () => {
+              try {
+                const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                if (status !== 'granted') {
+                  Alert.alert(t('common.error'), t('settings.permissionDenied'));
+                  return;
+                }
+                const result = await ImagePicker.launchImageLibraryAsync({
+                  mediaTypes: 'images',
+                  allowsEditing: true,
+                  aspect: [1, 1],
+                  quality: 0.6,
+                  base64: true,
+                });
+                if (!result.canceled && result.assets[0]) {
+                  setAvatarUri(result.assets[0].uri);
+                  setAvatarBase64(result.assets[0].base64 ?? null);
+                }
+              } catch (error: any) {
+                Alert.alert(t('common.error'), error?.message || 'Failed to open gallery');
+              }
+            }, 300);
           },
         },
         {
           text: t('settings.camera'),
-          onPress: async () => {
-            const { status } = await ImagePicker.requestCameraPermissionsAsync();
-            if (status !== 'granted') {
-              Alert.alert(t('common.error'), t('settings.permissionDenied'));
-              return;
-            }
-            const result = await ImagePicker.launchCameraAsync({
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 0.6,
-              base64: true,
-            });
-            if (!result.canceled && result.assets[0]) {
-              setAvatarUri(result.assets[0].uri);
-              setAvatarBase64(result.assets[0].base64 ?? null);
-            }
+          onPress: () => {
+            setTimeout(async () => {
+              const { status } = await ImagePicker.requestCameraPermissionsAsync();
+              if (status !== 'granted') {
+                Alert.alert(t('common.error'), t('settings.permissionDenied'));
+                return;
+              }
+              const result = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.6,
+                base64: true,
+              });
+              if (!result.canceled && result.assets[0]) {
+                setAvatarUri(result.assets[0].uri);
+                setAvatarBase64(result.assets[0].base64 ?? null);
+              }
+            }, 100);
           },
         },
         { text: t('common.cancel'), style: 'cancel' },
