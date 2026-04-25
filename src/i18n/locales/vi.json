@@ -322,7 +322,18 @@
     "currencyUpdated": "Đã cập nhật tiền tệ",
     "failedToUpdateCurrency": "Không thể cập nhật tiền tệ",
     "languageChanged": "Đã thay đổi ngôn ngữ",
-    "languageChangeError": "Không thể thay đổi ngôn ngữ"
+    "languageChangeError": "Không thể thay đổi ngôn ngữ",
+    "fullName": "Họ và tên",
+    "email": "Email",
+    "changePhoto": "Thay đổi ảnh",
+    "photoLibrary": "Thư viện ảnh",
+    "camera": "Máy ảnh",
+    "permissionDenied": "Không có quyền truy cập",
+    "tapToChangePhoto": "Nhấn vào ảnh đại diện để thay đổi",
+    "saveChanges": "Lưu thay đổi",
+    "profileUpdated": "Đã cập nhật hồ sơ thành công",
+    "profileUpdateError": "Không thể cập nhật hồ sơ",
+    "fullNameRequired": "Họ và tên không được để trống"
   },
   "onboarding": {
     "welcome": "Chào mừng!",

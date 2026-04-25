@@ -135,11 +135,19 @@ export const SettingsScreen = () => {
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* User Profile Section */}
       <View style={[styles.profileSection, { backgroundColor: theme.colors.surface }]}>
-        <Avatar.Text 
-          size={64} 
-          label={getInitials(fullName)} 
-          style={styles.avatar}
-        />
+        {profile?.avatar_url ? (
+          <Avatar.Image
+            size={64}
+            source={{ uri: profile.avatar_url }}
+            style={styles.avatar}
+          />
+        ) : (
+          <Avatar.Text
+            size={64}
+            label={getInitials(fullName)}
+            style={styles.avatar}
+          />
+        )}
         <Text variant="titleLarge" style={styles.userName}>{fullName}</Text>
         <Text variant="bodyMedium" style={styles.userEmail}>{user?.email}</Text>
       </View>
@@ -154,6 +162,7 @@ export const SettingsScreen = () => {
           description={t('settings.editProfileDescription')}
           left={(props) => <List.Icon {...props} icon="account" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
+          onPress={() => navigation.navigate('EditProfile' as never)}
         />
         <List.Item
           title={t('categories.manageCategories')}

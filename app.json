@@ -2,7 +2,7 @@
   "expo": {
     "name": "Ví Đau Khổ",
     "slug": "expense-app",
-    "version": "1.19.0",
+    "version": "1.20.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -19,6 +19,13 @@
           "microphonePermission": "Ứng dụng cần truy cập microphone để nhận dạng giọng nói.",
           "speechRecognitionPermission": "Ứng dụng cần quyền nhận dạng giọng nói để tạo giao dịch.",
           "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Ứng dụng cần truy cập thư viện ảnh để chọn ảnh đại diện và biên lai.",
+          "cameraPermission": "Ứng dụng cần truy cập camera để chụp ảnh đại diện và biên lai."
         }
       ]
     ],
@@ -40,6 +47,7 @@
       },
       "permissions": [
         "CAMERA",
+        "READ_MEDIA_IMAGES",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "RECORD_AUDIO"

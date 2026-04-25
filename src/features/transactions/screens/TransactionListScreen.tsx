@@ -31,6 +31,7 @@ import { PriceText } from '../../../components/PriceText';
 import { RangeDatePicker } from '../../../components/RangeDatePicker';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
 import { Chip } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { formatDateForDisplay, formatDateToUTC7String, getCurrentDateUTC7 } from '../../../utils/date';
 import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
 
@@ -345,9 +346,8 @@ export const TransactionListScreen = () => {
           <Chip
             selected={!categoryFilter}
             onPress={() => setCategoryFilter(undefined)}
-            style={[styles.chip, !categoryFilter && styles.chipSelected]}
-            textStyle={!categoryFilter ? styles.chipTextSelected : styles.chipText}
-            icon={!categoryFilter ? 'check' : undefined}
+            style={[styles.chip, !categoryFilter && { backgroundColor: theme.colors.primaryContainer }]}
+            textStyle={!categoryFilter ? [styles.chipTextSelected, { color: theme.colors.onPrimaryContainer }] : {}}
             showSelectedOverlay={false}
           >
             {t('transactions.allCategories')}
@@ -357,12 +357,11 @@ export const TransactionListScreen = () => {
               key={cat.id}
               selected={categoryFilter === cat.id}
               onPress={() => setCategoryFilter(prev => prev === cat.id ? undefined : cat.id)}
-              style={[styles.chip, categoryFilter === cat.id && styles.chipSelected]}
-              textStyle={categoryFilter === cat.id ? styles.chipTextSelected : styles.chipText}
-              icon={categoryFilter === cat.id ? 'check' : undefined}
+              style={[styles.chip, categoryFilter === cat.id && { backgroundColor: theme.colors.primaryContainer }]}
+              textStyle={categoryFilter === cat.id ? [styles.chipTextSelected, { color: theme.colors.onPrimaryContainer }] : {}}
               showSelectedOverlay={false}
-              avatar={categoryFilter !== cat.id && cat.color ? (
-                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: cat.color, marginLeft: 8 }} />
+              icon={cat.icon ? ({ size }) => (
+                <MaterialCommunityIcons name={cat.icon as any} size={size} color={cat.color} />
               ) : undefined}
             >
               {cat.name}
@@ -380,9 +379,8 @@ export const TransactionListScreen = () => {
             <Chip
               selected={scopeFilter === 'all'}
               onPress={() => setScopeFilter('all')}
-              style={[styles.chip, scopeFilter === 'all' && styles.chipSelected]}
-              textStyle={scopeFilter === 'all' ? styles.chipTextSelected : styles.chipText}
-              icon={scopeFilter === 'all' ? 'check' : undefined}
+              style={[styles.chip, scopeFilter === 'all' && { backgroundColor: theme.colors.primaryContainer }]}
+              textStyle={scopeFilter === 'all' ? [styles.chipTextSelected, { color: theme.colors.onPrimaryContainer }] : {}}
               showSelectedOverlay={false}
             >
               {t('transactions.allTransactions')}
@@ -390,9 +388,8 @@ export const TransactionListScreen = () => {
             <Chip
               selected={scopeFilter === 'mine'}
               onPress={() => setScopeFilter('mine')}
-              style={[styles.chip, scopeFilter === 'mine' && styles.chipSelected]}
-              textStyle={scopeFilter === 'mine' ? styles.chipTextSelected : styles.chipText}
-              icon={scopeFilter === 'mine' ? 'check' : undefined}
+              style={[styles.chip, scopeFilter === 'mine' && { backgroundColor: theme.colors.primaryContainer }]}
+              textStyle={scopeFilter === 'mine' ? [styles.chipTextSelected, { color: theme.colors.onPrimaryContainer }] : {}}
               showSelectedOverlay={false}
             >
               {t('transactions.myTransactions')}
@@ -400,9 +397,8 @@ export const TransactionListScreen = () => {
             <Chip
               selected={scopeFilter === 'family'}
               onPress={() => setScopeFilter('family')}
-              style={[styles.chip, scopeFilter === 'family' && styles.chipSelected]}
-              textStyle={scopeFilter === 'family' ? styles.chipTextSelected : styles.chipText}
-              icon={scopeFilter === 'family' ? 'check' : undefined}
+              style={[styles.chip, scopeFilter === 'family' && { backgroundColor: theme.colors.primaryContainer }]}
+              textStyle={scopeFilter === 'family' ? [styles.chipTextSelected, { color: theme.colors.onPrimaryContainer }] : {}}
               showSelectedOverlay={false}
             >
               {t('transactions.familyTransactions')}
@@ -567,6 +563,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   chipContainer: {
+    marginBottom: 8,
   },
   chipContent: {
     gap: 0,
@@ -575,10 +572,6 @@ const styles = StyleSheet.create({
     marginRight: 0,
     backgroundColor: 'transparent',
     borderRadius: 20,
-    height: 40,
-  },
-  chipSelected: {
-    backgroundColor: 'transparent',
   },
   chipText: {
     fontSize: 14,

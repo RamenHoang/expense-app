@@ -15,6 +15,7 @@ import { CreateFamilyScreen } from '../features/family/screens/CreateFamilyScree
 import { InviteMemberScreen } from '../features/family/screens/InviteMemberScreen';
 import { EditFamilyScreen } from '../features/family/screens/EditFamilyScreen';
 import { BatchVoiceScreen } from '../features/transactions/screens/BatchVoiceScreen';
+import { EditProfileScreen } from '../features/settings/screens/EditProfileScreen';
 import { useAuthStore } from '../store/authStore';
 import { t } from 'i18next';
 
@@ -127,6 +128,14 @@ export const RootNavigator = () => {
               component={BatchVoiceScreen}
               options={{
                 title: t('batchVoice.title'),
+                headerBackTitle: t('common.back'),
+              }}
+            />
+            <Stack.Screen
+              name="EditProfile"
+              component={EditProfileScreen}
+              options={{
+                title: t('settings.editProfile'),
                 headerBackTitle: t('common.back'),
               }}
             />

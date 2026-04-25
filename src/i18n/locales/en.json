@@ -328,7 +328,18 @@
     "currencyUpdated": "Currency updated",
     "failedToUpdateCurrency": "Failed to update currency",
     "languageChanged": "Language changed",
-    "languageChangeError": "Failed to change language"
+    "languageChangeError": "Failed to change language",
+    "fullName": "Full Name",
+    "email": "Email",
+    "changePhoto": "Change Photo",
+    "photoLibrary": "Photo Library",
+    "camera": "Camera",
+    "permissionDenied": "Permission denied",
+    "tapToChangePhoto": "Tap avatar to change photo",
+    "saveChanges": "Save Changes",
+    "profileUpdated": "Profile updated successfully",
+    "profileUpdateError": "Failed to update profile",
+    "fullNameRequired": "Full name is required"
   },
   "onboarding": {
     "welcome": "Welcome!",

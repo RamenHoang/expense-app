@@ -1,6 +1,6 @@
 import React, { useState, memo } from 'react';
 import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { List, IconButton, Dialog, Button, Portal, Text, useTheme, Divider } from 'react-native-paper';
+import { List, IconButton, Dialog, Button, Portal, Text, useTheme, Divider, Avatar } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { TransactionWithCategory } from '../../../types/transaction';
 import { transactionService } from '../../../services/transactionService';
@@ -27,6 +27,11 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const isOwnTransaction = user?.id === transaction.user_id;
+
+  const getOwnerInitials = (name?: string) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+  };
 
   const highlightText = (text: string, query: string) => {
     if (!query || !text) return <Text>{text}</Text>;
@@ -90,9 +95,23 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
           <View style={styles.titleContainer}>
             {highlightText(categoryInfo.name, searchQuery)}
             {transaction.is_shared && (
-              <Text style={[styles.sharedBadge, { color: theme.colors.primary }]}>
-                • {t('transactions.sharedTransaction')}
-              </Text>
+              isOwnTransaction ? (
+                <Text style={[styles.sharedBadge, { color: theme.colors.primary }]}>
+                  • {t('transactions.sharedTransaction')}
+                </Text>
+              ) : transaction.user_profile?.avatar_url ? (
+                <Avatar.Image
+                  size={20}
+                  source={{ uri: transaction.user_profile.avatar_url }}
+                  style={styles.ownerAvatar}
+                />
+              ) : (
+                <Avatar.Text
+                  size={20}
+                  label={getOwnerInitials(transaction.user_profile?.full_name)}
+                  style={styles.ownerAvatar}
+                />
+              )
             )}
           </View>
         }
@@ -190,7 +209,8 @@ export const TransactionListItem = memo(
       prevProps.transaction.note === nextProps.transaction.note &&
       prevProps.transaction.transaction_date === nextProps.transaction.transaction_date &&
       prevProps.transaction.type === nextProps.transaction.type &&
-      prevProps.transaction.category?.id === nextProps.transaction.category?.id
+      prevProps.transaction.category?.id === nextProps.transaction.category?.id &&
+      prevProps.transaction.user_profile?.avatar_url === nextProps.transaction.user_profile?.avatar_url
     );
   }
 );
@@ -209,6 +229,9 @@ const styles = StyleSheet.create({
   sharedBadge: {
     fontSize: 12,
     fontWeight: '600',
+  },
+  ownerAvatar: {
+    marginLeft: 4,
   },
   divider: {
     marginHorizontal: 16,

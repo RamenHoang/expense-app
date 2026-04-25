@@ -24,6 +24,7 @@ export interface TransactionWithCategory extends Transaction {
   user_profile?: {
     id: string;
     full_name: string;
+    avatar_url?: string;
     email?: string;
   };
 }

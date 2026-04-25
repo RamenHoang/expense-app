@@ -1,6 +1,6 @@
 {
   "name": "vi-dau-kho",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "main": "index.ts",
   "scripts": {
     "start": "expo start --go",
@@ -25,6 +25,7 @@
     "expo": "~54.0.33",
     "expo-dev-client": "~6.0.20",
     "expo-file-system": "^19.0.21",
+    "expo-image-manipulator": "~14.0.8",
     "expo-image-picker": "^17.0.10",
     "expo-sharing": "^14.0.8",
     "expo-speech-recognition": "^3.1.2",
