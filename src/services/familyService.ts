@@ -95,7 +95,7 @@ class FamilyService {
 
   async getFamilyMembers(familyId: string): Promise<FamilyMember[]> {
     try {
-      const { data, error } = await supabase.rpc('get_family_members', {
+      const { data, error } = await supabase.rpc('get_family_members_01', {
         p_family_id: familyId,
       });
 
@@ -111,6 +111,7 @@ class FamilyService {
         user: {
           email: member.user_email || '',
           name: member.user_name,
+          avatar_url: member.user_avatar_url || undefined,
         },
       }));
     } catch (error) {

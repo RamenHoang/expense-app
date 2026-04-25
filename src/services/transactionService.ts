@@ -68,32 +68,7 @@ export const transactionService = {
     const { data, error } = await query;
 
     if (error) throw error;
-    const transactions: TransactionWithCategory[] = data || [];
-
-    // Batch-fetch profiles for shared transactions owned by other users
-    const otherUserIds = [...new Set(
-      transactions
-        .filter(tx => tx.is_shared && tx.user_id !== user.id)
-        .map(tx => tx.user_id)
-    )];
-
-    if (otherUserIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, full_name, avatar_url')
-        .in('id', otherUserIds);
-
-      if (profiles) {
-        const profileMap = Object.fromEntries(profiles.map(p => [p.id, p]));
-        return transactions.map(tx =>
-          tx.is_shared && tx.user_id !== user.id && profileMap[tx.user_id]
-            ? { ...tx, user_profile: profileMap[tx.user_id] }
-            : tx
-        );
-      }
-    }
-
-    return transactions;
+    return data || [];
   },
 
   /**

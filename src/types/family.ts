@@ -20,6 +20,7 @@ export interface FamilyMember {
   user?: {
     email: string;
     name?: string;
+    avatar_url?: string;
   };
 }
 

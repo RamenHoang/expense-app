@@ -280,9 +280,14 @@ export const FamilyScreen = () => {
                   .filter((m) => m.status === 'active')
                   .map((member) => (
                     <View key={member.id} style={styles.memberItem}>
-                      <Avatar.Text
+                      {/* <Avatar.Text
                         size={40}
                         label={member.user?.email?.charAt(0).toUpperCase() || 'U'}
+                      /> */}
+                      <Avatar.Image
+                        size={40}
+                        source={{ uri: member.user?.avatar_url || undefined }}
+                        // style={styles.ownerAvatar}
                       />
                       <View style={styles.memberInfo}>
                         <Text style={styles.memberEmail} numberOfLines={1} ellipsizeMode="tail">

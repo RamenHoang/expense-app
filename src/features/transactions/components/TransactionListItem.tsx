@@ -6,6 +6,7 @@ import { TransactionWithCategory } from '../../../types/transaction';
 import { transactionService } from '../../../services/transactionService';
 import { useTransactionStore } from '../../../store/transactionStore';
 import { useAuthStore } from '../../../store/authStore';
+import { useFamilyStore } from '../../../store/familyStore';
 import { PriceText } from '../../../components/PriceText';
 
 interface TransactionListItemProps {
@@ -23,13 +24,20 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
   const theme = useTheme();
   const user = useAuthStore((state) => state.user);
   const removeTransaction = useTransactionStore((state) => state.removeTransaction);
+  const members = useFamilyStore((state) => state.members);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const isOwnTransaction = user?.id === transaction.user_id;
 
-  const getOwnerInitials = (name?: string) => {
-    if (!name) return '?';
+  const ownerMember = !isOwnTransaction
+    ? members.find(m => m.user_id === transaction.user_id)
+    : undefined;
+  const ownerName = ownerMember?.user?.name || ownerMember?.user?.email || '';
+  const ownerAvatarUrl = ownerMember?.user?.avatar_url;
+
+  const getOwnerInitials = (name: string) => {
+    if (!name) return '';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
 
@@ -99,16 +107,16 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
                 <Text style={[styles.sharedBadge, { color: theme.colors.primary }]}>
                   • {t('transactions.sharedTransaction')}
                 </Text>
-              ) : transaction.user_profile?.avatar_url ? (
+              ) : ownerAvatarUrl ? (
                 <Avatar.Image
                   size={20}
-                  source={{ uri: transaction.user_profile.avatar_url }}
+                  source={{ uri: ownerAvatarUrl }}
                   style={styles.ownerAvatar}
                 />
               ) : (
                 <Avatar.Text
                   size={20}
-                  label={getOwnerInitials(transaction.user_profile?.full_name)}
+                  label={getOwnerInitials(ownerName)}
                   style={styles.ownerAvatar}
                 />
               )
