@@ -147,7 +147,8 @@
     "sharedTransaction": "Đã chia sẻ",
     "myTransactions": "Giao dịch của tôi",
     "familyTransactions": "Giao dịch gia đình",
-    "allTransactions": "Tất cả giao dịch"
+    "allTransactions": "Tất cả giao dịch",
+    "allCategories": "Tất cả"
   },
   "budgets": {
     "title": "Ngân sách",

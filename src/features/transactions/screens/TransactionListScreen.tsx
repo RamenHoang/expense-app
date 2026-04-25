@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -11,19 +11,19 @@ import {
   Text,
   FAB,
   Searchbar,
-  SegmentedButtons,
   Snackbar,
   useTheme,
   Portal,
   Dialog,
   Button,
-  Divider,
   IconButton,
+  Modal,
 } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { useTransactionStore } from '../../../store/transactionStore';
 import { useFamilyStore } from '../../../store/familyStore';
+import { useCategoryStore } from '../../../store/categoryStore';
 import { TransactionListItem } from '../components/TransactionListItem';
 import { TransactionWithCategory } from '../../../types/transaction';
 import { useUserStore } from '../../../store/userStore';
@@ -47,16 +47,15 @@ export const TransactionListScreen = () => {
     filters,
     fetchTransactions,
     loadMoreTransactions,
-    setFilters,
     clearError,
     resetPagination,
   } = useTransactionStore();
-  const { profile } = useUserStore();
+  useUserStore();
   const { family } = useFamilyStore();
+  const { categories, fetchCategories } = useCategoryStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [scopeFilter, setScopeFilter] = useState<'all' | 'mine' | 'family'>('all');
   const [dateFilter, setDateFilter] = useState<'month' | 'year' | 'custom' | 'all'>('all');
@@ -66,25 +65,32 @@ export const TransactionListScreen = () => {
   const [customEndDate, setCustomEndDate] = useState(new Date());
   const [appliedCustomRange, setAppliedCustomRange] = useState<{ start: Date; end: Date } | null>(null);
   const [fabOpen, setFabOpen] = useState(false);
-  
+  const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
+  const [searchModalVisible, setSearchModalVisible] = useState(false);
+
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useLayoutEffect(() => {
     navigation.setOptions({
+      headerTitle: t('transactions.title'),
       headerRight: () => (
         <IconButton
-          icon={isSearchVisible ? 'close' : 'magnify'}
-          onPress={() => {
-            if (isSearchVisible) {
-              setSearchQuery('');
-              setDebouncedSearchQuery('');
-            }
-            setIsSearchVisible(v => !v);
-          }}
+          icon={debouncedSearchQuery ? 'magnify-close' : 'magnify'}
+          onPress={() => setSearchModalVisible(true)}
         />
       ),
     });
-  }, [navigation, isSearchVisible]);
+  }, [navigation, debouncedSearchQuery, t]);
+
+  const handleCloseSearch = () => {
+    setSearchModalVisible(false);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setDebouncedSearchQuery('');
+    setSearchModalVisible(false);
+  };
 
   // Debounce search query
   useEffect(() => {
@@ -104,8 +110,17 @@ export const TransactionListScreen = () => {
   }, [searchQuery]);
 
   useEffect(() => {
+    if (categories.length === 0) fetchCategories();
+  }, []);
+
+  const visibleCategories = useMemo(() =>
+    filterType === 'all' ? categories : categories.filter(c => c.type === filterType),
+    [categories, filterType]
+  );
+
+  useEffect(() => {
     loadTransactions();
-  }, [dateFilter, appliedCustomRange, scopeFilter, debouncedSearchQuery]);
+  }, [filterType, dateFilter, appliedCustomRange, scopeFilter, debouncedSearchQuery, categoryFilter]);
 
   const getDateRange = () => {
     // Get current date in UTC+7
@@ -151,6 +166,7 @@ export const TransactionListScreen = () => {
       type: filterType === 'all' ? undefined : filterType,
       search: debouncedSearchQuery || undefined,
       scope: scopeFilter === 'all' ? undefined : scopeFilter,
+      category_id: categoryFilter,
     }, true);
   };
 
@@ -183,6 +199,7 @@ export const TransactionListScreen = () => {
 
   const handleFilterChange = (value: string) => {
     setFilterType(value as 'all' | 'income' | 'expense');
+    setCategoryFilter(undefined);
   };
 
   const handleDateFilterChange = (value: string) => {
@@ -221,9 +238,6 @@ export const TransactionListScreen = () => {
     }
   };
 
-  const handleAddTransaction = () => {
-    navigation.navigate('AddTransaction' as never);
-  };
 
   const handleEditTransaction = (transaction: TransactionWithCategory) => {
     navigation.navigate('EditTransaction' as never, { transactionId: transaction.id } as never);
@@ -321,19 +335,41 @@ export const TransactionListScreen = () => {
           style={styles.segmentedButtons}
         />
 
-        {/* Search bar — shown when header icon is tapped */}
-        {isSearchVisible && (
-          <Searchbar
-            placeholder={t('common.search')}
-            onChangeText={setSearchQuery}
-            value={searchQuery}
-            autoFocus
-            style={styles.searchBar}
-            inputStyle={{ minWidth: 0 }}
-          />
-        )}
+        {/* Category filter chips */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.chipContainer}
+          contentContainerStyle={styles.chipContent}
+        >
+          <Chip
+            selected={!categoryFilter}
+            onPress={() => setCategoryFilter(undefined)}
+            style={[styles.chip, !categoryFilter && styles.chipSelected]}
+            textStyle={!categoryFilter ? styles.chipTextSelected : styles.chipText}
+            icon={!categoryFilter ? 'check' : undefined}
+            showSelectedOverlay={false}
+          >
+            {t('transactions.allCategories')}
+          </Chip>
+          {visibleCategories.map(cat => (
+            <Chip
+              key={cat.id}
+              selected={categoryFilter === cat.id}
+              onPress={() => setCategoryFilter(prev => prev === cat.id ? undefined : cat.id)}
+              style={[styles.chip, categoryFilter === cat.id && styles.chipSelected]}
+              textStyle={categoryFilter === cat.id ? styles.chipTextSelected : styles.chipText}
+              icon={categoryFilter === cat.id ? 'check' : undefined}
+              showSelectedOverlay={false}
+              avatar={categoryFilter !== cat.id && cat.color ? (
+                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: cat.color, marginLeft: 8 }} />
+              ) : undefined}
+            >
+              {cat.name}
+            </Chip>
+          ))}
+        </ScrollView>
 
-        {/* Scope filter chips - only show if user has family */}
         {family && (
           <ScrollView
             horizontal
@@ -344,10 +380,7 @@ export const TransactionListScreen = () => {
             <Chip
               selected={scopeFilter === 'all'}
               onPress={() => setScopeFilter('all')}
-              style={[
-                styles.chip,
-                scopeFilter === 'all' && styles.chipSelected,
-              ]}
+              style={[styles.chip, scopeFilter === 'all' && styles.chipSelected]}
               textStyle={scopeFilter === 'all' ? styles.chipTextSelected : styles.chipText}
               icon={scopeFilter === 'all' ? 'check' : undefined}
               showSelectedOverlay={false}
@@ -357,10 +390,7 @@ export const TransactionListScreen = () => {
             <Chip
               selected={scopeFilter === 'mine'}
               onPress={() => setScopeFilter('mine')}
-              style={[
-                styles.chip,
-                scopeFilter === 'mine' && styles.chipSelected,
-              ]}
+              style={[styles.chip, scopeFilter === 'mine' && styles.chipSelected]}
               textStyle={scopeFilter === 'mine' ? styles.chipTextSelected : styles.chipText}
               icon={scopeFilter === 'mine' ? 'check' : undefined}
               showSelectedOverlay={false}
@@ -370,10 +400,7 @@ export const TransactionListScreen = () => {
             <Chip
               selected={scopeFilter === 'family'}
               onPress={() => setScopeFilter('family')}
-              style={[
-                styles.chip,
-                scopeFilter === 'family' && styles.chipSelected,
-              ]}
+              style={[styles.chip, scopeFilter === 'family' && styles.chipSelected]}
               textStyle={scopeFilter === 'family' ? styles.chipTextSelected : styles.chipText}
               icon={scopeFilter === 'family' ? 'check' : undefined}
               showSelectedOverlay={false}
@@ -382,6 +409,7 @@ export const TransactionListScreen = () => {
             </Chip>
           </ScrollView>
         )}
+       
       </View>
 
       {isLoading && !refreshing && transactions.length > 0 ? (
@@ -422,6 +450,7 @@ export const TransactionListScreen = () => {
         />
       )}
 
+      <View style={styles.fabWrapper} pointerEvents="box-none">
       <FAB.Group
         open={fabOpen}
         visible
@@ -447,6 +476,7 @@ export const TransactionListScreen = () => {
           },
         ]}
       />
+      </View>
 
       <Snackbar
         visible={!!error}
@@ -490,6 +520,28 @@ export const TransactionListScreen = () => {
             </Button>
           </Dialog.Actions>
         </Dialog>
+
+        {/* Search modal */}
+        <Modal
+          visible={searchModalVisible}
+          onDismiss={handleCloseSearch}
+          contentContainerStyle={styles.searchModal}
+          style={styles.searchModalBackdrop}
+        >
+          <Searchbar
+            placeholder={t('common.search')}
+            onChangeText={setSearchQuery}
+            value={searchQuery}
+            autoFocus
+            style={[styles.searchModalBar, { backgroundColor: theme.colors.surface }]}
+            inputStyle={{ minWidth: 0 }}
+            right={() =>
+              searchQuery ? (
+                <IconButton icon="close" size={20} onPress={handleClearSearch} />
+              ) : null
+            }
+          />
+        </Modal>
       </Portal>
     </View>
   );
@@ -515,12 +567,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   chipContainer: {
-    marginTop: 8,
-    marginBottom: 8,
   },
   chipContent: {
-    gap: 8,
-    paddingRight: 16,
+    gap: 0,
   },
   chip: {
     marginRight: 0,
@@ -586,11 +635,13 @@ const styles = StyleSheet.create({
     paddingVertical: 80,
     minHeight: 300,
   },
+  fabWrapper: {
+    ...StyleSheet.absoluteFillObject,
+    pointerEvents: 'box-none' as const,
+  },
   fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
+    margin: 0,
+    paddingBottom: 0,
   },
   dialog: {
     maxHeight: '85%',
@@ -615,5 +666,20 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginVertical: 16,
+  },
+  searchModalBackdrop: {
+    backgroundColor: 'transparent',
+  },
+  searchModal: {
+    margin: 16,
+    marginTop: 8,
+  },
+  searchModalBar: {
+    borderRadius: 12,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
 });

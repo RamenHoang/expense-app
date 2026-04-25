@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import Constants from 'expo-constants';
 import { Text, List, Avatar, Divider, Dialog, Button, Portal, Switch, useTheme, RadioButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
@@ -228,6 +229,11 @@ export const SettingsScreen = () => {
         />
       </List.Section>
 
+      {/* App Version */}
+      <Text variant="bodySmall" style={styles.versionText}>
+        v{Constants.expoConfig?.version ?? '1.0.0'}
+      </Text>
+
       {/* Logout Confirmation Dialog */}
       <Portal>
         <Dialog visible={logoutDialogVisible} onDismiss={() => setLogoutDialogVisible(false)}>
@@ -317,5 +323,10 @@ const styles = StyleSheet.create({
   },
   signOutText: {
     color: '#d32f2f',
+  },
+  versionText: {
+    textAlign: 'center',
+    opacity: 0.5,
+    marginBottom: 24,
   },
 });

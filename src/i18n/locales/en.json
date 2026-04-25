@@ -156,7 +156,8 @@
     "sharedTransaction": "Shared",
     "myTransactions": "My Transactions",
     "familyTransactions": "Family Transactions",
-    "allTransactions": "All Transactions"
+    "allTransactions": "All Transactions",
+    "allCategories": "All"
   },
   "budgets": {
     "title": "Budgets",
