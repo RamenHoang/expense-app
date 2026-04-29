@@ -3,6 +3,7 @@ import { View, StyleSheet, Alert, ScrollView, TouchableOpacity, Image } from 're
 import { Text, TextInput, Button, Avatar, ActivityIndicator, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { ScreenTransition } from '../../../components/ScreenTransition';
@@ -50,11 +51,12 @@ export const EditProfileScreen = () => {
                   allowsEditing: true,
                   aspect: [1, 1],
                   quality: 0.6,
-                  base64: true,
                 });
                 if (!result.canceled && result.assets[0]) {
-                  setAvatarUri(result.assets[0].uri);
-                  setAvatarBase64(result.assets[0].base64 ?? null);
+                  const uri = result.assets[0].uri;
+                  const base64 = await new FileSystem.File(uri).base64();
+                  setAvatarUri(uri);
+                  setAvatarBase64(base64);
                 }
               } catch (error: any) {
                 Alert.alert(t('common.error'), error?.message || 'Failed to open gallery');
@@ -75,11 +77,12 @@ export const EditProfileScreen = () => {
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 0.6,
-                base64: true,
               });
               if (!result.canceled && result.assets[0]) {
-                setAvatarUri(result.assets[0].uri);
-                setAvatarBase64(result.assets[0].base64 ?? null);
+                const uri = result.assets[0].uri;
+                const base64 = await new FileSystem.File(uri).base64();
+                setAvatarUri(uri);
+                setAvatarBase64(base64);
               }
             }, 100);
           },
