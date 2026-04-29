@@ -17,7 +17,7 @@ export const MainNavigator = () => {
   const theme = useTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
-  const swipeDistance = Math.max(width * 0.25, 64);
+  const swipeDistance = width;
 
   return (
     <Tab.Navigator
@@ -51,7 +51,7 @@ export const MainNavigator = () => {
               {
                 translateX: current.progress.interpolate({
                   inputRange: [-1, 0, 1],
-                  outputRange: [swipeDistance, 0, -swipeDistance],
+                  outputRange: [-swipeDistance, 0, swipeDistance],
                 }),
               },
             ],
@@ -79,7 +79,7 @@ export const MainNavigator = () => {
           ),
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Budget"
         component={BudgetScreen}
         options={{
@@ -88,7 +88,7 @@ export const MainNavigator = () => {
             <MaterialCommunityIcons name="wallet" size={size} color={color} />
           ),
         }}
-      />
+      /> */}
       <Tab.Screen
         name="Family"
         component={FamilyScreen}
