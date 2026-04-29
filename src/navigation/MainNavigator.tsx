@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useWindowDimensions } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { MainTabParamList } from '../types/navigation';
@@ -15,6 +16,8 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 export const MainNavigator = () => {
   const theme = useTheme();
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+  const swipeDistance = Math.max(width * 0.25, 64);
 
   return (
     <Tab.Navigator
@@ -32,6 +35,28 @@ export const MainNavigator = () => {
         sceneStyle: {
           backgroundColor: theme.colors.background,
         },
+        transitionSpec: {
+          animation: 'timing',
+          config: {
+            duration: 220,
+          },
+        },
+        sceneStyleInterpolator: ({ current }) => ({
+          sceneStyle: {
+            opacity: current.progress.interpolate({
+              inputRange: [-1, 0, 1],
+              outputRange: [0.6, 1, 0.6],
+            }),
+            transform: [
+              {
+                translateX: current.progress.interpolate({
+                  inputRange: [-1, 0, 1],
+                  outputRange: [swipeDistance, 0, -swipeDistance],
+                }),
+              },
+            ],
+          },
+        }),
       }}
     >
       <Tab.Screen
