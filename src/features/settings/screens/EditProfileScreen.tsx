@@ -51,6 +51,7 @@ export const EditProfileScreen = () => {
                   allowsEditing: true,
                   aspect: [1, 1],
                   quality: 0.6,
+                  legacy: true,
                 });
                 if (!result.canceled && result.assets[0]) {
                   const uri = result.assets[0].uri;
