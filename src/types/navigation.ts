@@ -8,6 +8,7 @@ export type VoiceTransactionParams = {
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
+  ResetPassword: undefined;
   Categories: undefined;
   AddTransaction: VoiceTransactionParams | undefined;
   EditTransaction: { transactionId: string };

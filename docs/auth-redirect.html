@@ -189,10 +189,11 @@
         const refreshToken = urlParams.get('refresh_token');
         const tokenType = urlParams.get('token_type');
         const expiresIn = urlParams.get('expires_in');
+        const authType = urlParams.get('type');
 
-        // App deeplink scheme - update this to match your app's scheme
-        const APP_SCHEME = '"expense-app"://';
-        const ANDROID_PACKAGE = 'com.expense-app.personalfinance';
+        // App deeplink scheme
+        const APP_SCHEME = 'expenseapp://';
+        const ANDROID_PACKAGE = 'com.expenseapp.personalfinance';
         const IOS_APP_STORE_ID = ''; // Add your App Store ID when published
 
         function isIOS() {
@@ -221,12 +222,15 @@
                 if (expiresIn) {
                     deeplink += `&expires_in=${encodeURIComponent(expiresIn)}`;
                 }
+                if (authType) {
+                    deeplink += `&type=${encodeURIComponent(authType)}`;
+                }
             }
 
             try {
                 if (isAndroid()) {
                     // Android intent fallback
-                    const intentUrl = `intent://auth/callback${accessToken ? '?access_token=' + encodeURIComponent(accessToken) + (refreshToken ? '&refresh_token=' + encodeURIComponent(refreshToken) : '') : ''}#Intent;scheme=expenseapp;package=${ANDROID_PACKAGE};end`;
+                    const intentUrl = `intent://auth/callback${accessToken ? '?access_token=' + encodeURIComponent(accessToken) + (refreshToken ? '&refresh_token=' + encodeURIComponent(refreshToken) : '') + (authType ? '&type=' + encodeURIComponent(authType) : '') : ''}#Intent;scheme=expenseapp;package=${ANDROID_PACKAGE};end`;
                     window.location.href = intentUrl;
                 } else if (isIOS()) {
                     // iOS Universal Links or custom scheme
@@ -263,12 +267,11 @@
         }
 
         // Auto-open app when page loads
-        // window.addEventListener('load', () => {
-        //     // Wait a moment for the page to render
-        //     setTimeout(() => {
-        //         openApp();
-        //     }, 500);
-        // });
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                openApp();
+            }, 500);
+        });
 
         // Handle visibility change to detect if user returned to browser
         document.addEventListener('visibilitychange', () => {

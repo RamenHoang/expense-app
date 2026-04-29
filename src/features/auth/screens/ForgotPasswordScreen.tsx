@@ -80,7 +80,7 @@ export const ForgotPasswordScreen = ({ navigation }: ForgotPasswordScreenProps) 
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: 'myapp://reset-password',
+        redirectTo: 'https://ramenhoang.github.io/expense-app/auth-redirect.html',
       });
 
       if (error) throw error;

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, Linking } from 'react-native';
 import { ActivityIndicator, Text, useTheme } from 'react-native-paper';
+import { supabase } from '../config/supabase';
+import { ResetPasswordScreen } from '../features/auth/screens/ResetPasswordScreen';
 import { RootStackParamList } from '../types/navigation';
 import { AuthNavigator } from './AuthNavigator';
 import { MainNavigator } from './MainNavigator';
@@ -22,8 +24,32 @@ import { t } from 'i18next';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const RootNavigator = () => {
-  const { user, isLoading } = useAuthStore();
+  const { user, isLoading, isPasswordRecovery } = useAuthStore();
   const theme = useTheme();
+
+  useEffect(() => {
+    const handleUrl = async (url: string) => {
+      if (!url.includes('auth/callback')) return;
+
+      const queryStr = url.split('?')[1];
+      if (!queryStr) return;
+      const params = new URLSearchParams(queryStr);
+      const access_token = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+      const type = params.get('type');
+
+      if (access_token && refresh_token) {
+        await supabase.auth.setSession({ access_token, refresh_token });
+        if (type === 'recovery') {
+          useAuthStore.getState().setPasswordRecovery(true);
+        }
+      }
+    };
+
+    Linking.getInitialURL().then(url => { if (url) handleUrl(url); });
+    const sub = Linking.addEventListener('url', ({ url }) => handleUrl(url));
+    return () => sub.remove();
+  }, []);
 
   const commonScreenOptions = {
     headerStyle: {
@@ -52,11 +78,17 @@ export const RootNavigator = () => {
           ...commonScreenOptions,
         }}
       >
-        {user ? (
+        {isPasswordRecovery ? (
+          <Stack.Screen
+            name="ResetPassword"
+            component={ResetPasswordScreen}
+            options={{ headerShown: false }}
+          />
+        ) : user ? (
           <>
-            <Stack.Screen 
-              name="Main" 
-              component={MainNavigator} 
+            <Stack.Screen
+              name="Main"
+              component={MainNavigator}
               options={{ headerShown: false }}
             />
             <Stack.Screen 
