@@ -124,7 +124,7 @@ export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenP
         )}
       </ScrollView>
 
-      <View style={[styles.footer, { backgroundColor: theme.colors.surface, borderTopColor: theme.colors.outline }]}>
+      <View style={[styles.footer, { backgroundColor: theme.colors.surface }]}>
         <Button
           mode="outlined"
           onPress={() => navigation.goBack()}
@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
   },
   list: {
     flex: 1,
+    margin: 16,
   },
   listItem: {
     marginBottom: 1,
