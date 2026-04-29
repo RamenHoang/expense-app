@@ -36,7 +36,8 @@
           "android": {
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
-            "buildArchs": ["arm64-v8a", "armeabi-v7a"],
+            "buildArchs": ["arm64-v8a"],
+            "networkInspector": false,
             "extraProguardRules": "-keep class io.github.jan.supabase.** { *; }\n-dontwarn okhttp3.**\n-dontwarn okio.**\n-keep class okhttp3.** { *; }\n-keep class okio.** { *; }\n-keepattributes *Annotation*, InnerClasses\n-dontnote kotlinx.serialization.AnnotationsKt\n-keep,includedescriptorclasses class com.expenseapp.personalfinance.**$$serializer { *; }\n-keep class expo.modules.** { *; }"
           }
         }
