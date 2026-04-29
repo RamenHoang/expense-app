@@ -18,7 +18,9 @@
         {
           "microphonePermission": "Ứng dụng cần truy cập microphone để nhận dạng giọng nói.",
           "speechRecognitionPermission": "Ứng dụng cần quyền nhận dạng giọng nói để tạo giao dịch.",
-          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox"
+          ]
         }
       ],
       [
@@ -26,6 +28,17 @@
         {
           "photosPermission": "Ứng dụng cần truy cập thư viện ảnh để chọn ảnh đại diện và biên lai.",
           "cameraPermission": "Ứng dụng cần truy cập camera để chụp ảnh đại diện và biên lai."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "buildArchs": ["arm64-v8a", "armeabi-v7a"],
+            "extraProguardRules": "-keep class io.github.jan.supabase.** { *; }\n-dontwarn okhttp3.**\n-dontwarn okio.**\n-keep class okhttp3.** { *; }\n-keep class okio.** { *; }\n-keepattributes *Annotation*, InnerClasses\n-dontnote kotlinx.serialization.AnnotationsKt\n-keep,includedescriptorclasses class com.expenseapp.personalfinance.**$$serializer { *; }\n-keep class expo.modules.** { *; }"
+          }
         }
       ]
     ],
