@@ -4,13 +4,12 @@ import { Text, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { LineChart } from 'react-native-chart-kit';
 import { dashboardService, MonthlyTrend } from '../../../services/dashboardService';
+import { formatMonthShortLabel } from '../../../utils/date';
 
 interface SpendingTrendLineChartProps {
   startDate?: string;
   endDate?: string;
 }
-
-const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function daysBetween(start: string, end: string): number {
   return Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86_400_000);
@@ -20,6 +19,7 @@ export const SpendingTrendLineChart: React.FC<SpendingTrendLineChartProps> = ({ 
   const { t } = useTranslation();
   const theme = useTheme();
   const screenWidth = Dimensions.get('window').width;
+  const locale = t('common.locale');
 
   const [data, setData] = useState<MonthlyTrend[]>([]);
   const [granularity, setGranularity] = useState<'daily' | 'monthly'>('monthly');
@@ -66,14 +66,11 @@ export const SpendingTrendLineChart: React.FC<SpendingTrendLineChartProps> = ({ 
       const skip = data.length > 20 ? 2 : 1;
       return data.map((item, i) => {
         if (i % skip !== 0) return '';
-        const day = parseInt(item.month.split('-')[2]);
+        const day = parseInt(item.month.split('-')[2], 10);
         return String(day);
       });
     }
-    return data.map((item) => {
-      const month = parseInt(item.month.split('-')[1]);
-      return MONTH_NAMES[month - 1];
-    });
+    return data.map((item) => formatMonthShortLabel(item.month, locale));
   };
 
   const chartData = {

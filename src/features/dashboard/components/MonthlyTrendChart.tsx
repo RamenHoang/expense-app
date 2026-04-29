@@ -4,6 +4,7 @@ import { Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { BarChart } from 'react-native-chart-kit';
 import { MonthlyTrend } from '../../../services/dashboardService';
+import { formatMonthShortLabel } from '../../../utils/date';
 
 interface MonthlyTrendChartProps {
   data: MonthlyTrend[];
@@ -12,6 +13,7 @@ interface MonthlyTrendChartProps {
 export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) => {
   const { t } = useTranslation();
   const screenWidth = Dimensions.get('window').width;
+  const locale = t('common.locale');
 
   if (data.length === 0) {
     return (
@@ -23,12 +25,8 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) =>
     );
   }
 
-  // Format month labels (e.g., "2024-02" -> "Feb")
-  const labels = data.map((item) => {
-    const [year, month] = item.month.split('-');
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return monthNames[parseInt(month) - 1];
-  });
+  // Format month labels based on the active locale (e.g., "2024-02" -> "Feb"/"thg 2")
+  const labels = data.map((item) => formatMonthShortLabel(item.month, locale));
 
   // Get max value for better chart scaling
   const maxIncome = Math.max(...data.map(item => item.income));

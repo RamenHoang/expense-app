@@ -88,3 +88,28 @@ export const formatDateShort = (date: Date, locale: string = 'en-US'): string =>
     year: 'numeric',
   });
 };
+
+/**
+ * Format a YYYY-MM string as a localized short month label.
+ * @param yearMonth - Date string in YYYY-MM format
+ * @param locale - Locale string (e.g., 'en-US', 'vi-VN')
+ * @returns Localized short month label (e.g., "Feb", "Th2")
+ */
+export const formatMonthShortLabel = (yearMonth: string, locale: string = 'en-US'): string => {
+  const [yearPart, monthPart] = yearMonth.split('-');
+  const year = Number(yearPart);
+  const month = Number(monthPart);
+
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
+    return yearMonth;
+  }
+
+  if (locale.toLowerCase().startsWith('vi')) {
+    return `Th${month}`;
+  }
+
+  return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(locale, {
+    month: 'short',
+    timeZone: 'UTC',
+  });
+};
