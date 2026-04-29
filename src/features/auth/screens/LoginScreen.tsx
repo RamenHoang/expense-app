@@ -6,6 +6,7 @@ import { supabase } from '../../../config/supabase';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../../types/navigation';
 import { useTheme } from 'react-native-paper';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 type LoginScreenProps = {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'Login'>;
@@ -107,6 +108,7 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
   };
 
   return (
+    <ScreenTransition>
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
@@ -193,5 +195,6 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
         {error}
       </Snackbar>
     </KeyboardAvoidingView>
+    </ScreenTransition>
   );
 };

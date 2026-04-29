@@ -38,6 +38,7 @@ import { transactionService } from '../../../services/transactionService';
 import { formatDateToUTC7String } from '../../../utils/date';
 import { DatePickerInput } from '../components/DatePickerInput';
 import { AmountInput } from '../components/AmountInput';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 type QueueItem = ParsedTransaction & { key: string };
 type RecordingState = 'idle' | 'recording' | 'error';
@@ -508,6 +509,7 @@ export const BatchVoiceScreen = () => {
   // ─── Main render ──────────────────────────────────────────────────────────
 
   return (
+    <ScreenTransition>
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -610,6 +612,7 @@ export const BatchVoiceScreen = () => {
         </Surface>
       )}
     </KeyboardAvoidingView>
+    </ScreenTransition>
   );
 };
 

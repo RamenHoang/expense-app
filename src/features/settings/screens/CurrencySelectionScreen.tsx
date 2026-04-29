@@ -4,6 +4,7 @@ import { Text, List, Searchbar, RadioButton, Button, ActivityIndicator, useTheme
 import { useTranslation } from 'react-i18next';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useUserStore } from '../../../store/userStore';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 import { userService } from '../../../services/userService';
 import { getCurrencySymbol } from '../../../utils/currency';
 
@@ -75,6 +76,7 @@ export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenP
   };
 
   return (
+    <ScreenTransition>
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Searchbar
         placeholder={t('common.search')}
@@ -142,6 +144,7 @@ export const CurrencySelectionScreen = ({ navigation }: CurrencySelectionScreenP
         </Button>
       </View>
     </View>
+    </ScreenTransition>
   );
 };
 

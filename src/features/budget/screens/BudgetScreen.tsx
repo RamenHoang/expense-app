@@ -10,6 +10,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { budgetService } from '../../../services/budgetService';
 import { LoadingScreen } from '../../../components/LoadingScreen';
 import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 export const BudgetScreen = () => {
   const { t } = useTranslation();
@@ -106,7 +107,7 @@ export const BudgetScreen = () => {
   }
 
   return (
-    <>
+    <ScreenTransition>
       <ScrollView
         style={[styles.container, { backgroundColor: theme.colors.background }]}
         contentContainerStyle={styles.scrollContent}
@@ -303,7 +304,7 @@ export const BudgetScreen = () => {
         onPress={() => navigation.navigate('SetBudget' as never)}
         // label={t('budgets.addBudget')}
       />
-    </>
+    </ScreenTransition>
   );
 };
 

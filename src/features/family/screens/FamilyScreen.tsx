@@ -6,6 +6,7 @@ import { useFamilyStore } from '../../../store/familyStore';
 import { useUserStore } from '../../../store/userStore';
 import { useNavigation } from '@react-navigation/native';
 import { LoadingScreen } from '../../../components/LoadingScreen';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 import { formatDistanceToNow } from 'date-fns';
 import { vi, enUS } from 'date-fns/locale';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -172,6 +173,7 @@ export const FamilyScreen = () => {
   };
 
   return (
+    <ScreenTransition>
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView
         refreshControl={
@@ -364,6 +366,7 @@ export const FamilyScreen = () => {
         />
       )}
     </View>
+    </ScreenTransition>
   );
 };
 

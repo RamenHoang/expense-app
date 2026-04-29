@@ -4,6 +4,7 @@ import { Text, TextInput, Button, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useFamilyStore } from '../../../store/familyStore';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 export const InviteMemberScreen = () => {
   const { t } = useTranslation();
@@ -41,6 +42,7 @@ export const InviteMemberScreen = () => {
   };
 
   return (
+    <ScreenTransition>
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.content}>
         <Text style={styles.label}>{t('family.email')}</Text>
@@ -67,6 +69,7 @@ export const InviteMemberScreen = () => {
         </Button>
       </View>
     </ScrollView>
+    </ScreenTransition>
   );
 };
 

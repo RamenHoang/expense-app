@@ -4,6 +4,7 @@ import { Text, TextInput, Button, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useFamilyStore } from '../../../store/familyStore';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 export const EditFamilyScreen = () => {
   const { t } = useTranslation();
@@ -37,6 +38,7 @@ export const EditFamilyScreen = () => {
   };
 
   return (
+    <ScreenTransition>
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.content}>
         <Text style={styles.label}>{t('family.familyName')}</Text>
@@ -60,6 +62,7 @@ export const EditFamilyScreen = () => {
         </Button>
       </View>
     </ScrollView>
+    </ScreenTransition>
   );
 };
 

@@ -8,6 +8,7 @@ import { CategoryPieChart } from '../../dashboard/components/CategoryPieChart';
 import { MonthlyTrendChart } from '../../dashboard/components/MonthlyTrendChart';
 import { formatCurrency } from '../../../utils/currency';
 import { LoadingScreen } from '../../../components/LoadingScreen';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 export const ReportsScreen = () => {
   const { t } = useTranslation();
@@ -91,6 +92,7 @@ export const ReportsScreen = () => {
   }
 
   return (
+    <ScreenTransition>
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
@@ -212,6 +214,7 @@ export const ReportsScreen = () => {
         </Card.Content>
       </Card>
     </ScrollView>
+    </ScreenTransition>
   );
 };
 

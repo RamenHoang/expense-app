@@ -4,6 +4,7 @@ import { Text, Button, TextInput, Snackbar, useTheme } from 'react-native-paper'
 import { supabase } from '../../../config/supabase';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../../types/navigation';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 type RegisterScreenProps = {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'Register'>;
@@ -129,6 +130,7 @@ export const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
   };
 
   return (
+    <ScreenTransition>
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
@@ -244,5 +246,6 @@ export const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
         {success}
       </Snackbar>
     </KeyboardAvoidingView>
+    </ScreenTransition>
   );
 };

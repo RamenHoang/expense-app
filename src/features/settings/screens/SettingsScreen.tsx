@@ -9,6 +9,7 @@ import { useUserStore } from '../../../store/userStore';
 import { useThemeStore } from '../../../store/themeStore';
 import { exportService } from '../../../services/exportService';
 import { useNavigation } from '@react-navigation/native';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 export const SettingsScreen = () => {
   const { t, i18n } = useTranslation();
@@ -142,6 +143,7 @@ export const SettingsScreen = () => {
   const fullName = user?.user_metadata?.full_name || 'User';
 
   return (
+    <ScreenTransition>
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -319,6 +321,7 @@ export const SettingsScreen = () => {
         </Dialog>
       </Portal>
     </ScrollView>
+    </ScreenTransition>
   );
 };
 

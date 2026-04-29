@@ -35,6 +35,7 @@ import { formatDateToUTC7String } from '../../../utils/date';
 import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
 import { VoiceInputModal } from '../components/VoiceInputModal';
 import { RootStackParamList } from '../../../types/navigation';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 type AddTransactionScreenProps = {
   navigation: NativeStackNavigationProp<any>;
@@ -198,6 +199,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
   // };
 
   return (
+    <ScreenTransition>
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -391,6 +393,7 @@ export const AddTransactionScreen = ({ navigation }: AddTransactionScreenProps) 
         }}
       />
     </View>
+    </ScreenTransition>
   );
 };
 

@@ -31,6 +31,7 @@ import { Category } from '../../../types/category';
 import { TransactionWithCategory } from '../../../types/transaction';
 import { parseDateStringToUTC7, formatDateToUTC7String } from '../../../utils/date';
 import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 type EditTransactionScreenProps = {
   navigation: NativeStackNavigationProp<any>;
@@ -190,6 +191,7 @@ export const EditTransactionScreen = ({
   }
 
   return (
+    <ScreenTransition>
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -336,6 +338,7 @@ export const EditTransactionScreen = ({
         {success}
       </Snackbar>
     </KeyboardAvoidingView>
+    </ScreenTransition>
   );
 };
 

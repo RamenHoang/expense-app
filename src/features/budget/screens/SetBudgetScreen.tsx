@@ -11,6 +11,7 @@ import { useUserStore } from '../../../store/userStore';
 import { Category } from '../../../types/category';
 import { formatCurrency } from '../../../utils/currency';
 import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 type SetBudgetScreenProps = {
   navigation: NativeStackNavigationProp<any>;
@@ -231,6 +232,7 @@ export const SetBudgetScreen = ({ navigation, route }: SetBudgetScreenProps) => 
   }
 
   return (
+    <ScreenTransition>
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.scrollContent}>
       <View style={styles.form}>
         <View style={styles.header}>
@@ -348,6 +350,7 @@ export const SetBudgetScreen = ({ navigation, route }: SetBudgetScreenProps) => 
         {success}
       </Snackbar>
     </ScrollView>
+    </ScreenTransition>
   );
 };
 

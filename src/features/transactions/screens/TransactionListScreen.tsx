@@ -34,6 +34,7 @@ import { Chip } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { formatDateForDisplay, formatDateToUTC7String, getCurrentDateUTC7 } from '../../../utils/date';
 import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 export const TransactionListScreen = () => {
   const { t } = useTranslation();
@@ -317,6 +318,7 @@ export const TransactionListScreen = () => {
   }, [renderSectionHeader, debouncedSearchQuery]);
 
   return (
+    <ScreenTransition>
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
         <FilterButtonGroup
@@ -540,6 +542,7 @@ export const TransactionListScreen = () => {
         </Modal>
       </Portal>
     </View>
+    </ScreenTransition>
   );
 };
 

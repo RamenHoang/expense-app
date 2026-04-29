@@ -154,37 +154,46 @@ export const dashboardService = {
   },
 
   /**
-   * Get monthly trends for the last N months
+   * Get monthly trends. If startDate/endDate are provided, uses that range;
+   * otherwise falls back to the last 6 months.
    */
-  getMonthlyTrends: async (months: number = 6): Promise<MonthlyTrend[]> => {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setMonth(startDate.getMonth() - months);
+  getMonthlyTrends: async (startDate?: string, endDate?: string): Promise<MonthlyTrend[]> => {
+    let start: Date;
+    let end: Date;
+
+    if (startDate && endDate) {
+      start = new Date(startDate);
+      end = new Date(endDate);
+    } else {
+      end = new Date();
+      start = new Date();
+      start.setMonth(start.getMonth() - 6);
+    }
 
     const { data, error } = await supabase
       .from('transactions')
       .select('type, amount, transaction_date')
-      .gte('transaction_date', startDate.toISOString().split('T')[0])
-      .lte('transaction_date', endDate.toISOString().split('T')[0])
+      .gte('transaction_date', start.toISOString().split('T')[0])
+      .lte('transaction_date', end.toISOString().split('T')[0])
       .order('transaction_date');
 
     if (error) throw error;
 
     // Initialize all months in the range with zero values
     const monthMap = new Map<string, { income: number; expense: number }>();
-    const current = new Date(startDate);
-    
-    while (current <= endDate) {
+    const current = new Date(start.getFullYear(), start.getMonth(), 1);
+    const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
+
+    while (current <= endMonth) {
       const monthKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
       monthMap.set(monthKey, { income: 0, expense: 0 });
       current.setMonth(current.getMonth() + 1);
     }
 
-    // Fill in actual transaction data
     (data || []).forEach((transaction: any) => {
       const date = new Date(transaction.transaction_date);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      
+
       if (monthMap.has(monthKey)) {
         const monthData = monthMap.get(monthKey)!;
         if (transaction.type === 'income') {
@@ -195,29 +204,83 @@ export const dashboardService = {
       }
     });
 
-    // Convert to array with month names
-    const trends: MonthlyTrend[] = Array.from(monthMap.entries())
-      .map(([month, data]) => ({
+    return Array.from(monthMap.entries())
+      .map(([month, d]) => ({
         month,
-        income: data.income,
-        expense: data.expense,
-        balance: data.income - data.expense,
+        income: d.income,
+        expense: d.expense,
+        balance: d.income - d.expense,
       }))
       .sort((a, b) => a.month.localeCompare(b.month));
+  },
 
-    return trends;
+  /**
+   * Get daily trends for a date range (used when range ≤ 45 days).
+   */
+  getDailyTrends: async (startDate: string, endDate: string): Promise<MonthlyTrend[]> => {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('type, amount, transaction_date')
+      .gte('transaction_date', startDate)
+      .lte('transaction_date', endDate)
+      .order('transaction_date');
+
+    if (error) throw error;
+
+    // Initialize all days in the range with zero values
+    const dayMap = new Map<string, { income: number; expense: number }>();
+    const current = new Date(startDate);
+    const end = new Date(endDate);
+
+    while (current <= end) {
+      const dayKey = current.toISOString().split('T')[0];
+      dayMap.set(dayKey, { income: 0, expense: 0 });
+      current.setDate(current.getDate() + 1);
+    }
+
+    (data || []).forEach((transaction: any) => {
+      const dayKey = transaction.transaction_date.split('T')[0];
+
+      if (dayMap.has(dayKey)) {
+        const dayData = dayMap.get(dayKey)!;
+        if (transaction.type === 'income') {
+          dayData.income += Number(transaction.amount);
+        } else {
+          dayData.expense += Number(transaction.amount);
+        }
+      }
+    });
+
+    return Array.from(dayMap.entries())
+      .map(([day, d]) => ({
+        month: day,
+        income: d.income,
+        expense: d.expense,
+        balance: d.income - d.expense,
+      }))
+      .sort((a, b) => a.month.localeCompare(b.month));
   },
 
   /**
    * Get recent transactions (for dashboard widget)
    */
-  getRecentTransactions: async (limit: number = 5) => {
-    const { data, error } = await supabase
+  getRecentTransactions: async (limit: number = 5, startDate?: string, endDate?: string) => {
+    let query = supabase
       .from('transactions')
       .select(`
         *,
         category:categories(id, name, icon, color, type)
-      `)
+      `);
+
+    if (startDate) {
+      query = query.gte('transaction_date', startDate);
+    }
+
+    if (endDate) {
+      query = query.lte('transaction_date', endDate);
+    }
+
+    const { data, error } = await query
       .order('transaction_date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(limit);

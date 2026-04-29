@@ -8,6 +8,7 @@ import { CategoryListItem } from '../components/CategoryListItem';
 import { CategoryModal } from '../components/CategoryModal';
 import { Category } from '../../../types/category';
 import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 
 export const CategoryListScreen = () => {
   const { t } = useTranslation();
@@ -96,6 +97,7 @@ export const CategoryListScreen = () => {
   const expenseCategories = filteredCategories.filter((cat) => cat.type === 'expense');
 
   return (
+    <ScreenTransition>
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
         <FilterButtonGroup
@@ -200,6 +202,7 @@ export const CategoryListScreen = () => {
         {error}
       </Snackbar>
     </View>
+    </ScreenTransition>
   );
 };
 

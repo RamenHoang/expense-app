@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
+import { ScreenTransition } from '../../../components/ScreenTransition';
 import { useUserStore } from '../../../store/userStore';
 import { useAuthStore } from '../../../store/authStore';
 import { userService } from '../../../services/userService';
@@ -124,6 +125,7 @@ export const EditProfileScreen = () => {
   const displayUri = avatarUri || currentAvatarUrl;
 
   return (
+    <ScreenTransition>
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       contentContainerStyle={styles.content}
@@ -170,6 +172,7 @@ export const EditProfileScreen = () => {
         {saving ? <ActivityIndicator size={20} color={theme.colors.onPrimary} /> : t('settings.saveChanges')}
       </Button>
     </ScrollView>
+    </ScreenTransition>
   );
 };
 
