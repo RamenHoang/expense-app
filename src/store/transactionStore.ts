@@ -11,7 +11,7 @@ interface TransactionState {
   filters: TransactionFilters;
   currentOffset: number;
   pageSize: number;
-  lastModifiedTimestamp: number; // Track when last modification occurred
+  lastModifiedTimestamp: number;
   fetchTransactions: (filters?: TransactionFilters, reset?: boolean) => Promise<void>;
   loadMoreTransactions: () => Promise<void>;
   addTransaction: (transaction: TransactionWithCategory) => void;
@@ -83,32 +83,22 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
 
   addTransaction: (transaction: TransactionWithCategory) => {
     set((state) => ({
-      transactions: [transaction, ...state.transactions].sort(
-        (a, b) =>
-          new Date(b.transaction_date).getTime() -
-          new Date(a.transaction_date).getTime()
-      ),
-      lastModifiedTimestamp: Date.now(), // Update timestamp
+      transactions: [transaction, ...state.transactions],
+      lastModifiedTimestamp: Date.now(),
     }));
   },
 
   updateTransaction: (id: string, updates: Partial<TransactionWithCategory>) => {
     set((state) => ({
-      transactions: state.transactions
-        .map((t) => (t.id === id ? { ...t, ...updates } : t))
-        .sort(
-          (a, b) =>
-            new Date(b.transaction_date).getTime() -
-            new Date(a.transaction_date).getTime()
-        ),
-      lastModifiedTimestamp: Date.now(), // Update timestamp
+      transactions: state.transactions.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+      lastModifiedTimestamp: Date.now(),
     }));
   },
 
   removeTransaction: (id: string) => {
     set((state) => ({
       transactions: state.transactions.filter((t) => t.id !== id),
-      lastModifiedTimestamp: Date.now(), // Update timestamp
+      lastModifiedTimestamp: Date.now(),
     }));
   },
 

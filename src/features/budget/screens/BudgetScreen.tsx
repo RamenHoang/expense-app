@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { Text, Card, Button, IconButton, SegmentedButtons, FAB, ProgressBar, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useUserStore } from '../../../store/userStore';
-import { useTransactionStore } from '../../../store/transactionStore';
 import { useBudgetStore } from '../../../store/budgetStore';
+import { useTransactionStore } from '../../../store/transactionStore';
 import { formatCurrency } from '../../../utils/currency';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { budgetService } from '../../../services/budgetService';
@@ -19,10 +19,9 @@ export const BudgetScreen = () => {
   const { profile, fetchProfile } = useUserStore();
   const { budgetUsage, fetchBudgetUsage, isLoading } = useBudgetStore();
   const lastModifiedTimestamp = useTransactionStore((state) => state.lastModifiedTimestamp);
-  
+  const lastLoadedTimestampRef = useRef(0);
   const [period, setPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [refreshing, setRefreshing] = useState(false);
-  const [lastLoadedTimestamp, setLastLoadedTimestamp] = useState(0);
 
   useEffect(() => {
     if (!profile) {
@@ -34,14 +33,13 @@ export const BudgetScreen = () => {
     loadBudgetUsage();
   }, [period]);
 
-  // Reload budget data when screen comes into focus only if there are changes
   useFocusEffect(
     useCallback(() => {
-      if (lastModifiedTimestamp > lastLoadedTimestamp) {
+      if (lastModifiedTimestamp > lastLoadedTimestampRef.current) {
         loadBudgetUsage();
-        setLastLoadedTimestamp(Date.now());
+        lastLoadedTimestampRef.current = Date.now();
       }
-    }, [lastModifiedTimestamp, lastLoadedTimestamp])
+    }, [lastModifiedTimestamp, period])
   );
 
   const loadBudgetUsage = async () => {

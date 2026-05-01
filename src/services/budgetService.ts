@@ -117,11 +117,6 @@ export const budgetService = {
     const startDateStr = formatLocalDate(startDate);
     const endDateStr = formatLocalDate(endDate);
 
-    console.log('Calculating budget usage for period:', period);
-    console.log('Current date:', formatLocalDate(now));
-    console.log('Start date:', startDateStr);
-    console.log('End date:', endDateStr);
-
     // Get budgets for current period
     const { data: budgets, error: budgetError } = await supabase
       .from('budgets')
@@ -139,22 +134,25 @@ export const budgetService = {
       return [];
     }
 
-    // Get spending for each budget category
-    const usagePromises = budgets.map(async (budget: any) => {
-      const { data: transactions, error: transError } = await supabase
-        .from('transactions')
-        .select('amount')
-        .eq('category_id', budget.category_id)
-        .eq('type', 'expense')
-        .gte('transaction_date', startDateStr)
-        .lte('transaction_date', endDateStr);
+    // Fetch all matching transactions in a single query, then aggregate in JS
+    const categoryIds = budgets.map((b: any) => b.category_id);
+    const { data: transactions, error: transError } = await supabase
+      .from('transactions')
+      .select('category_id, amount')
+      .in('category_id', categoryIds)
+      .eq('type', 'expense')
+      .gte('transaction_date', startDateStr)
+      .lte('transaction_date', endDateStr);
 
-      if (transError) throw transError;
+    if (transError) throw transError;
 
-      const spent = (transactions || []).reduce(
-        (sum, t) => sum + Number(t.amount),
-        0
-      );
+    const spentByCategory = (transactions || []).reduce<Record<string, number>>((acc, t) => {
+      acc[t.category_id] = (acc[t.category_id] ?? 0) + Number(t.amount);
+      return acc;
+    }, {});
+
+    const usage = budgets.map((budget: any) => {
+      const spent = spentByCategory[budget.category_id] ?? 0;
       const budgetAmount = Number(budget.amount);
       const remaining = budgetAmount - spent;
       const percentage = budgetAmount > 0 ? (spent / budgetAmount) * 100 : 0;
@@ -169,7 +167,6 @@ export const budgetService = {
       };
     });
 
-    const usage = await Promise.all(usagePromises);
     return usage.sort((a, b) => b.percentage - a.percentage);
   },
 

@@ -44,7 +44,8 @@ const TransactionListItemComponent: React.FC<TransactionListItemProps> = ({
   const highlightText = (text: string, query: string) => {
     if (!query || !text) return <Text>{text}</Text>;
 
-    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const parts = text.split(new RegExp(`(${escaped})`, 'gi'));
     return (
       <Text>
         {parts.map((part, index) =>

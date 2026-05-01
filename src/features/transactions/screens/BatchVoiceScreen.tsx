@@ -49,7 +49,6 @@ export const BatchVoiceScreen = () => {
   const navigation = useNavigation();
   const { categories, fetchCategories } = useCategoryStore();
   const { fetchTransactions } = useTransactionStore();
-  const markModified = () => useTransactionStore.setState({ lastModifiedTimestamp: Date.now() });
   const { profile } = useUserStore();
   const { family, shareWithFamily, setShareWithFamily } = useFamilyStore();
   const currency = profile?.currency || 'VND';
@@ -237,7 +236,7 @@ export const BatchVoiceScreen = () => {
       }));
       await transactionService.createTransactionsBatch(inputs);
       await fetchTransactions();
-      markModified();
+      useTransactionStore.setState({ lastModifiedTimestamp: Date.now() });
       navigation.goBack();
     } catch (err: any) {
       setSubmitError(err.message || t('common.error'));

@@ -1,10 +1,16 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useMemo } from 'react';
 import { Animated, Easing } from 'react-native';
 
 export function useContentTransition(duration = 350) {
   const anim = useRef(new Animated.Value(0)).current;
+  const hasPlayedOnce = useRef(false);
 
   const play = useCallback(() => {
+    // Only animate on the very first load — subsequent data refreshes
+    // update content in-place without resetting opacity to 0.
+    if (hasPlayedOnce.current) return;
+    hasPlayedOnce.current = true;
+
     anim.setValue(0);
     Animated.timing(anim, {
       toValue: 1,
@@ -14,7 +20,8 @@ export function useContentTransition(duration = 350) {
     }).start();
   }, []);
 
-  const animatedStyle = {
+  // Memoize so anim.interpolate() is not called on every render.
+  const animatedStyle = useMemo(() => ({
     opacity: anim,
     transform: [
       {
@@ -24,7 +31,7 @@ export function useContentTransition(duration = 350) {
         }),
       },
     ],
-  };
+  }), [anim]);
 
   return { play, animatedStyle };
 }

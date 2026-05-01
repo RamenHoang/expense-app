@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Component, ErrorInfo, ReactNode } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Platform } from 'react-native';
+import { Platform, View, Text, StyleSheet } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -12,6 +12,39 @@ import { useThemeStore } from './src/store/themeStore';
 import { lightTheme, darkTheme } from './src/theme/theme';
 import { OnboardingScreen } from './src/features/onboarding';
 import './src/i18n';
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('Uncaught error:', error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={errorStyles.container}>
+          <Text style={errorStyles.title}>Something went wrong</Text>
+          <Text style={errorStyles.subtitle}>Please restart the app.</Text>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const errorStyles = StyleSheet.create({
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  title: { fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
+  subtitle: { fontSize: 14, opacity: 0.6 },
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,21 +100,23 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <PaperProvider theme={theme}>
-          <StatusBar 
-            style={isDarkMode ? "light" : "dark"}
-            backgroundColor={theme.colors.surface}
-            translucent={false}
-          />
-          {showOnboarding ? (
-            <OnboardingScreen onComplete={handleOnboardingComplete} />
-          ) : (
-            <RootNavigator />
-          )}
-        </PaperProvider>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <PaperProvider theme={theme}>
+            <StatusBar
+              style={isDarkMode ? "light" : "dark"}
+              backgroundColor={theme.colors.surface}
+              translucent={false}
+            />
+            {showOnboarding ? (
+              <OnboardingScreen onComplete={handleOnboardingComplete} />
+            ) : (
+              <RootNavigator />
+            )}
+          </PaperProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }

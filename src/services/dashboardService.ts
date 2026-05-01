@@ -26,6 +26,8 @@ export interface MonthlyTrend {
   balance: number;
 }
 
+export type DailyTrend = MonthlyTrend;
+
 export const dashboardService = {
   /**
    * Get dashboard summary for a date range
@@ -217,7 +219,7 @@ export const dashboardService = {
   /**
    * Get daily trends for a date range (used when range ≤ 45 days).
    */
-  getDailyTrends: async (startDate: string, endDate: string): Promise<MonthlyTrend[]> => {
+  getDailyTrends: async (startDate: string, endDate: string): Promise<DailyTrend[]> => {
     const { data, error } = await supabase
       .from('transactions')
       .select('type, amount, transaction_date')

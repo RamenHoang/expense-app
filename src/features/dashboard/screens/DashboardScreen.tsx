@@ -73,7 +73,7 @@ export const DashboardScreen = () => {
   const theme = useTheme();
   const { profile, fetchProfile } = useUserStore();
   const lastModifiedTimestamp = useTransactionStore((state) => state.lastModifiedTimestamp);
-
+  const lastLoadedTimestampRef = useRef(0);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [categoryBreakdown, setCategoryBreakdown] = useState<CategorySummary[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
@@ -84,7 +84,6 @@ export const DashboardScreen = () => {
   const [showCustomDialog, setShowCustomDialog] = useState(false);
   const [customStartDate, setCustomStartDate] = useState(new Date());
   const [customEndDate, setCustomEndDate] = useState(new Date());
-  const [lastLoadedTimestamp, setLastLoadedTimestamp] = useState(0);
   const [fabOpen, setFabOpen] = useState(false);
 
   // Tracks current range so useFocusEffect can use it without a stale closure.
@@ -146,15 +145,14 @@ export const DashboardScreen = () => {
     loadDashboardData(startDate, endDate);
   }, [dateFilter, appliedCustomRange]);
 
-  // Reload when returning to screen after a transaction change.
   useFocusEffect(
     useCallback(() => {
-      if (lastModifiedTimestamp > lastLoadedTimestamp) {
+      if (lastModifiedTimestamp > lastLoadedTimestampRef.current) {
         const { startDate, endDate } = currentRangeRef.current;
         loadDashboardData(startDate, endDate);
-        setLastLoadedTimestamp(Date.now());
+        lastLoadedTimestampRef.current = Date.now();
       }
-    }, [lastModifiedTimestamp, lastLoadedTimestamp])
+    }, [lastModifiedTimestamp])
   );
 
   const loadDashboardData = async (startDate?: string, endDate?: string) => {

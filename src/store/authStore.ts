@@ -15,6 +15,8 @@ interface AuthState {
   signOut: () => Promise<void>;
 }
 
+let authSubscription: { unsubscribe: () => void } | null = null;
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   session: null,
@@ -33,13 +35,16 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data: { session } } = await supabase.auth.getSession();
       set({ session, user: session?.user ?? null, isLoading: false });
 
-      supabase.auth.onAuthStateChange((event, session) => {
+      // Unsubscribe any previous listener before registering a new one
+      authSubscription?.unsubscribe();
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'PASSWORD_RECOVERY') {
           set({ session, user: session?.user ?? null, isPasswordRecovery: true });
         } else {
           set({ session, user: session?.user ?? null, isPasswordRecovery: false });
         }
       });
+      authSubscription = data.subscription;
     } catch (error) {
       console.error('Error initializing auth:', error);
       set({ isLoading: false });
@@ -49,6 +54,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: async () => {
     try {
       await supabase.auth.signOut();
+      // Do NOT unsubscribe here — the listener must remain active to catch
+      // the next SIGNED_IN event after a fresh login.
       set({ user: null, session: null });
     } catch (error) {
       console.error('Error signing out:', error);

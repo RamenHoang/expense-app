@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, StyleSheet, Platform, Linking } from 'react-native';
 import { ActivityIndicator, Text, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../config/supabase';
 import { ResetPasswordScreen } from '../features/auth/screens/ResetPasswordScreen';
 import { RootStackParamList } from '../types/navigation';
@@ -19,11 +20,11 @@ import { EditFamilyScreen } from '../features/family/screens/EditFamilyScreen';
 import { BatchVoiceScreen } from '../features/transactions/screens/BatchVoiceScreen';
 import { EditProfileScreen } from '../features/settings/screens/EditProfileScreen';
 import { useAuthStore } from '../store/authStore';
-import { t } from 'i18next';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const RootNavigator = () => {
+  const { t } = useTranslation();
   const { user, isLoading, isPasswordRecovery } = useAuthStore();
   const theme = useTheme();
 

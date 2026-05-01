@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { MainTabParamList } from '../types/navigation';
 import { DashboardScreen } from '../features/dashboard/screens/DashboardScreen';
 import { TransactionsScreen } from '../features/transactions/screens/TransactionsScreen';
-import { BudgetScreen } from '../features/budget/screens/BudgetScreen';
 import { FamilyScreen } from '../features/family/screens/FamilyScreen';
 import { SettingsScreen } from '../features/settings/screens/SettingsScreen';
 
@@ -79,16 +78,6 @@ export const MainNavigator = () => {
           ),
         }}
       />
-      {/* <Tab.Screen
-        name="Budget"
-        component={BudgetScreen}
-        options={{
-          title: t('navigation.budgets'),
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="wallet" size={size} color={color} />
-          ),
-        }}
-      /> */}
       <Tab.Screen
         name="Family"
         component={FamilyScreen}

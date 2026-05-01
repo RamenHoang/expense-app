@@ -32,7 +32,7 @@ import { RangeDatePicker } from '../../../components/RangeDatePicker';
 import { DateFilterSegment } from '../../../components/DateFilterSegment';
 import { Chip } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { formatDateForDisplay, formatDateToUTC7String, getCurrentDateUTC7 } from '../../../utils/date';
+import { formatDateForDisplay, formatDateToUTC7String } from '../../../utils/date';
 import { FilterButtonGroup } from '../../../components/FilterButtonGroup';
 import { ScreenTransition } from '../../../components/ScreenTransition';
 
@@ -125,19 +125,17 @@ export const TransactionListScreen = () => {
   }, [filterType, dateFilter, appliedCustomRange, scopeFilter, debouncedSearchQuery, categoryFilter]);
 
   const getDateRange = () => {
-    // Get current date in UTC+7
-    const endDate = getCurrentDateUTC7();
-    const startDate = getCurrentDateUTC7();
+    // Compute today's date string in UTC+7 from the real current time.
+    // formatDateToUTC7String expects a real UTC Date — do NOT pre-shift with
+    // getCurrentDateUTC7() here, that would apply the +7h offset twice.
+    const todayStr = formatDateToUTC7String(new Date());
+    const [year, month] = todayStr.split('-');
 
     switch (dateFilter) {
       case 'month':
-        // First day of current month
-        startDate.setUTCDate(1);
-        break;
+        return { start_date: `${year}-${month}-01`, end_date: todayStr };
       case 'year':
-        // First day of current year
-        startDate.setUTCMonth(0, 1);
-        break;
+        return { start_date: `${year}-01-01`, end_date: todayStr };
       case 'custom':
         if (appliedCustomRange) {
           return {
@@ -149,11 +147,6 @@ export const TransactionListScreen = () => {
       case 'all':
         return {};
     }
-
-    return {
-      start_date: formatDateToUTC7String(startDate),
-      end_date: formatDateToUTC7String(endDate),
-    };
   };
 
   const loadTransactions = async () => {

@@ -41,9 +41,20 @@ export const userService = {
       await supabase.storage.from('avatars').remove(toDelete);
     }
 
+    const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 MB
+    const estimatedBytes = (base64.length * 3) / 4;
+    if (estimatedBytes > MAX_AVATAR_BYTES) {
+      throw new Error('Avatar image exceeds 5 MB limit');
+    }
+
     const path = `${folder}/avatar.jpg`;
 
-    const uint8Array = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    let uint8Array: Uint8Array;
+    try {
+      uint8Array = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    } catch {
+      throw new Error('Invalid image data');
+    }
 
     const { error } = await supabase.storage
       .from('avatars')

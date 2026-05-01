@@ -30,17 +30,13 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
 
   addCategory: (category: Category) => {
     set((state) => ({
-      categories: [...state.categories, category].sort((a, b) => 
-        a.name.localeCompare(b.name)
-      ),
+      categories: [...state.categories, category],
     }));
   },
 
   updateCategory: (id: string, updates: Partial<Category>) => {
     set((state) => ({
-      categories: state.categories
-        .map((cat) => (cat.id === id ? { ...cat, ...updates } : cat))
-        .sort((a, b) => a.name.localeCompare(b.name)),
+      categories: state.categories.map((cat) => (cat.id === id ? { ...cat, ...updates } : cat)),
     }));
   },
 

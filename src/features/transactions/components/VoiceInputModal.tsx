@@ -29,7 +29,7 @@ interface VoiceInputModalProps {
 type RecordingState = 'idle' | 'recording' | 'done' | 'error';
 
 export const VoiceInputModal = ({ visible, onDismiss, onConfirm }: VoiceInputModalProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const theme = useTheme();
   const { categories, fetchCategories, isLoading: categoriesLoading } = useCategoryStore();
   const { profile } = useUserStore();
@@ -40,8 +40,17 @@ export const VoiceInputModal = ({ visible, onDismiss, onConfirm }: VoiceInputMod
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const pulseLoop = useRef<Animated.CompositeAnimation | null>(null);
+  const recordingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currency = profile?.currency || 'VND';
+
+  // Clean up animation and timeout on unmount
+  useEffect(() => {
+    return () => {
+      pulseLoop.current?.stop();
+      if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
+    };
+  }, []);
 
   // Fetch fresh categories every time the modal opens
   useEffect(() => {
@@ -72,16 +81,30 @@ export const VoiceInputModal = ({ visible, onDismiss, onConfirm }: VoiceInputMod
     pulseAnim.setValue(1);
   }, [pulseAnim]);
 
+  const clearRecordingTimeout = () => {
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+    }
+  };
+
   // expo-speech-recognition event handlers
   useSpeechRecognitionEvent('start', () => {
     setRecordingState('recording');
     startPulse();
+    // Auto-stop after 10 seconds if no result received
+    recordingTimeoutRef.current = setTimeout(() => {
+      ExpoSpeechRecognitionModule.stop();
+      setRecordingState('idle');
+      setTranscript(t('voice.noTranscript'));
+    }, 10000);
   });
 
   useSpeechRecognitionEvent('result', (event) => {
     const text = event.results[0]?.transcript ?? '';
     setTranscript(text);
     if (event.isFinal) {
+      clearRecordingTimeout();
       stopPulse();
       const result = parseVoiceTransaction(text, categories);
       setParsed(result);
@@ -90,6 +113,7 @@ export const VoiceInputModal = ({ visible, onDismiss, onConfirm }: VoiceInputMod
   });
 
   useSpeechRecognitionEvent('error', (event) => {
+    clearRecordingTimeout();
     stopPulse();
     // 'no-speech' is a soft error — stay in idle so user can try again
     if (event.error === 'no-speech') {
@@ -100,6 +124,7 @@ export const VoiceInputModal = ({ visible, onDismiss, onConfirm }: VoiceInputMod
   });
 
   useSpeechRecognitionEvent('end', () => {
+    clearRecordingTimeout();
     stopPulse();
     // If ended without a result, go back to idle
     setRecordingState(prev => (prev === 'recording' ? 'idle' : prev));
@@ -116,7 +141,7 @@ export const VoiceInputModal = ({ visible, onDismiss, onConfirm }: VoiceInputMod
       setTranscript('');
       setParsed(null);
       ExpoSpeechRecognitionModule.start({
-        lang: 'vi-VN',
+        lang: i18n.language === 'vi' ? 'vi-VN' : 'en-US',
         interimResults: true,
         continuous: false,
       });
