@@ -18,6 +18,7 @@ import { CreateFamilyScreen } from '../features/family/screens/CreateFamilyScree
 import { InviteMemberScreen } from '../features/family/screens/InviteMemberScreen';
 import { EditFamilyScreen } from '../features/family/screens/EditFamilyScreen';
 import { BatchVoiceScreen } from '../features/transactions/screens/BatchVoiceScreen';
+import { BatchReceiptScreen } from '../features/transactions/screens/BatchReceiptScreen';
 import { EditProfileScreen } from '../features/settings/screens/EditProfileScreen';
 import { useAuthStore } from '../store/authStore';
 
@@ -161,6 +162,14 @@ export const RootNavigator = () => {
               component={BatchVoiceScreen}
               options={{
                 title: t('batchVoice.title'),
+                headerBackTitle: t('common.back'),
+              }}
+            />
+            <Stack.Screen
+              name="BatchReceipt"
+              component={BatchReceiptScreen}
+              options={{
+                title: t('receipt.screenTitle'),
                 headerBackTitle: t('common.back'),
               }}
             />

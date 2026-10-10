@@ -526,5 +526,20 @@
     "errorNoSpeech": "Không nghe thấy gì, hãy thử lại",
     "errorGeneral": "Lỗi nhận dạng, hãy thử lại",
     "successCreated": "Đã tạo {{count}} giao dịch"
+  },
+  "receipt": {
+    "screenTitle": "Scan hóa đơn",
+    "scanReceipt": "Scan hóa đơn",
+    "scanInstructions": "Chụp ảnh hoặc chọn ảnh hóa đơn.\nApp sẽ tự động nhận diện các mặt hàng.",
+    "analyzing": "Đang phân tích hóa đơn...",
+    "itemsFoundSoFar": "Đã tìm thấy {{count}} mặt hàng...",
+    "merchant": "Cửa hàng",
+    "detectedItems": "{{count}} mặt hàng",
+    "addTransactions": "Thêm {{count}} giao dịch",
+    "noItemsDetected": "Không nhận diện được mặt hàng. Hãy chụp lại ảnh rõ hơn.",
+    "retake": "Chụp lại",
+    "camera": "Chụp ảnh",
+    "gallery": "Thư viện",
+    "defaultCategory": "Danh mục mặc định"
   }
 }

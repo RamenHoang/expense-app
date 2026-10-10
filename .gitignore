@@ -44,3 +44,6 @@ yarn-error.*
 .claude
 .idea
 .vscode
+
+/samples
+/builds

@@ -465,6 +465,14 @@ export const TransactionListScreen = () => {
               navigation.navigate('BatchVoice' as never);
             },
           },
+          {
+            icon: 'receipt',
+            label: t('receipt.scanReceipt'),
+            onPress: () => {
+              setFabOpen(false);
+              navigation.navigate('BatchReceipt' as never);
+            },
+          },
         ]}
       />
       </View>

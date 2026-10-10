@@ -521,5 +521,20 @@
     "errorNoSpeech": "No speech detected, please try again",
     "errorGeneral": "Recognition error, please try again",
     "successCreated": "Created {{count}} transaction(s)"
+  },
+  "receipt": {
+    "screenTitle": "Scan Receipt",
+    "scanReceipt": "Scan receipt",
+    "scanInstructions": "Take a photo or pick an image of a receipt.\nThe app will automatically detect items.",
+    "analyzing": "Analyzing receipt...",
+    "itemsFoundSoFar": "Found {{count}} item(s)...",
+    "merchant": "Merchant",
+    "detectedItems": "{{count}} item(s)",
+    "addTransactions": "Add {{count}} transaction(s)",
+    "noItemsDetected": "No items detected. Try a clearer photo.",
+    "retake": "Retake",
+    "camera": "Camera",
+    "gallery": "Gallery",
+    "defaultCategory": "Default category"
   }
 }
