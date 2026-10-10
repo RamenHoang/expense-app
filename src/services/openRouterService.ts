@@ -6,13 +6,24 @@ const OPENROUTER_API_KEY = process.env.EXPO_PUBLIC_OPENROUTER_API_KEY || '';
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const OPENROUTER_MODEL = 'deepseek/deepseek-v4.1-flash';
 
-const EXTRACTION_PROMPT = `Nhiệm vụ: Trích xuất thông tin của TỪNG MẶT HÀNG (line item) trên hóa đơn trong hình đính kèm.
+const EXTRACTION_PROMPT = `Nhiệm vụ: Xác định hình ảnh đính kèm là Hóa đơn (Receipt) hay Giao dịch ngân hàng (Bank Transaction) để trích xuất dữ liệu.
 Chỉ trả về duy nhất mảng JSON, tuyệt đối không in markdown \`\`\`json, không giải thích hay nói thêm bất cứ từ nào.
 
-Quy tắc map dữ liệu cho từng mặt hàng:
-- "amount": Thành tiền của mặt hàng (line total). Định dạng số nguyên (integer), không chứa dấu phẩy/chấm/khoảng trắng.
-- "date": Lấy ngày in trên hóa đơn (đang ở định dạng Việt Nam DD/MM/YYYY), chuyển đổi bắt buộc sang định dạng YYYY-MM-DD. Mọi mặt hàng đều dùng chung ngày này.
-- "description": Tên mặt hàng (giữ nguyên in hoa), kèm theo số lượng và đơn giá trong ngoặc đơn. Ví dụ: "MIEN GOI NEM VIET CUONG 100G-SME (1 Goi x 10100)".
+Quy tắc trích xuất rẽ nhánh (Chỉ áp dụng 1 trong 2):
+
+KỊCH BẢN 1 - NẾU LÀ HÓA ĐƠN:
+Trích xuất TỪNG MẶT HÀNG (line item) thành một object.
+- "amount": Thành tiền của mặt hàng (line total).
+- "description": Tên mặt hàng, kèm số lượng và đơn giá trong ngoặc. Ví dụ: "MIEN GOI (1 Goi x 10100)".
+
+KỊCH BẢN 2 - NẾU LÀ GIAO DỊCH NGÂN HÀNG:
+Trích xuất thành MỘT object duy nhất.
+- "amount": Số tiền được chuyển hoặc nhận.
+- "description": Nội dung chuyển khoản (Memo) kèm Tên người nhận/gửi (nếu có). Ví dụ: "Chuyen tien tien nha thang 10 - NGUYEN VAN A".
+
+Quy tắc chung bắt buộc (áp dụng cho cả 2 kịch bản):
+- "amount": Luôn là số nguyên DƯƠNG (integer), bỏ dấu +/- hiển thị trên ảnh (giao dịch ngân hàng thường hiển thị số âm/màu đỏ khi là tiền chuyển đi). Tuyệt đối không chứa dấu phẩy, dấu chấm hay khoảng trắng.
+- "date": Lấy ngày trên ảnh (thường ở định dạng VN DD/MM/YYYY), chuyển đổi bắt buộc sang định dạng "YYYY-MM-DD".
 
 Output format:
 [
@@ -74,9 +85,11 @@ function extractCompleteJsonObjects(text: string): string[] {
 function parseTransactionObject(raw: string): AIExtractedTransaction | null {
   try {
     const obj = JSON.parse(raw);
-    if (obj && typeof obj.amount === 'number' && obj.amount > 0) {
+    if (obj && typeof obj.amount === 'number' && obj.amount !== 0) {
       return {
-        amount: obj.amount,
+        // Bank transaction screenshots often show a signed amount (e.g. "-500,000" for
+        // money sent out) — normalize to a positive magnitude regardless of the model's output.
+        amount: Math.abs(obj.amount),
         date: typeof obj.date === 'string' ? obj.date : null,
         description: typeof obj.description === 'string' ? obj.description : '',
       };
