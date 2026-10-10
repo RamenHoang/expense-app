@@ -300,26 +300,34 @@ export const VoiceInputModal = ({ visible, onDismiss, onConfirm }: VoiceInputMod
         onDismiss={onDismiss}
         contentContainerStyle={[styles.modal, { backgroundColor: theme.colors.surface }]}
       >
+        {/* Header (fixed) */}
+        <View style={styles.header}>
+          <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
+            {t('voice.modalTitle')}
+          </Text>
+          <IconButton icon="close" size={20} onPress={onDismiss} />
+        </View>
+
         <ScrollView
+          style={styles.scroll}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Header */}
-          <View style={styles.header}>
-            <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
-              {t('voice.modalTitle')}
-            </Text>
-            <IconButton icon="close" size={20} onPress={onDismiss} />
-          </View>
-
-          {/* Mic area */}
-          {renderMicArea()}
-
           {/* Parsed result */}
           {renderParsedResult()}
 
-          {/* Action buttons */}
+          {recordingState === 'error' && (
+            <Button mode="contained" onPress={handleRetry} style={styles.retryButton}>
+              {t('voice.retryRecording')}
+            </Button>
+          )}
+        </ScrollView>
+
+        {/* Mic area + confirm actions (fixed at bottom, within thumb reach) */}
+        <View style={styles.micAreaFixed}>
+          {renderMicArea()}
+
           {recordingState === 'done' && (
             <View style={styles.actions}>
               <Button mode="outlined" onPress={handleRetry} style={styles.actionButton}>
@@ -335,13 +343,7 @@ export const VoiceInputModal = ({ visible, onDismiss, onConfirm }: VoiceInputMod
               </Button>
             </View>
           )}
-
-          {recordingState === 'error' && (
-            <Button mode="contained" onPress={handleRetry} style={styles.retryButton}>
-              {t('voice.retryRecording')}
-            </Button>
-          )}
-        </ScrollView>
+        </View>
       </Modal>
     </Portal>
   );
@@ -353,15 +355,25 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     maxHeight: '90%',
   },
-  scrollContent: {
-    padding: 20,
-    flexGrow: 1,
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 8,
+  },
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+  },
+  micAreaFixed: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 4,
   },
   micContainer: {
     alignItems: 'center',
