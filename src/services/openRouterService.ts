@@ -183,6 +183,7 @@ export async function extractTransactionsFromImage(
         model: OPENROUTER_MODEL,
         temperature: 0,
         stream: true,
+        reasoning: { enabled: false },
         messages: [
           {
             role: 'user',

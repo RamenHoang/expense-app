@@ -15,6 +15,7 @@ import {
   useTheme,
   Chip,
   ActivityIndicator,
+  ProgressBar,
   TextInput,
   SegmentedButtons,
   Modal,
@@ -68,6 +69,7 @@ export const BatchReceiptScreen = () => {
   const [submitError, setSubmitError] = useState('');
   const [scanError, setScanError] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [scanProgressPercent, setScanProgressPercent] = useState(0);
 
   // Inline edit state
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -98,6 +100,19 @@ export const BatchReceiptScreen = () => {
     setScanError('');
     setMerchant('');
     setQueue([]);
+    setScanProgressPercent(0);
+
+    // Fake 0→100% progress while waiting for the first streamed result — OpenRouter
+    // gives no real progress signal up front, so this is a simulated ramp that slows
+    // down near the top and holds at 95% until an actual item arrives (see below).
+    const progressTimer = setInterval(() => {
+      setScanProgressPercent(prev => {
+        if (prev >= 95) return prev;
+        const step = prev < 60 ? 8 : prev < 85 ? 3 : 1;
+        return Math.min(prev + step, 95);
+      });
+    }, 250);
+
     try {
       // Compress image (also requests base64 for the vision API call)
       const compressed = await ImageManipulator.manipulateAsync(
@@ -114,6 +129,8 @@ export const BatchReceiptScreen = () => {
         const itemDate = tx.date ? new Date(tx.date) : new Date();
         streamedCount += 1;
         if (streamedCount === 1) {
+          clearInterval(progressTimer);
+          setScanProgressPercent(100);
           setReceiptDate(itemDate);
           setScanState('review');
         }
@@ -170,6 +187,8 @@ export const BatchReceiptScreen = () => {
     } catch (err: any) {
       setScanError(err.message || t('common.error'));
       setScanState('idle');
+    } finally {
+      clearInterval(progressTimer);
     }
   }, [globalCategoryId, t]);
 
@@ -331,6 +350,16 @@ export const BatchReceiptScreen = () => {
       >
         {t('receipt.analyzing')}
       </Text>
+      <View style={styles.processingProgress}>
+        <ProgressBar
+          progress={scanProgressPercent / 100}
+          color={theme.colors.primary}
+          style={styles.progressBar}
+        />
+        <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: 6 }}>
+          {Math.round(scanProgressPercent)}%
+        </Text>
+      </View>
     </View>
   );
 
@@ -694,6 +723,15 @@ const styles = StyleSheet.create({
   },
   processingText: {
     textAlign: 'center',
+  },
+  processingProgress: {
+    width: '80%',
+    alignItems: 'center',
+  },
+  progressBar: {
+    width: '100%',
+    height: 8,
+    borderRadius: 4,
   },
   // Review state
   reviewContainer: {
