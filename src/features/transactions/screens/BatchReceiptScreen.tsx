@@ -30,7 +30,7 @@ import { useTransactionStore } from '../../../store/transactionStore';
 import { useUserStore } from '../../../store/userStore';
 import { useFamilyStore } from '../../../store/familyStore';
 import { parseReceiptText, ReceiptItem } from '../../../utils/parseReceiptText';
-import { extractTransactionsFromImage } from '../../../services/openRouterService';
+import { extractTransactionsFromImage, AIExtractedTransaction } from '../../../services/openRouterService';
 import { formatCurrency } from '../../../utils/currency';
 import { transactionService } from '../../../services/transactionService';
 import { logger } from '../../../utils/logger';
@@ -67,7 +67,7 @@ export const BatchReceiptScreen = () => {
   const [isShared, setIsShared] = useState(shareWithFamily);
   const [submitError, setSubmitError] = useState('');
   const [scanError, setScanError] = useState('');
-  const [scanProgressCount, setScanProgressCount] = useState(0);
+  const [isStreaming, setIsStreaming] = useState(false);
 
   // Inline edit state
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -97,7 +97,7 @@ export const BatchReceiptScreen = () => {
     setScanState('processing');
     setScanError('');
     setMerchant('');
-    setScanProgressCount(0);
+    setQueue([]);
     try {
       // Compress image (also requests base64 for the vision API call)
       const compressed = await ImageManipulator.manipulateAsync(
@@ -106,51 +106,67 @@ export const BatchReceiptScreen = () => {
         { compress: 0.85, format: ImageManipulator.SaveFormat.JPEG, base64: true }
       );
 
-      type ParsedItem = { name: string; amount: number; date: Date };
-      let items: ParsedItem[];
+      let streamedCount = 0;
+
+      // Appends each transaction to the queue the moment it finishes streaming —
+      // the user sees items appear one by one instead of waiting for the full scan.
+      const appendStreamedItem = (tx: AIExtractedTransaction) => {
+        const itemDate = tx.date ? new Date(tx.date) : new Date();
+        streamedCount += 1;
+        if (streamedCount === 1) {
+          setReceiptDate(itemDate);
+          setScanState('review');
+        }
+        setQueue(prev => [
+          ...prev,
+          {
+            key: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+            name: tx.description,
+            amount: tx.amount,
+            categoryId: globalCategoryId,
+            date: itemDate,
+          },
+        ]);
+      };
 
       try {
         if (!compressed.base64) throw new Error('Missing base64 image data');
-        const transactions = await extractTransactionsFromImage(
-          compressed.base64,
-          'image/jpeg',
-          accumulatedText => {
-            // Rough live progress: count completed "amount" fields streamed so far.
-            const found = accumulatedText.match(/"amount"/g)?.length ?? 0;
-            setScanProgressCount(found);
-          }
-        );
-        items = transactions.map(tx => ({
-          name: tx.description,
-          amount: tx.amount,
-          date: tx.date ? new Date(tx.date) : new Date(),
-        }));
+        setIsStreaming(true);
+        await extractTransactionsFromImage(compressed.base64, 'image/jpeg', appendStreamedItem);
       } catch (aiErr) {
-        logger.error('[BatchReceipt] AI vision extraction failed, falling back to OCR + regex parser', aiErr);
-        const ocrResult = await TextRecognition.recognize(compressed.uri);
-        const parsed = parseReceiptText(ocrResult.text);
-        setMerchant(parsed.merchant || '');
-        const baseDate = parsed.date ? new Date(parsed.date) : new Date();
-        items = parsed.items.map(item => ({ name: item.name, amount: item.amount, date: baseDate }));
-      }
+        if (streamedCount > 0) {
+          // Some items already landed in the queue — keep them, just surface a warning
+          // instead of discarding visible results and replacing them with OCR fallback.
+          logger.error('[BatchReceipt] AI streaming ended early', aiErr);
+          setScanError(t('receipt.partialScanWarning'));
+        } else {
+          logger.error('[BatchReceipt] AI vision extraction failed, falling back to OCR + regex parser', aiErr);
+          const ocrResult = await TextRecognition.recognize(compressed.uri);
+          const parsed = parseReceiptText(ocrResult.text);
 
-      if (items.length === 0) {
-        setScanError(t('receipt.noItemsDetected'));
-        setScanState('idle');
-        return;
-      }
+          if (parsed.items.length === 0) {
+            setScanError(t('receipt.noItemsDetected'));
+            setScanState('idle');
+            return;
+          }
 
-      setReceiptDate(items[0].date);
-      setQueue(
-        items.map(item => ({
-          key: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
-          name: item.name,
-          amount: item.amount,
-          categoryId: globalCategoryId,
-          date: item.date,
-        }))
-      );
-      setScanState('review');
+          const baseDate = parsed.date ? new Date(parsed.date) : new Date();
+          setMerchant(parsed.merchant || '');
+          setReceiptDate(baseDate);
+          setQueue(
+            parsed.items.map(item => ({
+              key: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+              name: item.name,
+              amount: item.amount,
+              categoryId: globalCategoryId,
+              date: baseDate,
+            }))
+          );
+          setScanState('review');
+        }
+      } finally {
+        setIsStreaming(false);
+      }
     } catch (err: any) {
       setScanError(err.message || t('common.error'));
       setScanState('idle');
@@ -313,9 +329,7 @@ export const BatchReceiptScreen = () => {
         variant="bodyLarge"
         style={[styles.processingText, { color: theme.colors.onSurfaceVariant }]}
       >
-        {scanProgressCount > 0
-          ? t('receipt.itemsFoundSoFar', { count: scanProgressCount })
-          : t('receipt.analyzing')}
+        {t('receipt.analyzing')}
       </Text>
     </View>
   );
@@ -449,6 +463,15 @@ export const BatchReceiptScreen = () => {
       <View style={styles.queueSection}>
         {queue.map(item => renderQueueItem(item))}
       </View>
+
+      {isStreaming && (
+        <View style={styles.streamingIndicator}>
+          <ActivityIndicator size="small" color={theme.colors.primary} />
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+            {t('receipt.scanningMore')}
+          </Text>
+        </View>
+      )}
     </View>
   );
 
@@ -601,7 +624,7 @@ export const BatchReceiptScreen = () => {
             <Button
               mode="contained"
               onPress={handleCreateAll}
-              disabled={validCount === 0 || scanState === 'submitting'}
+              disabled={validCount === 0 || scanState === 'submitting' || isStreaming}
               loading={scanState === 'submitting'}
               icon="check"
               style={styles.createButton}
@@ -707,6 +730,13 @@ const styles = StyleSheet.create({
   },
   queueSection: {
     gap: 8,
+  },
+  streamingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
   },
   queueCard: {
     borderRadius: 10,
