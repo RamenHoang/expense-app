@@ -458,87 +458,95 @@ export const BatchReceiptScreen = () => {
 
   const renderReview = () => (
     <View style={styles.reviewContainer}>
-      {/* Header info card */}
-      <Surface
-        style={[styles.headerCard, { backgroundColor: theme.colors.primaryContainer }]}
-        elevation={0}
-      >
-        <View style={styles.headerCardRow}>
-          <Text variant="labelMedium" style={{ color: theme.colors.onPrimaryContainer }}>
-            {t('receipt.merchant')}
-          </Text>
-          <Text
-            variant="bodyMedium"
-            style={{ color: theme.colors.onPrimaryContainer, fontWeight: 'bold' }}
-          >
-            {merchant || '—'}
-          </Text>
-        </View>
-        <View style={styles.headerCardRow}>
-          <Text variant="labelMedium" style={{ color: theme.colors.onPrimaryContainer }}>
-            {t('transactions.date')}
-          </Text>
-          <Text variant="bodyMedium" style={{ color: theme.colors.onPrimaryContainer }}>
-            {receiptDate.toLocaleDateString('vi-VN')}
-          </Text>
-        </View>
-        <View style={styles.headerCardRow}>
-          <Text variant="labelMedium" style={{ color: theme.colors.onPrimaryContainer }}>
-            {t('receipt.detectedItems', { count: queue.length })}
-          </Text>
-          <Button
-            mode="text"
-            compact
-            onPress={() => { setScanState('idle'); setQueue([]); }}
-            labelStyle={{ fontSize: 12, color: theme.colors.onPrimaryContainer }}
-          >
-            {t('receipt.retake')}
-          </Button>
-        </View>
-      </Surface>
-
-      {/* Global category selector */}
-      <Text
-        variant="labelMedium"
-        style={[styles.sectionLabel, { color: theme.colors.onSurfaceVariant }]}
-      >
-        {t('receipt.defaultCategory')}
-      </Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-        <View style={styles.chipRow}>
-          {expenseCategories.map(cat => (
-            <Chip
-              key={cat.id}
-              selected={globalCategoryId === cat.id}
-              onPress={() => handleGlobalCategoryChange(cat.id)}
-              style={styles.categoryChip}
-              compact
+      {/* Fixed header: info card + global category selector (does not scroll) */}
+      <View style={styles.reviewFixedHeader}>
+        <Surface
+          style={[styles.headerCard, { backgroundColor: theme.colors.primaryContainer }]}
+          elevation={0}
+        >
+          <View style={styles.headerCardRow}>
+            <Text variant="labelMedium" style={{ color: theme.colors.onPrimaryContainer }}>
+              {t('receipt.merchant')}
+            </Text>
+            <Text
+              variant="bodyMedium"
+              style={{ color: theme.colors.onPrimaryContainer, fontWeight: 'bold' }}
             >
-              {cat.name}
-            </Chip>
-          ))}
-        </View>
-      </ScrollView>
+              {merchant || '—'}
+            </Text>
+          </View>
+          <View style={styles.headerCardRow}>
+            <Text variant="labelMedium" style={{ color: theme.colors.onPrimaryContainer }}>
+              {t('transactions.date')}
+            </Text>
+            <Text variant="bodyMedium" style={{ color: theme.colors.onPrimaryContainer }}>
+              {receiptDate.toLocaleDateString('vi-VN')}
+            </Text>
+          </View>
+          <View style={styles.headerCardRow}>
+            <Text variant="labelMedium" style={{ color: theme.colors.onPrimaryContainer }}>
+              {t('receipt.detectedItems', { count: queue.length })}
+            </Text>
+            <Button
+              mode="text"
+              compact
+              onPress={() => { setScanState('idle'); setQueue([]); }}
+              labelStyle={{ fontSize: 12, color: theme.colors.onPrimaryContainer }}
+            >
+              {t('receipt.retake')}
+            </Button>
+          </View>
+        </Surface>
 
-      {/* Items list */}
-      <Text
-        variant="labelLarge"
-        style={[styles.queueTitle, { color: theme.colors.onSurfaceVariant }]}
-      >
-        {t('batchVoice.queueTitle', { count: queue.length })}
-      </Text>
-      <View style={styles.queueSection}>
-        {queue.map(item => renderQueueItem(item))}
+        <Text
+          variant="labelMedium"
+          style={[styles.sectionLabel, { color: theme.colors.onSurfaceVariant }]}
+        >
+          {t('receipt.defaultCategory')}
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+          <View style={styles.chipRow}>
+            {expenseCategories.map(cat => (
+              <Chip
+                key={cat.id}
+                selected={globalCategoryId === cat.id}
+                onPress={() => handleGlobalCategoryChange(cat.id)}
+                style={styles.categoryChip}
+                compact
+              >
+                {cat.name}
+              </Chip>
+            ))}
+          </View>
+        </ScrollView>
+
+        <Text
+          variant="labelLarge"
+          style={[styles.queueTitle, { color: theme.colors.onSurfaceVariant }]}
+        >
+          {t('batchVoice.queueTitle', { count: queue.length })}
+        </Text>
       </View>
 
-      {isStreaming && (
-        <View style={styles.streamingIndicator}>
-          <ActivityIndicator size="small" color={theme.colors.primary} />
-          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-            {t('receipt.scanningMore')}
-          </Text>
+      {/* Only the items list scrolls */}
+      <ScrollView
+        style={styles.queueScroll}
+        contentContainerStyle={styles.queueScrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.queueSection}>
+          {queue.map(item => renderQueueItem(item))}
         </View>
-      )}
+
+        {isStreaming && (
+          <View style={styles.streamingIndicator}>
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              {t('receipt.scanningMore')}
+            </Text>
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 
@@ -642,15 +650,18 @@ export const BatchReceiptScreen = () => {
       >
         {renderEditModal()}
 
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          {scanState === 'idle' && renderIdle()}
-          {scanState === 'processing' && renderProcessing()}
-          {(scanState === 'review' || scanState === 'submitting') && renderReview()}
-        </ScrollView>
+        {(scanState === 'idle' || scanState === 'processing') && (
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            {scanState === 'idle' && renderIdle()}
+            {scanState === 'processing' && renderProcessing()}
+          </ScrollView>
+        )}
+
+        {(scanState === 'review' || scanState === 'submitting') && renderReview()}
 
         {/* Bottom action bar */}
         {(scanState === 'review' || scanState === 'submitting') && queue.length > 0 && (
@@ -773,7 +784,19 @@ const styles = StyleSheet.create({
   },
   // Review state
   reviewContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  reviewFixedHeader: {
     gap: 12,
+    marginBottom: 12,
+  },
+  queueScroll: {
+    flex: 1,
+  },
+  queueScrollContent: {
+    paddingBottom: 16,
   },
   headerCard: {
     borderRadius: 12,
