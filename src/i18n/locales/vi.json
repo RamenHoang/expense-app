@@ -530,8 +530,9 @@
   "receipt": {
     "screenTitle": "Scan hóa đơn",
     "scanReceipt": "Scan hóa đơn",
-    "scanInstructions": "Chụp ảnh hoặc chọn ảnh hóa đơn.\nApp sẽ tự động nhận diện các mặt hàng.",
+    "scanInstructions": "Chụp ảnh hoặc chọn nhiều ảnh hóa đơn cùng lúc.\nApp sẽ tự động nhận diện các mặt hàng.",
     "analyzing": "Đang phân tích hóa đơn...",
+    "analyzingMultiple": "Đang phân tích ảnh {{current}}/{{total}}...",
     "scanningMore": "Đang quét thêm mặt hàng...",
     "partialScanWarning": "Quét bị ngắt giữa chừng — một số mặt hàng có thể bị thiếu. Hãy kiểm tra lại danh sách.",
     "merchant": "Cửa hàng",

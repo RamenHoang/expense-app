@@ -70,6 +70,7 @@ export const BatchReceiptScreen = () => {
   const [scanError, setScanError] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [scanProgressPercent, setScanProgressPercent] = useState(0);
+  const [imageProgress, setImageProgress] = useState({ current: 0, total: 0 });
 
   // Inline edit state
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -95,100 +96,133 @@ export const BatchReceiptScreen = () => {
 
   // ─── Image picking & OCR ──────────────────────────────────────────────────
 
-  const processImage = useCallback(async (uri: string) => {
+  // Processes one or more images sequentially, merging every extracted transaction
+  // into the same queue so a multi-image pick ("select all receipts from this trip")
+  // ends up as one combined review list.
+  const processImages = useCallback(async (uris: string[]) => {
+    if (uris.length === 0) return;
+
     setScanState('processing');
     setScanError('');
     setMerchant('');
     setQueue([]);
     setScanProgressPercent(0);
+    setImageProgress({ current: 0, total: uris.length });
 
-    // Fake 0→100% progress while waiting for the first streamed result — OpenRouter
-    // gives no real progress signal up front, so this is a simulated ramp that slows
-    // down near the top and holds at 95% until an actual item arrives (see below).
-    const progressTimer = setInterval(() => {
-      setScanProgressPercent(prev => {
-        if (prev >= 95) return prev;
-        const step = prev < 60 ? 8 : prev < 85 ? 3 : 1;
-        return Math.min(prev + step, 95);
-      });
-    }, 250);
+    let firstItemSeen = false;
+    let totalExtracted = 0;
+    let hadPartialStreamError = false;
 
+    setIsStreaming(true);
     try {
-      // Compress image (also requests base64 for the vision API call)
-      const compressed = await ImageManipulator.manipulateAsync(
-        uri,
-        [{ resize: { width: 1920 } }],
-        { compress: 0.85, format: ImageManipulator.SaveFormat.JPEG, base64: true }
-      );
+      for (let i = 0; i < uris.length; i++) {
+        setImageProgress({ current: i + 1, total: uris.length });
+        setScanProgressPercent(0);
 
-      let streamedCount = 0;
+        // Fake 0→100% progress while waiting for the first streamed result — OpenRouter
+        // gives no real progress signal up front, so this is a simulated ramp that slows
+        // down near the top and holds at 95% until an actual item arrives (see below).
+        // Only visible while still on the "processing" screen (before any item has landed).
+        const progressTimer = setInterval(() => {
+          setScanProgressPercent(prev => {
+            if (prev >= 95) return prev;
+            const step = prev < 60 ? 8 : prev < 85 ? 3 : 1;
+            return Math.min(prev + step, 95);
+          });
+        }, 250);
 
-      // Appends each transaction to the queue the moment it finishes streaming —
-      // the user sees items appear one by one instead of waiting for the full scan.
-      const appendStreamedItem = (tx: AIExtractedTransaction) => {
-        const itemDate = tx.date ? new Date(tx.date) : new Date();
-        streamedCount += 1;
-        if (streamedCount === 1) {
-          clearInterval(progressTimer);
-          setScanProgressPercent(100);
-          setReceiptDate(itemDate);
-          setScanState('review');
-        }
-        setQueue(prev => [
-          ...prev,
-          {
-            key: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
-            name: tx.description,
-            amount: tx.amount,
-            categoryId: globalCategoryId,
-            date: itemDate,
-          },
-        ]);
-      };
-
-      try {
-        if (!compressed.base64) throw new Error('Missing base64 image data');
-        setIsStreaming(true);
-        await extractTransactionsFromImage(compressed.base64, 'image/jpeg', appendStreamedItem);
-      } catch (aiErr) {
-        if (streamedCount > 0) {
-          // Some items already landed in the queue — keep them, just surface a warning
-          // instead of discarding visible results and replacing them with OCR fallback.
-          logger.error('[BatchReceipt] AI streaming ended early', aiErr);
-          setScanError(t('receipt.partialScanWarning'));
-        } else {
-          logger.error('[BatchReceipt] AI vision extraction failed, falling back to OCR + regex parser', aiErr);
-          const ocrResult = await TextRecognition.recognize(compressed.uri);
-          const parsed = parseReceiptText(ocrResult.text);
-
-          if (parsed.items.length === 0) {
-            setScanError(t('receipt.noItemsDetected'));
-            setScanState('idle');
-            return;
-          }
-
-          const baseDate = parsed.date ? new Date(parsed.date) : new Date();
-          setMerchant(parsed.merchant || '');
-          setReceiptDate(baseDate);
-          setQueue(
-            parsed.items.map(item => ({
-              key: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
-              name: item.name,
-              amount: item.amount,
-              categoryId: globalCategoryId,
-              date: baseDate,
-            }))
+        try {
+          // Compress image (also requests base64 for the vision API call)
+          const compressed = await ImageManipulator.manipulateAsync(
+            uris[i],
+            [{ resize: { width: 1920 } }],
+            { compress: 0.85, format: ImageManipulator.SaveFormat.JPEG, base64: true }
           );
-          setScanState('review');
+
+          let streamedThisImage = 0;
+
+          // Appends each transaction to the queue the moment it finishes streaming —
+          // the user sees items appear one by one instead of waiting for the full scan.
+          const appendStreamedItem = (tx: AIExtractedTransaction) => {
+            const itemDate = tx.date ? new Date(tx.date) : new Date();
+            streamedThisImage += 1;
+            totalExtracted += 1;
+            if (!firstItemSeen) {
+              firstItemSeen = true;
+              clearInterval(progressTimer);
+              setReceiptDate(itemDate);
+              setScanState('review');
+            }
+            setQueue(prev => [
+              ...prev,
+              {
+                key: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+                name: tx.description,
+                amount: tx.amount,
+                categoryId: globalCategoryId,
+                date: itemDate,
+              },
+            ]);
+          };
+
+          try {
+            if (!compressed.base64) throw new Error('Missing base64 image data');
+            await extractTransactionsFromImage(compressed.base64, 'image/jpeg', appendStreamedItem);
+          } catch (aiErr) {
+            if (streamedThisImage > 0) {
+              // Some items already landed in the queue — keep them, just surface a warning
+              // instead of discarding visible results and replacing them with OCR fallback.
+              logger.error(`[BatchReceipt] AI streaming ended early for image ${i + 1}/${uris.length}`, aiErr);
+              hadPartialStreamError = true;
+            } else {
+              logger.error(
+                `[BatchReceipt] AI vision extraction failed for image ${i + 1}/${uris.length}, falling back to OCR + regex parser`,
+                aiErr
+              );
+              const ocrResult = await TextRecognition.recognize(compressed.uri);
+              const parsed = parseReceiptText(ocrResult.text);
+
+              if (parsed.items.length > 0) {
+                const baseDate = parsed.date ? new Date(parsed.date) : new Date();
+                if (parsed.merchant) setMerchant(parsed.merchant);
+                if (!firstItemSeen) {
+                  firstItemSeen = true;
+                  setReceiptDate(baseDate);
+                  setScanState('review');
+                }
+                setQueue(prev => [
+                  ...prev,
+                  ...parsed.items.map(item => ({
+                    key: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+                    name: item.name,
+                    amount: item.amount,
+                    categoryId: globalCategoryId,
+                    date: baseDate,
+                  })),
+                ]);
+                totalExtracted += parsed.items.length;
+              }
+            }
+          }
+        } catch (imageErr: any) {
+          // Compression or another unexpected failure for this one image — skip it, keep going.
+          logger.error(`[BatchReceipt] Failed to process image ${i + 1}/${uris.length}`, imageErr);
+        } finally {
+          clearInterval(progressTimer);
         }
-      } finally {
-        setIsStreaming(false);
       }
-    } catch (err: any) {
-      setScanError(err.message || t('common.error'));
-      setScanState('idle');
+
+      if (totalExtracted === 0) {
+        setScanError(t('receipt.noItemsDetected'));
+        setScanState('idle');
+        return;
+      }
+
+      if (hadPartialStreamError) {
+        setScanError(t('receipt.partialScanWarning'));
+      }
     } finally {
-      clearInterval(progressTimer);
+      setIsStreaming(false);
     }
   }, [globalCategoryId, t]);
 
@@ -200,7 +234,7 @@ export const BatchReceiptScreen = () => {
       allowsEditing: false,
     });
     if (!result.canceled && result.assets[0]) {
-      await processImage(result.assets[0].uri);
+      await processImages([result.assets[0].uri]);
     }
   };
 
@@ -211,9 +245,11 @@ export const BatchReceiptScreen = () => {
       quality: 1,
       allowsEditing: false,
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      selectionLimit: 20,
     });
-    if (!result.canceled && result.assets[0]) {
-      await processImage(result.assets[0].uri);
+    if (!result.canceled && result.assets.length > 0) {
+      await processImages(result.assets.map(asset => asset.uri));
     }
   };
 
@@ -348,7 +384,9 @@ export const BatchReceiptScreen = () => {
         variant="bodyLarge"
         style={[styles.processingText, { color: theme.colors.onSurfaceVariant }]}
       >
-        {t('receipt.analyzing')}
+        {imageProgress.total > 1
+          ? t('receipt.analyzingMultiple', { current: imageProgress.current, total: imageProgress.total })
+          : t('receipt.analyzing')}
       </Text>
       <View style={styles.processingProgress}>
         <ProgressBar

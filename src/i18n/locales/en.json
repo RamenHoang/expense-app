@@ -525,8 +525,9 @@
   "receipt": {
     "screenTitle": "Scan Receipt",
     "scanReceipt": "Scan receipt",
-    "scanInstructions": "Take a photo or pick an image of a receipt.\nThe app will automatically detect items.",
+    "scanInstructions": "Take a photo or pick multiple receipt images at once.\nThe app will automatically detect items.",
     "analyzing": "Analyzing receipt...",
+    "analyzingMultiple": "Analyzing image {{current}}/{{total}}...",
     "scanningMore": "Scanning for more items...",
     "partialScanWarning": "The scan was interrupted — some items may be missing. Please review the list.",
     "merchant": "Merchant",
